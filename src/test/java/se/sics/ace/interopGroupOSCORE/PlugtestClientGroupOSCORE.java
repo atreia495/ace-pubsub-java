@@ -1459,7 +1459,7 @@ public class PlugtestClientGroupOSCORE {
         
         Assert.assertEquals(true, joinResponse.ContainsKey(CBORObject.FromObject(GroupcommParameters.EXP)));
         Assert.assertEquals(CBORType.Integer, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).getType());
-        Assert.assertEquals(1000000, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt32());
+        Assert.assertEquals(2682374400L, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt64Value());
         
         if (myMap.ContainsKey(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params))) {
             Assert.assertEquals(CBORType.Array, myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params)).getType());
@@ -2173,7 +2173,7 @@ public class PlugtestClientGroupOSCORE {
         
         Assert.assertEquals(true, joinResponse.ContainsKey(CBORObject.FromObject(GroupcommParameters.EXP)));
         Assert.assertEquals(CBORType.Integer, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).getType());
-        Assert.assertEquals(1000000, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt32());
+		Assert.assertEquals(2682374400L, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt64Value());
         
         if (myMap.ContainsKey(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params))) {
             Assert.assertEquals(CBORType.Array, myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params)).getType());
@@ -2887,7 +2887,7 @@ public class PlugtestClientGroupOSCORE {
         
         Assert.assertEquals(true, joinResponse.ContainsKey(CBORObject.FromObject(GroupcommParameters.EXP)));
         Assert.assertEquals(CBORType.Integer, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).getType());
-        Assert.assertEquals(1000000, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt32());
+        Assert.assertEquals(2682374400L, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt64Value());
         
         if (myMap.ContainsKey(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params))) {
             Assert.assertEquals(CBORType.Array, myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params)).getType());
@@ -3605,7 +3605,7 @@ public class PlugtestClientGroupOSCORE {
         
         Assert.assertEquals(true, joinResponse.ContainsKey(CBORObject.FromObject(GroupcommParameters.EXP)));
         Assert.assertEquals(CBORType.Integer, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).getType());
-        Assert.assertEquals(1000000, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt32());
+        Assert.assertEquals(2682374400L, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt64Value());
         
         if (myMap.ContainsKey(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params))) {
             Assert.assertEquals(CBORType.Array, myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params)).getType());

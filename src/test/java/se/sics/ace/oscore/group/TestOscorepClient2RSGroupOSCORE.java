@@ -83,7 +83,9 @@ import se.sics.ace.oscore.GroupOSCOREInputMaterialObjectParameters;
 import se.sics.ace.oscore.OSCOREInputMaterialObjectParameters;
 
 /**
- * A test case for the OSCORE profile interactions between client and server.
+ * A test case for the OSCORE profile interactions between
+ * a candidate OSCORE group member acting as ACE Client and
+ * an OSCORE Group Manager acting as ACE Resource Server.
  * 
  * @author Marco Tiloca and Rikard Hoeglund
  *
@@ -116,7 +118,7 @@ public class TestOscorepClient2RSGroupOSCORE {
      * The cnf key used in these tests
      */
     private static byte[] keyCnf = {'a', 'b', 'c', 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
-
+    
     /**
      * The AS <-> RS key used in these tests
      */
@@ -218,11 +220,6 @@ public class TestOscorepClient2RSGroupOSCORE {
     	    
     	}
     	
-    	
-    	
-    	
-    	
-    	
         ctxDB = new org.eclipse.californium.oscore.HashMapCtxDB();
         
     	for (int i = 0; i < 4; i++) {
@@ -277,10 +274,9 @@ public class TestOscorepClient2RSGroupOSCORE {
                 "coap://localhost/authz-info", asRes, ctxDB, usedRecipientIds);
         
         assert(rsRes.getCode().equals(CoAP.ResponseCode.CREATED));
-        //Check that the OSCORE context has been created:
         
-        Assert.assertNotNull(ctxDB.getContext(
-        	     "coap://localhost/helloWorld"));
+        //Check that the OSCORE context has been created:
+        Assert.assertNotNull(ctxDB.getContext("coap://localhost/helloWorld"));
        
        //Submit a request
 
@@ -355,7 +351,7 @@ public class TestOscorepClient2RSGroupOSCORE {
 
         CBORObject osc = CBORObject.NewMap();
         osc.Add(Constants.OS_MS, keyCnf);
-        osc.Add(Constants.OS_ID, Util.intToBytes(0));
+        osc.Add(Constants.OS_ID, Util.intToBytes(1));
         
         CBORObject cnf = CBORObject.NewMap();
         cnf.Add(Constants.OSCORE_Input_Material, osc);
@@ -819,7 +815,7 @@ public class TestOscorepClient2RSGroupOSCORE {
        
         Assert.assertEquals(true, joinResponse.ContainsKey(CBORObject.FromObject(GroupcommParameters.EXP)));
         Assert.assertEquals(CBORType.Integer, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).getType());
-        Assert.assertEquals(1000000, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt32());
+        Assert.assertEquals(2682374400L, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt64Value());
        
         if (myMap.ContainsKey(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params))) {
             Assert.assertEquals(CBORType.Array, myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params)).getType());
@@ -1128,7 +1124,7 @@ public class TestOscorepClient2RSGroupOSCORE {
        
         Assert.assertEquals(true, keyDistributionResponse.ContainsKey(CBORObject.FromObject(GroupcommParameters.EXP)));
         Assert.assertEquals(CBORType.Integer, keyDistributionResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).getType());
-        Assert.assertEquals(1000000, keyDistributionResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt32());
+        Assert.assertEquals(2682374400L, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt64Value());
        
         if (myMap.ContainsKey(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params))) {
             Assert.assertEquals(CBORType.Array, myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params)).getType());
@@ -1763,7 +1759,7 @@ public class TestOscorepClient2RSGroupOSCORE {
        
         Assert.assertEquals(true, KeyDistributionResponse.ContainsKey(CBORObject.FromObject(GroupcommParameters.EXP)));
         Assert.assertEquals(CBORType.Integer, KeyDistributionResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).getType());
-        Assert.assertEquals(1000000, KeyDistributionResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt32());
+        Assert.assertEquals(2682374400L, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt64Value());
        
         if (myMap.ContainsKey(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params))) {
             Assert.assertEquals(CBORType.Array, myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params)).getType());
@@ -2150,7 +2146,7 @@ public class TestOscorepClient2RSGroupOSCORE {
         // Now the 'cnf' claim includes only a 'kid' with value the 'id'
         // used in the first Token and identifying the OSCORE_Input_Material
         CBORObject cbor = CBORObject.NewMap();
-        cbor.Add(Constants.COSE_KID_CBOR, Util.intToBytes(0));
+        cbor.Add(Constants.COSE_KID_CBOR, Util.intToBytes(1));
         params2.put(Constants.CNF, cbor);
         CWT token2 = new CWT(params2);
         
@@ -2489,7 +2485,7 @@ public class TestOscorepClient2RSGroupOSCORE {
            
             Assert.assertEquals(true, joinResponse.ContainsKey(CBORObject.FromObject(GroupcommParameters.EXP)));
             Assert.assertEquals(CBORType.Integer, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).getType());
-            Assert.assertEquals(1000000, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt32());
+            Assert.assertEquals(2682374400L, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt64Value());
            
             if (myMap.ContainsKey(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params))) {
                 Assert.assertEquals(CBORType.Array, myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params)).getType());
@@ -2784,7 +2780,7 @@ public class TestOscorepClient2RSGroupOSCORE {
 
         CBORObject osc = CBORObject.NewMap();
         osc.Add(Constants.OS_MS, keyCnf);
-        osc.Add(Constants.OS_ID, Util.intToBytes(0));
+        osc.Add(Constants.OS_ID, Util.intToBytes(2));
         
         CBORObject cnf = CBORObject.NewMap();
         cnf.Add(Constants.OSCORE_Input_Material, osc);
@@ -3237,7 +3233,7 @@ public class TestOscorepClient2RSGroupOSCORE {
        
         Assert.assertEquals(true, joinResponse.ContainsKey(CBORObject.FromObject(GroupcommParameters.EXP)));
         Assert.assertEquals(CBORType.Integer, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).getType());
-        Assert.assertEquals(1000000, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt32());
+        Assert.assertEquals(2682374400L, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt64Value());
        
         if (myMap.ContainsKey(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params))) {
             Assert.assertEquals(CBORType.Array, myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params)).getType());
@@ -3546,7 +3542,7 @@ public class TestOscorepClient2RSGroupOSCORE {
        
         Assert.assertEquals(true, keyDistributionResponse.ContainsKey(CBORObject.FromObject(GroupcommParameters.EXP)));
         Assert.assertEquals(CBORType.Integer, keyDistributionResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).getType());
-        Assert.assertEquals(1000000, keyDistributionResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt32());
+        Assert.assertEquals(2682374400L, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt64Value());
        
         if (myMap.ContainsKey(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params))) {
             Assert.assertEquals(CBORType.Array, myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params)).getType());
@@ -4236,7 +4232,7 @@ public class TestOscorepClient2RSGroupOSCORE {
        
         Assert.assertEquals(true, KeyDistributionResponse.ContainsKey(CBORObject.FromObject(GroupcommParameters.EXP)));
         Assert.assertEquals(CBORType.Integer, KeyDistributionResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).getType());
-        Assert.assertEquals(1000000, KeyDistributionResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt32());
+        Assert.assertEquals(2682374400L, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt64Value());
        
         if (myMap.ContainsKey(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params))) {
             Assert.assertEquals(CBORType.Array, myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params)).getType());

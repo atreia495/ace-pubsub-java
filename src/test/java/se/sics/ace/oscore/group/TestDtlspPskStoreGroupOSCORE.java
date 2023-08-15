@@ -72,7 +72,7 @@ import se.sics.ace.examples.KissTime;
 import se.sics.ace.oscore.GroupInfo;
 import se.sics.ace.oscore.rs.AuthzInfoGroupOSCORE;
 import se.sics.ace.oscore.rs.DtlspPskStoreGroupOSCORE;
-import se.sics.ace.oscore.rs.GroupOSCOREJoinValidator;
+import se.sics.ace.oscore.rs.GroupOSCOREValidator;
 import se.sics.ace.rs.TokenRepository;
 
 /**
@@ -100,9 +100,11 @@ public class TestDtlspPskStoreGroupOSCORE {
 	// This value must be strictly greater than 1
 	private final static int maxStaleIdsSets = 3;
 	
-    private static Map<String, GroupInfo> activeGroups = new HashMap<>();
+    private static Map<String, GroupInfo> existingGroups = new HashMap<>();
     
 	private static final String rootGroupMembershipResource = "ace-group";
+	
+	private final static String groupCollectionResourcePath = "admin";
     
     /**
      * Set up tests.
@@ -141,7 +143,7 @@ public class TestDtlspPskStoreGroupOSCORE {
         Set<String> auds = new HashSet<>();
         auds.add("aud1"); // Simple test audience
         auds.add("aud2"); // OSCORE Group Manager (This audience expects scopes as Byte Strings)
-        GroupOSCOREJoinValidator valid = new GroupOSCOREJoinValidator(auds, myScopes, rootGroupMembershipResource);
+        GroupOSCOREValidator valid = new GroupOSCOREValidator(auds, myScopes, rootGroupMembershipResource, groupCollectionResourcePath);
         
         // Include this audience in the list of audiences recognized as OSCORE Group Managers 
         valid.setGMAudiences(Collections.singleton("aud2"));
@@ -300,7 +302,7 @@ public class TestDtlspPskStoreGroupOSCORE {
         
     	// Add this OSCORE group to the set of active groups
 
-    	activeGroups.put(groupName, myGroup);
+    	existingGroups.put(groupName, myGroup);
     	        
         COSEparams coseP = new COSEparams(MessageTag.Encrypt0, 
                 AlgorithmID.AES_CCM_16_128_128, AlgorithmID.Direct);
@@ -317,8 +319,8 @@ public class TestDtlspPskStoreGroupOSCORE {
                 new KissTime(), null, rsId, valid, ctx, null, 0,
                 tokenFile, valid, false);
         
-        // Provide the authz-info endpoint with the set of active OSCORE groups
-        ai.setActiveGroups(activeGroups);
+        // Provide the authz-info endpoint with the set of existing OSCORE groups
+        ai.setExistingGroups(existingGroups);
         
         store = new DtlspPskStoreGroupOSCORE(ai);
     }

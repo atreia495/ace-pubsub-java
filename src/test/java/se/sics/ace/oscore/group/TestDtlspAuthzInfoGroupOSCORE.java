@@ -86,7 +86,7 @@ import se.sics.ace.examples.LocalMessage;
 import se.sics.ace.oscore.GroupInfo;
 import se.sics.ace.oscore.rs.AuthzInfoGroupOSCORE;
 import se.sics.ace.oscore.rs.CoapAuthzInfoGroupOSCORE;
-import se.sics.ace.oscore.rs.GroupOSCOREJoinValidator;
+import se.sics.ace.oscore.rs.GroupOSCOREValidator;
 import se.sics.ace.rs.IntrospectionException;
 import se.sics.ace.rs.TokenRepository;
 
@@ -123,9 +123,11 @@ public class TestDtlspAuthzInfoGroupOSCORE {
 	// This value must be strictly greater than 1
 	private final static int maxStaleIdsSets = 3;
 	
-    private static Map<String, GroupInfo> activeGroups = new HashMap<>();
+    private static Map<String, GroupInfo> existingGroups = new HashMap<>();
     
 	private static final String rootGroupMembershipResource = "ace-group";
+	
+	private final static String groupCollectionResourcePath = "admin";
     
     /**
      * Set up the necessary objects.
@@ -173,7 +175,7 @@ public class TestDtlspAuthzInfoGroupOSCORE {
         Set<String> auds = new HashSet<>();
         auds.add("aud1"); // Simple test audience
         auds.add("aud2"); // OSCORE Group Manager (This audience expects scopes as Byte Strings)
-        GroupOSCOREJoinValidator valid = new GroupOSCOREJoinValidator(auds, myScopes, rootGroupMembershipResource);
+        GroupOSCOREValidator valid = new GroupOSCOREValidator(auds, myScopes, rootGroupMembershipResource, groupCollectionResourcePath);
         
         // Include this audience in the list of audiences recognized as OSCORE Group Managers 
         valid.setGMAudiences(Collections.singleton("aud2"));
@@ -323,8 +325,8 @@ public class TestDtlspAuthzInfoGroupOSCORE {
     			                          gmAuthenticationCredential,
     			                          maxStaleIdsSets);
         
-    	// Add this OSCORE group to the set of active OSCORE groups
-    	activeGroups.put(groupName, myGroup);
+    	// Add this OSCORE group to the set of existing OSCORE groups
+    	existingGroups.put(groupName, myGroup);
         
         //Set up COSE parameters
         COSEparams coseP = new COSEparams(MessageTag.Encrypt0, 
@@ -341,8 +343,8 @@ public class TestDtlspAuthzInfoGroupOSCORE {
         ai = new AuthzInfoGroupOSCORE(Collections.singletonList("TestAS"), 
                 new KissTime(), null, rsId, valid, ctx, null, 0, tokenFile, valid, false);
         
-        // Provide the authz-info endpoint with the set of active OSCORE groups
-        ai.setActiveGroups(activeGroups);
+        // Provide the authz-info endpoint with the set of existing OSCORE groups
+        ai.setExistingGroups(existingGroups);
         
         //Set up the DTLS authz-info resource
         dai = new CoapAuthzInfoGroupOSCORE(ai);
@@ -352,8 +354,8 @@ public class TestDtlspAuthzInfoGroupOSCORE {
         ai2 = new AuthzInfoGroupOSCORE(Collections.singletonList("TestAS"), 
                 new KissTime(), null, rsId, valid, ctx, null, 0, tokenFile, valid, false);
         
-        // Provide the authz-info endpoint with the set of active OSCORE groups
-        ai2.setActiveGroups(activeGroups);
+        // Provide the authz-info endpoint with the set of existing OSCORE groups
+        ai2.setExistingGroups(existingGroups);
         
         // A separate authz-info endpoint is required for each audience, here "aud2",
         // due to the interface of the IntrospectionHandler4Tests taking exactly

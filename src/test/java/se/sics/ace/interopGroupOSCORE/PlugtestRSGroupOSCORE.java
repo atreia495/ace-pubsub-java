@@ -92,7 +92,7 @@ import se.sics.ace.oscore.GroupInfo;
 import se.sics.ace.oscore.rs.AuthzInfoGroupOSCORE;
 import se.sics.ace.oscore.rs.CoapAuthzInfoGroupOSCORE;
 import se.sics.ace.oscore.rs.DtlspPskStoreGroupOSCORE;
-import se.sics.ace.oscore.rs.GroupOSCOREJoinValidator;
+import se.sics.ace.oscore.rs.GroupOSCOREValidator;
 import se.sics.ace.oscore.rs.oscoreGroupManager.GroupOSCOREGroupMembershipResource;
 import se.sics.ace.oscore.rs.oscoreGroupManager.GroupOSCORERootGroupMembershipResource;
 import se.sics.ace.oscore.rs.oscoreGroupManager.GroupOSCORESubResourceActive;
@@ -127,6 +127,8 @@ public class PlugtestRSGroupOSCORE {
     private static String rsD = "00EA086573C683477D74EB7A0C63A6D031D5DEB10F3CC2876FDA6D3400CAA4E507";
 	
 	private final static String rootGroupMembershipResourcePath = "ace-group";
+	
+	private final static String groupCollectionResourcePath = "admin";
     
 	// Up to 4 bytes, same for all the OSCORE Group of the Group Manager
 	private final static int groupIdPrefixSize = 4; 
@@ -175,7 +177,7 @@ public class PlugtestRSGroupOSCORE {
     
     private static Map<String, Map<String, Set<Short>>> myScopes = new HashMap<>();
     
-    private static GroupOSCOREJoinValidator valid = null;
+    private static GroupOSCOREValidator valid = null;
     
     /**
      * Definition of the Hello-World Resource
@@ -307,7 +309,7 @@ public class PlugtestRSGroupOSCORE {
         auds.add("aud1"); // Simple test audience
         auds.add("aud2"); // OSCORE Group Manager (This audience expects scopes as Byte Strings)
         
-        valid = new GroupOSCOREJoinValidator(auds, myScopes, rootGroupMembershipResourcePath);
+        valid = new GroupOSCOREValidator(auds, myScopes, rootGroupMembershipResourcePath, groupCollectionResourcePath);
 
         // Include this audience in the list of audiences recognized as OSCORE Group Managers 
         valid.setGMAudiences(Collections.singleton("aud2"));
@@ -345,8 +347,8 @@ public class PlugtestRSGroupOSCORE {
         ai = new AuthzInfoGroupOSCORE(Collections.singletonList("TestAS"), 
         	 new KissTime(), null, rsId, valid, ctx, null, 0, tokenFile, valid, false);
         
-        // Provide the authz-info endpoint with the set of active OSCORE groups
-        ai.setActiveGroups(existingGroupInfo);
+        // Provide the authz-info endpoint with the set of existing OSCORE groups
+        ai.setExistingGroups(existingGroupInfo);
  
         // The related test in TestDtlspClientGroupOSCORE still works with this server even with a single
         // AuthzInfoGroupOSCORE 'ai', but only because 'ai' is constructed with a null Introspection Handler.

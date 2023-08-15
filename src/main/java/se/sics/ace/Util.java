@@ -7,9 +7,13 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.upokecenter.cbor.CBORObject;
 import com.upokecenter.cbor.CBORType;
@@ -281,7 +285,7 @@ public class Util {
       * @return  the updated role set
       * @throws AceException  if the role identifier is less than 1
      */
-    public static int addGroupOSCORERole (int currentRoleSet, short newRole) throws AceException{
+    public static int addGroupOSCORERole (int currentRoleSet, short newRole) throws AceException {
 
    	 if (newRole < 1) throw new AceException("Invalid identifier of Group OSCORE role");
    	 
@@ -301,7 +305,7 @@ public class Util {
       * @return  the updated role set
       * @throws AceException  if the role identifier is less than 1
      */
-    public static int removeGroupOSCORERole (int currentRoleSet, short oldRole) throws AceException{
+    public static int removeGroupOSCORERole (int currentRoleSet, short oldRole) throws AceException {
 
    	 if (oldRole < 1) throw new AceException("Invalid identifier of Group OSCORE role");
    	 
@@ -319,11 +323,18 @@ public class Util {
      * @param role  the role to remove from the current set
      * 
       * @return  true if the role set includes the specified role, false otherwise
-      * @throws AceException  if the role identifier is less than 1
+      * @throws AceException  if the set of roles is inconsistent with the AIF-OSCORE-GROUPCOMM data model
+      * 					  or the role identifier is less than 1
      */
     public static boolean checkGroupOSCORERole (int roleSet, short role) throws AceException {
-
-   	 if (role < 1) throw new AceException("Invalid identifier of Group OSCORE role");
+   	 
+   	 if ((roleSet < 1) || ((roleSet % 2) == 1)) {
+   		 throw new AceException("Invalid set of Group OSCORE roles");
+   	 }
+   	 
+   	 if (role < 1) {
+   		 throw new AceException("Invalid identifier of Group OSCORE role");
+   	 }
    	 
    	 return ((roleSet & (1 << role)) != 0);
    	 
@@ -335,11 +346,13 @@ public class Util {
      * @param roleSet  the set of roles, encoded using the AIF-OSCORE-GROUPCOMM data model
      * 
       * @return  The set of role identifiers specified in the role set
-      * @throws AceException  if the reserved role is requested (identifier 1, hence 'roleSet' has an odd value)
+      * @throws AceException  if the set of roles is inconsistent with the AIF-OSCORE-GROUPCOMM data model
      */
     public static Set<Integer> getGroupOSCORERoles (int roleSet) throws AceException {
    	 
-	   	 if ((roleSet % 2) == 1) throw new AceException("Invalid identifier of Group OSCORE role");
+      	 if ((roleSet < 1) || ((roleSet % 2) == 1)) {
+       		 throw new AceException("Invalid set of Group OSCORE roles");
+       	 }
 	   	 
 	   	 Set<Integer> mySet = new HashSet<Integer>();
 	   	 int roleIdentifier = 0;
@@ -376,13 +389,14 @@ public class Util {
     	if (ctis == null)
     		return null;
     	
-    	for (String cti : ctis) { //All tokens linked to that pop key
+    	for (String cti : ctis) { // All tokens linked to that pop key
     		
-	        //Check if we have the claims for that cti
-	        //Get the claims
+	        // Check if we have the claims for that cti
+    		
+	        // Get the claims
             Map<Short, CBORObject> claims = TokenRepository.getInstance().getClaims(cti);
             if (claims == null || claims.isEmpty()) {
-                //No claims found
+                // No claims found
         		// Move to the next Access Token for this 'kid'
                 continue;
             }
@@ -419,7 +433,7 @@ public class Util {
                     break;
                 }
 	        	
-	        	// Retrieve the Group ID of the OSCORE group
+	        	// Retrieve the group name of the OSCORE group
 	        	String scopeStr;
 	      	  	CBORObject scopeElement = scopeEntry.get(0);
 	      	  	if (scopeElement.getType().equals(CBORType.TextString)) {
@@ -430,8 +444,8 @@ public class Util {
 	      	  		}
 	      	  	}
 	      	  	else {
-	    			// Move to the next Access Token for this 'kid'
-	                break;
+	      	  		// Move to the next scope entry
+	                continue;
 	      	  	}
 	      	  	
 	      	  	// Retrieve the role or list of roles
@@ -474,6 +488,270 @@ public class Util {
     		return ret;
     	}
     	
+    }
+    
+    /**
+     * Add 'newPermission' to the admin permission set, encoded using the AIF-OSCORE-GROUPCOMM data model
+     * 
+     * @param currentPermissionSet  the current set of admin permissions
+     * @param newPermission  the admin permission to add to the current set
+     * 
+      * @return  the updated set of admin permission
+      * @throws AceException  if the permission identifier is less than 1
+     */
+    public static int addGroupOSCOREAdminPermission (int currentPermissionSet, short newPermission) throws AceException {
+
+   	 if (newPermission < 0) throw new AceException("Invalid identifier of Group OSCORE admin permission");
+   	 
+   	 int updatedPermissionSet = 0;
+   	 updatedPermissionSet = currentPermissionSet | (1 << newPermission);
+   	 
+   	 return updatedPermissionSet; 
+   	 
+    }
+    
+    /**
+     * Remove 'oldPermission' from the admin permission set, encoded using the AIF-OSCORE-GROUPCOMM data model
+     * 
+     * @param currentPermissionSet  the current set of admin permissions
+     * @param oldPermission  the permission to remove from the current set
+     * 
+      * @return  the updated set of admin permissions
+      * @throws AceException  if the permission identifier is less than 1
+     */
+    public static int removeGroupOSCOREAdminPermission (int currentPermissionSet, short oldPermission) throws AceException {
+
+   	 if (oldPermission < 0) throw new AceException("Invalid identifier of Group OSCORE admin permission");
+   	 
+   	 int updatedPermissionSet = 0;
+   	 updatedPermissionSet = currentPermissionSet & (~(1 << oldPermission));
+   	 
+   	 return updatedPermissionSet; 
+   	 
+    }
+    
+    /**
+     * Check if a permission set includes a specified admin permission, encoded using the AIF-OSCORE-GROUPCOMM data model
+     * 
+     * @param permissionSet  the set of admin permissions
+     * @param permission  the permission to remove from the current set of admin permissions
+     * 
+      * @return  true if the permission set includes the specified admin permission, false otherwise
+      * @throws AceException  if the set of admin permissions is inconsistent with the AIF-OSCORE-GROUPCOMM data model
+      * 					  or the permission identifier is less than 1
+     */
+    public static boolean checkGroupOSCOREAdminPermission (int permissionSet, short permission) throws AceException {
+   	 
+   	 if ((permissionSet < 1) || ((permissionSet % 2) == 0)) {
+   		 throw new AceException("Invalid set of Group OSCORE admin permissions");
+   	 }
+   	 
+   	 if (permission < 0) {
+   		 throw new AceException("Invalid identifier of Group OSCORE admin permission");
+   	 }
+   	 
+   	 return ((permissionSet & (1 << permission)) != 0);
+   	 
+    }
+    
+    /**
+     * Return the array of permissions included in the specified set of admin permissions,
+     * encoded using the AIF-OSCORE-GROUPCOMM data model
+     * 
+     * @param permissionSet  the set of admin permissions, encoded using the AIF-OSCORE-GROUPCOMM data model
+     * 
+      * @return  The set of permission identifiers specified in the set of admin permission
+      * @throws AceException  if the set of permissions is inconsistent with the AIF-OSCORE-GROUPCOMM data model
+     */
+    public static Set<Integer> getGroupOSCOREAdminPermissions (int permissionSet) throws AceException {
+   	 
+      	 if ((permissionSet < 1) || ((permissionSet % 2) == 0)) {
+       		 throw new AceException("Invalid set of Group OSCORE admin permissions");
+       	 }
+	   	 
+	   	 Set<Integer> mySet = new HashSet<Integer>();
+	   	 int permissionIdentifier = 0;
+	   	 
+	   	 // The admin permission "List" is always set in every admin scope entry
+	   	 mySet.add(Integer.valueOf(permissionIdentifier));
+	   	 permissionSet = permissionSet >>> 1;
+	   	 
+	   	 while (permissionSet != 0) {
+	   		permissionSet = permissionSet >>> 1;
+   	 		permissionIdentifier++;
+	   	 	 if ((permissionSet & 1) != 0) {
+	   	 		 mySet.add(Integer.valueOf(permissionIdentifier));
+	   	 	 }
+	   	 }
+	   	 
+	   	 return mySet;
+   	 
+    }
+    
+    /**
+     * Return the sets of admin permissions allowed to a subject, based on all the Access Tokens for that subject
+     * 
+     * @param subject   Subject identity of the node
+     * @param groupName   Group name of the OSCORE group, or null to retrieve all the admin scope entries
+     * @return The sets of scope entries such the group name matches with the specified group name pattern
+     *         and for which the subject has admin permissions, or null in case of no results
+     */
+    public static CBORObject[] getGroupOSCOREAdminPermissionsFromToken(String subject, String groupName) {
+
+    	List<CBORObject> scopeEntries = new ArrayList<CBORObject>();
+    	
+    	String kid = TokenRepository.getInstance().getKid(subject);
+    	Set<String> ctis = TokenRepository.getInstance().getCtis(kid);
+    	
+    	// This should never happen at this point, since a valid Access Token
+    	// has just made this request pass through 
+    	if (ctis == null)
+    		return null;
+    	
+    	for (String cti : ctis) { // All tokens linked to that pop key
+    		
+	        // Check if we have the claims for that cti
+    		
+	        // Get the claims
+            Map<Short, CBORObject> claims = TokenRepository.getInstance().getClaims(cti);
+            if (claims == null || claims.isEmpty()) {
+                // No claims found
+        		// Move to the next Access Token for this 'kid'
+                continue;
+            }
+            
+	        //Check the scope
+            CBORObject scope = claims.get(Constants.SCOPE);
+            
+        	// This should never happen, since a valid Access Token
+            // has just reached a handler at the Group Manager
+            if (scope == null) {
+        		// Move to the next Access Token for this 'kid'
+            	continue;
+            }
+            
+            if (!scope.getType().equals(CBORType.ByteString)) {
+        		// Move to the next Access Token for this 'kid'
+            	continue;
+            }
+            
+            byte[] rawScope = scope.GetByteString();
+        	CBORObject cborScope = CBORObject.DecodeFromBytes(rawScope);
+        	
+        	if (!cborScope.getType().equals(CBORType.Array)) {
+        		// Move to the next Access Token for this 'kid'
+                continue;
+            }
+        	
+        	for (int entryIndex = 0; entryIndex < cborScope.size(); entryIndex++) {
+            	
+        		CBORObject scopeEntry = cborScope.get(entryIndex);
+        		
+        		if (!scopeEntry.getType().equals(CBORType.Array) || scopeEntry.size() != 2) {
+        			// Move to the next Access Token for this 'kid'
+                    break;
+                }
+        		
+	      	  	// Retrieve the role or list of admin permissions
+        		CBORObject scopeElement = scopeEntry.get(1);
+	      	  	
+	        	if (!scopeElement.getType().equals(CBORType.Integer)) {
+      	  		    // Move to the next scope entry
+      	  			continue;
+	        	}
+	        	
+        		int permissionSetToken = scopeElement.AsInt32();
+        		
+        		// According to the AIF-OSCORE-GROUPCOMM data model, a valid combination 
+        		// of admin permissions has to be a positive integer of odd value (i.e., with last bit 1)
+        		if (permissionSetToken <= 0 || (permissionSetToken % 2 == 0)) {
+      	  		    // Move to the next scope entry
+      	  			continue;
+        		}
+        		
+	      	  	if (groupName == null) {
+	      	  		// Include this scope entry in the results to return, and move to the next one
+	      	  		scopeEntries.add(scopeEntry);
+	      	  		continue;
+	      	  	}
+
+	        	// Check if the group name of the OSCORE group matches with the group name pattern
+	      	  	scopeElement = scopeEntry.get(0);
+	      	    if (matchingGroupOscoreName(groupName, scopeElement)) {
+	      	    	// There is a match; include this scope entry in the results to return
+	      	    	scopeEntries.add(scopeEntry);
+	      	    }
+	      	    else {
+	      	    	// Move to the next scope entry
+	      	    	continue;
+	      	    }
+        			        	
+        	}
+        	
+    	}
+    	    	
+    	// No Access Token allows this node to have any admin permission,
+    	// altogether or with respect to the specified group
+    	int size = scopeEntries.size();
+    	if (size == 0) {
+    		return null;
+    	}
+    	else {
+    		CBORObject[] ret = new CBORObject[size];
+    		
+    		int index = 0;
+    		for (CBORObject entry : scopeEntries) {
+        		// Hard copy
+    			byte[] binaryElem = entry.EncodeToBytes();
+    			ret[index] = CBORObject.DecodeFromBytes(binaryElem);
+    			index++;
+    		}
+    		
+    		return ret;
+    	}
+    	
+    }
+    
+    /**
+     * Check if the name of an OSCORE group matches with the group name pattern
+     * specified by Toid in a scope entry of the scope claim, according to the
+     * AIF-OSCORE-GROUPCOMM data model
+     *  
+     * @param groupName   The name of the OSCORE group, as a String
+     * @param groupNamePattern   The Toid from the scope entry, as a CBOR Object
+     * @return  True if the group name matches with the group name pattern, or false otherwise
+     */
+    public static boolean matchingGroupOscoreName(final String groupName, final CBORObject groupNamePattern) {
+    	
+  	  	if (groupNamePattern.equals(CBORObject.True)) {
+	  		// The group name pattern is the wildcard
+  	  		return true;
+  	  	}
+  	  		
+  	  	if (groupNamePattern.getType().equals(CBORType.TextString)) {
+  	  		String groupNamePatternString = groupNamePattern.AsString();
+  	  		if (groupNamePattern.HasTag(35)) {
+  	  			// The group name pattern is a regular expression
+  	  			
+  	  			Pattern pat = Pattern.compile(groupNamePatternString);
+  	  			Matcher myMatcher = pat.matcher(groupName);
+  	  			if (myMatcher.matches() == false) {
+  	  				// The target group name does not match with the regular expression
+      	  		    return false;
+  	  			}
+  	  		}
+  	  		else if (!groupNamePatternString.equals(groupName)) {
+  	  			// The group name pattern is an exact group name,
+  	  			// which does not match with the target group name
+  	  		    return false;
+  	  		}
+  	  		
+  	  		// The target group name has matched with the group name pattern
+  	  		return true;
+  	  	}
+
+  	  	return false;
+  	  	
     }
     
     /**

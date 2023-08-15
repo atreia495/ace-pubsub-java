@@ -109,6 +109,37 @@ public class GroupcommParameters {
     }
 	
     /**
+     * Admin permission "List"
+     */
+    public static final short GROUP_OSCORE_ADMIN_LIST = 0;
+    
+    /**
+     * Admin permission "Create"
+     */
+    public static final short GROUP_OSCORE_ADMIN_CREATE = 1;
+    
+    /**
+     * Admin permission "Read"
+     */
+    public static final short GROUP_OSCORE_ADMIN_READ = 2;
+    
+    /**
+     * Admin permission "Write"
+     */
+    public static final short GROUP_OSCORE_ADMIN_WRITE = 3;
+    
+    /**
+     * Admin permission "Delete"
+     */
+    public static final short GROUP_OSCORE_ADMIN_DELETE = 4;
+    
+    /**
+     * Admin permissions as strings
+     */
+    public static final String[] GROUP_OSCORE_ADMIN_PERMISSIONS = {"list", "create", "read", "write", "delete"};
+    
+    
+    /**
      * Value for the application profile "coap_group_oscore_app"
      */
     public static final short COAP_GROUP_OSCORE_APP = 1;
@@ -244,6 +275,6 @@ public class GroupcommParameters {
     
     public static final short CONF_FILTER = 55;
     
-    public static final short APP_GROUP_DIFF = 56;
+    public static final short APP_GROUPS_DIFF = 56;
     
 }

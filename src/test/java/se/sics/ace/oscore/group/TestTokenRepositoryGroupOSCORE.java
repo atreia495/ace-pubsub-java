@@ -71,7 +71,7 @@ import se.sics.ace.TestConfig;
 import se.sics.ace.Util;
 import se.sics.ace.cwt.CwtCryptoCtx;
 import se.sics.ace.examples.KissTime;
-import se.sics.ace.oscore.rs.GroupOSCOREJoinValidator;
+import se.sics.ace.oscore.rs.GroupOSCOREValidator;
 import se.sics.ace.rs.IntrospectionException;
 import se.sics.ace.rs.TokenRepository;
 
@@ -95,6 +95,8 @@ public class TestTokenRepositoryGroupOSCORE {
     private static String rpk = "ni:///sha-256;-QCjSk6ojWX8-YaHwQMOkewLD7p89aFF2eh8shWDmKE";
     
 	private static final String rootGroupMembershipResource = "ace-group";
+	
+	private final static String groupCollectionResourcePath = "admin";
 	
 	private static Map<String, Short> rolesToInt = new HashMap<>();
     
@@ -154,7 +156,7 @@ public class TestTokenRepositoryGroupOSCORE {
         auds.add("aud1"); // Simple test audience
         auds.add("aud2"); // OSCORE Group Manager (This audience expects scopes as Byte Strings)
         
-        GroupOSCOREJoinValidator valid = new GroupOSCOREJoinValidator(auds, myScopes, rootGroupMembershipResource);
+        GroupOSCOREValidator valid = new GroupOSCOREValidator(auds, myScopes, rootGroupMembershipResource, groupCollectionResourcePath);
         
         // Include this audience in the list of audiences recognized as OSCORE Group Managers 
         valid.setGMAudiences(Collections.singleton("aud2"));
@@ -188,7 +190,7 @@ public class TestTokenRepositoryGroupOSCORE {
      * @throws IOException 
      * 
      */
-    private static void createTR(GroupOSCOREJoinValidator valid) throws IOException {
+    private static void createTR(GroupOSCOREValidator valid) throws IOException {
 
     	String rsId = "rs1";
     	

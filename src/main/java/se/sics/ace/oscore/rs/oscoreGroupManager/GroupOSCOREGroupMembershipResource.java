@@ -66,7 +66,7 @@ import se.sics.ace.coap.CoapReq;
 import se.sics.ace.oscore.GroupInfo;
 import se.sics.ace.oscore.GroupOSCOREInputMaterialObjectParameters;
 import se.sics.ace.oscore.OSCOREInputMaterialObjectParameters;
-import se.sics.ace.oscore.rs.GroupOSCOREJoinValidator;
+import se.sics.ace.oscore.rs.GroupOSCOREValidator;
 import se.sics.ace.rs.TokenRepository;
 
 /**
@@ -80,7 +80,7 @@ public class GroupOSCOREGroupMembershipResource extends CoapResource {
 	
 	private Map<String, Map<String, Set<Short>>> myScopes;
 	
-	private GroupOSCOREJoinValidator valid;
+	private GroupOSCOREValidator valid;
 	
 	/**
      * Constructor
@@ -94,7 +94,7 @@ public class GroupOSCOREGroupMembershipResource extends CoapResource {
     										  Map<String, GroupInfo> existingGroupInfo,
     										  String rootGroupMembershipResourcePath,
     										  Map<String, Map<String, Set<Short>>> myScopes,
-    										  GroupOSCOREJoinValidator valid) {
+    										  GroupOSCOREValidator valid) {
         
         // set resource identifier
         super(resId);
@@ -200,7 +200,7 @@ public class GroupOSCOREGroupMembershipResource extends CoapResource {
     	
     	// Expiration time in seconds, after which the OSCORE Security Context
     	// derived from the 'k' parameter is not valid anymore.
-    	myResponse.Add(GroupcommParameters.EXP, CBORObject.FromObject(1000000));
+    	myResponse.Add(GroupcommParameters.EXP, CBORObject.FromObject(2682374400L));
 
     	byte[] responsePayload = myResponse.EncodeToBytes();
     	
@@ -955,7 +955,7 @@ public class GroupOSCOREGroupMembershipResource extends CoapResource {
     	
     	// Expiration time in seconds, after which the OSCORE Security Context
     	// derived from the 'k' parameter is not valid anymore.
-    	joinResponse.Add(GroupcommParameters.EXP, CBORObject.FromObject(1000000));
+    	joinResponse.Add(GroupcommParameters.EXP, CBORObject.FromObject(2682374400L));
 
     	if (provideAuthCreds) {
 

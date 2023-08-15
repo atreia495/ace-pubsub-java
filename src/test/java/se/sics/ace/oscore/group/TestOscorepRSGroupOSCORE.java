@@ -44,8 +44,9 @@ import se.sics.ace.cwt.CwtCryptoCtx;
 import se.sics.ace.examples.KissTime;
 import se.sics.ace.examples.LocalMessage;
 import se.sics.ace.oscore.GroupInfo;
-import se.sics.ace.oscore.rs.GroupOSCOREJoinValidator;
+import se.sics.ace.oscore.rs.GroupOSCOREValidator;
 import se.sics.ace.oscore.rs.OscoreAuthzInfoGroupOSCORE;
+import se.sics.ace.oscore.rs.oscoreGroupManager.GroupOSCOREGroupCollectionResource;
 import se.sics.ace.oscore.rs.oscoreGroupManager.GroupOSCOREGroupMembershipResource;
 import se.sics.ace.oscore.rs.oscoreGroupManager.GroupOSCORERootGroupMembershipResource;
 import se.sics.ace.oscore.rs.oscoreGroupManager.GroupOSCORESubResourceActive;
@@ -61,21 +62,19 @@ import se.sics.ace.rs.AsRequestCreationHints;
 /**
  * A RS for testing the OSCORE profile of ACE (RFC 9203)
  * 
- * Server for testing Group Joining over OSCORE.
- * Should first receive a Token to authz-info.
- * 
- * Followed by a request to initiate the Join procedure,
- * the server will reply with the Join response.
+ * The RS acts as an OSCORE Group Manager.
  * 
  * @author Marco Tiloca and Rikard Hoeglund
  *
  */
 public class TestOscorepRSGroupOSCORE {
 	
-	//Sets the port to use
+	// Sets the port to use
 	private final static int PORT = CoAP.DEFAULT_COAP_PORT;
 	
     private final static String rootGroupMembershipResourcePath = "ace-group";
+    
+    private final static String groupCollectionResourcePath = "admin";
 	
 	// Up to 4 bytes, same for all the OSCORE Group of the Group Manager
 	private final static int groupIdPrefixSize = 4; 
@@ -106,7 +105,7 @@ public class TestOscorepRSGroupOSCORE {
 	
 	private static Map<String, Map<String, Set<Short>>> myScopes = new HashMap<>();
 	
-	private static GroupOSCOREJoinValidator valid = null;
+	private static GroupOSCOREValidator valid = null;
 
     /**
      * Definition of the Hello-World Resource
@@ -258,10 +257,19 @@ public class TestOscorepRSGroupOSCORE {
         myResource4.put(rootGroupMembershipResourcePath + "/" + "fBBBca570000", actions4);
         myScopes.put(rootGroupMembershipResourcePath + "/" + "fBBBca570000", myResource4);
 
+        // Adding the group-collection resource
+        Map<String, Set<Short>> myResource5 = new HashMap<>();
+        Set<Short> actions5 = new HashSet<>();
+        actions5.add(Constants.GET);
+        actions5.add(Constants.FETCH);
+        actions5.add(Constants.POST);
+        myResource5.put(groupCollectionResourcePath, actions5);
+        myScopes.put(groupCollectionResourcePath, myResource5);
+                
         Set<String> auds = new HashSet<>();
         auds.add("aud1"); // Simple test audience
         auds.add("aud2"); // OSCORE Group Manager (This audience expects scopes as Byte Strings)
-        valid = new GroupOSCOREJoinValidator(auds, myScopes, rootGroupMembershipResourcePath);
+        valid = new GroupOSCOREValidator(auds, myScopes, rootGroupMembershipResourcePath, groupCollectionResourcePath);
         
         // Include this audience in the list of audiences recognized as OSCORE Group Managers 
         valid.setGMAudiences(Collections.singleton("aud2"));
@@ -278,6 +286,9 @@ public class TestOscorepRSGroupOSCORE {
         valid.setGroupMembershipResources(Collections.singleton(rootGroupMembershipResourcePath + "/" + groupName + "/active"));
         valid.setGroupMembershipResources(Collections.singleton(rootGroupMembershipResourcePath + "/" + groupName + "/policies"));
         valid.setGroupMembershipResources(Collections.singleton(rootGroupMembershipResourcePath + "/" + groupName + "/stale-sids"));
+        
+        // Include the group-collection resource for Group OSCORE.
+        valid.setGroupAdminResources(Collections.singleton(groupCollectionResourcePath));
         
         String rsId = "rs1";
         
@@ -296,8 +307,8 @@ public class TestOscorepRSGroupOSCORE {
         ai = new OscoreAuthzInfoGroupOSCORE(Collections.singletonList("TestAS"), 
                   new KissTime(), null, rsId, valid, ctx, tokenFile, valid, false);
       
-        // Provide the authz-info endpoint with the set of active OSCORE groups
-        ai.setActiveGroups(existingGroupInfo);
+        // Provide the authz-info endpoint with the set of existing OSCORE groups
+        ai.setExistingGroups(existingGroupInfo);
       
         // Add a test token to authz-info
         
@@ -381,8 +392,13 @@ public class TestOscorepRSGroupOSCORE {
         // Add the /nodes sub-resource, as root to actually accessible per-node sub-resources
         Resource nodesSubResource = new GroupOSCORESubResourceNodes("nodes");
         groupMembershipResource.add(nodesSubResource);
-      
-  	    
+        
+        // The group-collection resource
+  	    Resource groupOSCOREGroupCollection = new GroupOSCOREGroupCollectionResource(groupCollectionResourcePath,
+  	    																			 existingGroupInfo,
+  	    																			 myScopes,
+  	    																			 valid);
+        
         // Create the OSCORE Group(s)
         if (!OSCOREGroupCreation(groupName, signKeyCurve, ecdhKeyCurve))
         	return;
@@ -392,11 +408,12 @@ public class TestOscorepRSGroupOSCORE {
         rs.add(temp);
         rs.add(authzInfo);
   	    rs.add(groupOSCORERootGroupMembership);
+  	    rs.add(groupOSCOREGroupCollection);
   	    groupOSCORERootGroupMembership.add(groupMembershipResource);
 
         CoapEndpoint cep = new CoapEndpoint.Builder()
                 .setCoapStackFactory(new OSCoreCoapStackFactory())
-                .setPort(CoAP.DEFAULT_COAP_PORT)
+                .setPort(PORT)
                 .setCustomCoapStackArgument(OscoreCtxDbSingleton.getInstance())
                 .build();
         rs.addEndpoint(cep);

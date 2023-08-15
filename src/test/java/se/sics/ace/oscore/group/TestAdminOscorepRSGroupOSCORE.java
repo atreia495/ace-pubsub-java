@@ -1,45 +1,9 @@
-/*******************************************************************************
- * Copyright (c) 2019, RISE AB
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without 
- * modification, are permitted provided that the following conditions 
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, 
- *    this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice, 
- *    this list of conditions and the following disclaimer in the documentation 
- *    and/or other materials provided with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR 
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT 
- * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *******************************************************************************/
 package se.sics.ace.oscore.group;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.security.Provider;
+import java.security.SecureRandom;
 import java.security.Security;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,16 +15,9 @@ import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.network.CoapEndpoint;
-import org.eclipse.californium.core.network.CoapEndpoint.Builder;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
-import org.eclipse.californium.scandium.DTLSConnector;
-import org.eclipse.californium.scandium.config.DtlsConfig;
-import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
-import org.eclipse.californium.scandium.dtls.CertificateType;
-import org.eclipse.californium.scandium.dtls.cipher.CipherSuite;
-import org.eclipse.californium.scandium.dtls.x509.AsyncNewAdvancedCertificateVerifier;
-import org.eclipse.californium.scandium.dtls.x509.SingleCertificateProvider;
+import org.eclipse.californium.oscore.OSCoreCoapStackFactory;
 
 import com.upokecenter.cbor.CBORObject;
 
@@ -69,28 +26,26 @@ import COSE.CoseException;
 import COSE.KeyKeys;
 import COSE.MessageTag;
 import COSE.OneKey;
-import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
-import org.eclipse.californium.elements.config.CertificateAuthenticationMode;
-import org.eclipse.californium.elements.config.Configuration;
-
 import net.i2p.crypto.eddsa.EdDSASecurityProvider;
 import net.i2p.crypto.eddsa.Utils;
+import se.sics.ace.AccessToken;
 import se.sics.ace.AceException;
 import se.sics.ace.COSEparams;
 import se.sics.ace.Constants;
 import se.sics.ace.GroupcommParameters;
 import se.sics.ace.TestConfig;
 import se.sics.ace.Util;
+import se.sics.ace.as.AccessTokenFactory;
+import se.sics.ace.coap.rs.CoapAuthzInfo;
 import se.sics.ace.coap.rs.CoapDeliverer;
+import se.sics.ace.coap.rs.oscoreProfile.OscoreCtxDbSingleton;
 import se.sics.ace.cwt.CWT;
 import se.sics.ace.cwt.CwtCryptoCtx;
 import se.sics.ace.examples.KissTime;
 import se.sics.ace.examples.LocalMessage;
 import se.sics.ace.oscore.GroupInfo;
-import se.sics.ace.oscore.rs.AuthzInfoGroupOSCORE;
-import se.sics.ace.oscore.rs.CoapAuthzInfoGroupOSCORE;
-import se.sics.ace.oscore.rs.DtlspPskStoreGroupOSCORE;
 import se.sics.ace.oscore.rs.GroupOSCOREValidator;
+import se.sics.ace.oscore.rs.OscoreAuthzInfoGroupOSCORE;
 import se.sics.ace.oscore.rs.oscoreGroupManager.GroupOSCOREGroupCollectionResource;
 import se.sics.ace.oscore.rs.oscoreGroupManager.GroupOSCOREGroupMembershipResource;
 import se.sics.ace.oscore.rs.oscoreGroupManager.GroupOSCORERootGroupMembershipResource;
@@ -105,25 +60,24 @@ import se.sics.ace.oscore.rs.oscoreGroupManager.GroupOSCORESubResourceVerifData;
 import se.sics.ace.rs.AsRequestCreationHints;
 
 /**
- *
- * A RS for testing the DTLS profile of ACE (RFC 9202)
+ * A RS for testing the OSCORE profile of ACE (RFC 9203)
  * 
- * The RS acts as an OSCORE Group Manager.
- * 
- * The Junit tests are in TestDtlspClientGroupOSCORE, 
- * which will automatically start this server.
+ * The RS acts as an OSCORE Group Manager, and is meant to also test the admin interface 
  * 
  * @author Marco Tiloca
  *
  */
-public class TestDtlspRSGroupOSCORE {
-
+public class TestAdminOscorepRSGroupOSCORE {
+	
+	// Sets the port to use
+	private final static int PORT = 5685;
+	
     private final static String rootGroupMembershipResourcePath = "ace-group";
     
     private final static String groupCollectionResourcePath = "admin";
 	
-    // Up to 4 bytes, same for all the OSCORE Group of the Group Manager
-	private final static int groupIdPrefixSize = 4;
+	// Up to 4 bytes, same for all the OSCORE Group of the Group Manager
+	private final static int groupIdPrefixSize = 4; 
 	
 	// Initial part of the node name for monitors, since they do not have a Sender ID
 	private final static String prefixMonitorNames = "M";
@@ -146,13 +100,13 @@ public class TestDtlspRSGroupOSCORE {
     
     // Uncomment to set curve X25519 for pairwise key derivation
 	private static int ecdhKeyCurve = KeyKeys.OKP_X25519.AsInt32();
-		
+	
 	private static Map<String, GroupInfo> existingGroupInfo = new HashMap<>();
 	
 	private static Map<String, Map<String, Set<Short>>> myScopes = new HashMap<>();
 	
 	private static GroupOSCOREValidator valid = null;
-	
+
     /**
      * Definition of the Hello-World Resource
      */
@@ -179,6 +133,39 @@ public class TestDtlspRSGroupOSCORE {
     }
     
     /**
+     * Definition of the Manage Resource
+     */
+    public static class ManageResource extends CoapResource {
+        
+        /**
+         * Constructor
+         */
+        public ManageResource() {
+            
+            // set resource identifier
+            super("manage");
+            
+            // set display name
+            getAttributes().setTitle("Manage Resource");
+        }
+
+        @Override
+        public void handleGET(CoapExchange exchange) {
+            
+            // respond to the request
+            exchange.respond("This is the /manage resource.");
+        }
+        
+        @Override
+        public void handlePOST(CoapExchange exchange) {
+            
+            // respond to the request
+            exchange.respond("This is the /manage resource.");
+        }
+    }
+    
+    
+    /**
      * Definition of the Temp Resource
      */
     public static class TempResource extends CoapResource {
@@ -203,18 +190,14 @@ public class TestDtlspRSGroupOSCORE {
         }
     }
     
-    
-    private static AuthzInfoGroupOSCORE ai = null;
+    private static OscoreAuthzInfoGroupOSCORE ai = null;
     
     private static CoapServer rs = null;
     
-    private static CoapDeliverer dpd = null;
-    
-    private static String rpk = "piJYILr/9Frrqur4bAz152+6hfzIG6v/dHMG+SK7XaC2JcEvI1ghAKryvKM6og3sNzRQk/nNqzeAfZsIGAYisZbRsPCE3s5BAyYBAiFYIIrXSWPfcBGeHZvB0La2Z0/nCciMirhJb8fv8HcOCyJzIAE=";
-    
+    private static CoapDeliverer dpd = null;  
     
     /**
-     * The CoAPs server for testing, run this before running the Junit tests.
+     * The CoAP OSCORE server for testing, run this before running the Junit tests.
      *  
      * @param args
      * @throws Exception
@@ -224,15 +207,14 @@ public class TestDtlspRSGroupOSCORE {
     	final Provider EdDSA = new EdDSASecurityProvider();
     	Security.insertProviderAt(PROVIDER, 2);
     	Security.insertProviderAt(EdDSA, 1);
-
+    	
     	final String groupName = "feedca570000";
-
-        //Set up DTLSProfileTokenRepository
+ 
+        // Set up token repository
         Set<Short> actions = new HashSet<>();
         actions.add(Constants.GET);
         Map<String, Set<Short>> myResource = new HashMap<>();
         myResource.put("helloWorld", actions);
-        myScopes = new HashMap<>();
         myScopes.put("r_helloWorld", myResource);
         
         Set<Short> actions2 = new HashSet<>();
@@ -274,7 +256,7 @@ public class TestDtlspRSGroupOSCORE {
         actions4.add(Constants.POST);
         myResource4.put(rootGroupMembershipResourcePath + "/" + "fBBBca570000", actions4);
         myScopes.put(rootGroupMembershipResourcePath + "/" + "fBBBca570000", myResource4);
-        
+
         // Adding the group-collection resource
         Map<String, Set<Short>> myResource5 = new HashMap<>();
         Set<Short> actions5 = new HashSet<>();
@@ -283,7 +265,7 @@ public class TestDtlspRSGroupOSCORE {
         actions5.add(Constants.POST);
         myResource5.put(groupCollectionResourcePath, actions5);
         myScopes.put(groupCollectionResourcePath, myResource5);
-        
+                
         Set<String> auds = new HashSet<>();
         auds.add("aud1"); // Simple test audience
         auds.add("aud2"); // OSCORE Group Manager (This audience expects scopes as Byte Strings)
@@ -299,7 +281,7 @@ public class TestDtlspRSGroupOSCORE {
         valid.setGroupMembershipResources(Collections.singleton(rootGroupMembershipResourcePath + "/" + groupName));
         valid.setGroupMembershipResources(Collections.singleton(rootGroupMembershipResourcePath + "/" + groupName + "/creds"));
         valid.setGroupMembershipResources(Collections.singleton(rootGroupMembershipResourcePath + "/" + groupName + "/kdc-cred"));
-        valid.setGroupMembershipResources(Collections.singleton(rootGroupMembershipResourcePath + "/" + groupName + "/verif-data"));
+        valid.setGroupMembershipResources(Collections.singleton(rootGroupMembershipResourcePath + "/" + groupName + "/verif-data"));        
         valid.setGroupMembershipResources(Collections.singleton(rootGroupMembershipResourcePath + "/" + groupName + "/num"));
         valid.setGroupMembershipResources(Collections.singleton(rootGroupMembershipResourcePath + "/" + groupName + "/active"));
         valid.setGroupMembershipResources(Collections.singleton(rootGroupMembershipResourcePath + "/" + groupName + "/policies"));
@@ -309,68 +291,66 @@ public class TestDtlspRSGroupOSCORE {
         valid.setGroupAdminResources(Collections.singleton(groupCollectionResourcePath));
         
         String rsId = "rs1";
-    	
-    	String tokenFile = TestConfig.testFilePath + "tokens.json";
-    	//Delete lingering old token files
-    	new File(tokenFile).delete();
-              
-        byte[] key128a 
-            = {'c', 'b', 'c', 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+        
+        String tokenFile = TestConfig.testFilePath + "tokens.json";
+        // Delete lingering old token files
+        new File(tokenFile).delete();
+        
+        byte[] key128a = {'c', 'b', 'c', 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+                   
+        //Set up COSE parameters (enable for encrypting Tokens)
+        COSEparams coseP = new COSEparams(MessageTag.Encrypt0, AlgorithmID.AES_CCM_16_128_128, AlgorithmID.Direct);
+        CwtCryptoCtx ctx = CwtCryptoCtx.encrypt0(key128a, coseP.getAlg().AsCBOR());
+        
+        //Set up the inner Authz-Info library
+        //Changed this OscoreAuthzInfo->OscoreAuthzInfoGroupOSCORE
+        ai = new OscoreAuthzInfoGroupOSCORE(Collections.singletonList("TestAS"), 
+                  new KissTime(), null, rsId, valid, ctx, tokenFile, valid, false);
       
-        OneKey asymmetric = new OneKey(CBORObject.DecodeFromBytes(
-                Base64.getDecoder().decode(rpk)));
-        
-        //Set up COSE parameters
-        COSEparams coseP = new COSEparams(MessageTag.Encrypt0, 
-                AlgorithmID.AES_CCM_16_128_128, AlgorithmID.Direct);
-        CwtCryptoCtx ctx 
-            = CwtCryptoCtx.encrypt0(key128a, coseP.getAlg().AsCBOR());
-
-        // Set up the inner Authz-Info library
-        ai = new AuthzInfoGroupOSCORE(Collections.singletonList("TestAS"), 
-        	 new KissTime(), null, rsId, valid, ctx, null, 0, tokenFile, valid, false);
-        
         // Provide the authz-info endpoint with the set of existing OSCORE groups
         ai.setExistingGroups(existingGroupInfo);
-
-        // The related test in TestDtlspClientGroupOSCORE still works with this server even with a single
-        // AuthzInfoGroupOSCORE 'ai', but only because 'ai' is constructed with a null Introspection Handler.
-        // 
-        // If provided, a proper Introspection Handler would require to take care of multiple audiences,
-        // rather than of a single RS as IntrospectionHandler4Tests does. This is already admitted in the
-        // Java interface IntrospectionHandler.
       
-        //Add a test token to authz-info
-        byte[] key128 = {'a', 'b', 'c', 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+        // Add a test token to authz-info
+        
         Map<Short, CBORObject> params = new HashMap<>(); 
         params.put(Constants.SCOPE, CBORObject.FromObject("r_temp"));
         params.put(Constants.AUD, CBORObject.FromObject("aud1"));
         params.put(Constants.CTI, CBORObject.FromObject("token1".getBytes(Constants.charset)));
         params.put(Constants.ISS, CBORObject.FromObject("TestAS"));
 
-        OneKey key = new OneKey();
-        key.add(KeyKeys.KeyType, KeyKeys.KeyType_Octet);
-      
-        byte[] kid  = new byte[] {0x01, 0x02, 0x03};
-        CBORObject kidC = CBORObject.FromObject(kid);
-        key.add(KeyKeys.KeyId, kidC);
-        key.add(KeyKeys.Octet_K, CBORObject.FromObject(key128));
+        // Build oscore CNF claim
+        CBORObject osccnf = CBORObject.NewMap();
+        CBORObject osc = CBORObject.NewMap();
 
-        CBORObject cnf = CBORObject.NewMap();
-        cnf.Add(Constants.COSE_KEY_CBOR, key.AsCBOR());
-        params.put(Constants.CNF, cnf);
-        CWT token = new CWT(params);
-        ai.processMessage(new LocalMessage(0, null, null, token.encode(ctx)));  
-      
-  	    AsRequestCreationHints asi 
-  	    	= new AsRequestCreationHints("coaps://blah/authz-info/", null, false, false);
-  	    Resource hello = new HelloWorldResource();
-  	    Resource temp = new TempResource();
-  	    Resource authzInfo = new CoapAuthzInfoGroupOSCORE(ai);
-  	    
+        byte[] masterSecret = new byte[16];
+        new SecureRandom().nextBytes(masterSecret);
+
+        osc.Add(Constants.OS_MS, masterSecret);
+        osc.Add(Constants.OS_ID, Util.intToBytes(0));
+        osccnf.Add(Constants.OSCORE_Input_Material, osc);
+        params.put(Constants.CNF, osccnf);
+
+        AccessToken token = AccessTokenFactory.generateToken(AccessTokenFactory.CWT_TYPE, params);
+        CWT cwt = (CWT)token;
+
+        CBORObject payload = CBORObject.NewMap();
+        payload.Add(Constants.ACCESS_TOKEN, cwt.encode(ctx).EncodeToBytes());
+        byte[] n1 = new byte[8];
+        new SecureRandom().nextBytes(n1);
+        payload.Add(Constants.NONCE1, n1);
+        payload.Add(Constants.ACE_CLIENT_RECIPIENTID, new byte[]{0x22});
+        CBORObject message = CBORObject.FromObject(payload);
+
+        ai.processMessage(new LocalMessage(0, null, null, message));
+
+        AsRequestCreationHints archm = new AsRequestCreationHints("coap://blah/authz-info/", null, false, false);
+        Resource hello = new HelloWorldResource();
+        Resource temp = new TempResource();
+        Resource authzInfo = new CoapAuthzInfo(ai);
+        
         // The root group-membership resource
   	    Resource groupOSCORERootGroupMembership = new GroupOSCORERootGroupMembershipResource(rootGroupMembershipResourcePath,
-  	    																				     existingGroupInfo);
+  	    																			         existingGroupInfo);
   	    
   	    /*
   	     * For each OSCORE group, create the associated group-membership resource and its sub-resources
@@ -412,58 +392,39 @@ public class TestDtlspRSGroupOSCORE {
         // Add the /nodes sub-resource, as root to actually accessible per-node sub-resources
         Resource nodesSubResource = new GroupOSCORESubResourceNodes("nodes");
         groupMembershipResource.add(nodesSubResource);
-  	    
+        
         // The group-collection resource
   	    Resource groupOSCOREGroupCollection = new GroupOSCOREGroupCollectionResource(groupCollectionResourcePath,
   	    																			 existingGroupInfo,
   	    																			 myScopes,
   	    																			 valid);
-  	    
+        
         // Create the OSCORE Group(s)
         if (!OSCOREGroupCreation(groupName, signKeyCurve, ecdhKeyCurve))
         	return;
-  	      	    
-  	    rs = new CoapServer();
-  	    rs.add(hello);
-  	    rs.add(temp);
-  	    rs.add(authzInfo);
+  	    
+        rs = new CoapServer();
+        rs.add(hello);
+        rs.add(temp);
+        rs.add(authzInfo);
   	    rs.add(groupOSCORERootGroupMembership);
   	    rs.add(groupOSCOREGroupCollection);
   	    groupOSCORERootGroupMembership.add(groupMembershipResource);
+
+        CoapEndpoint cep = new CoapEndpoint.Builder()
+                .setCoapStackFactory(new OSCoreCoapStackFactory())
+                .setPort(PORT)
+                .setCustomCoapStackArgument(OscoreCtxDbSingleton.getInstance())
+                .build();
+        rs.addEndpoint(cep);
       
-  	    Configuration dtlsConfig = Configuration.getStandard();
-  	    dtlsConfig.set(DtlsConfig.DTLS_CLIENT_AUTHENTICATION_MODE, CertificateAuthenticationMode.NEEDED);
-  	    dtlsConfig.set(DtlsConfig.DTLS_CIPHER_SUITES, Arrays.asList(CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8, CipherSuite.TLS_PSK_WITH_AES_128_CCM_8));
+        dpd = new CoapDeliverer(rs.getRoot(), null, archm, cep); 
+        // Add special allowance for Token and message from this OSCORE Sender ID
+        rs.setMessageDeliverer(dpd);
+        
+        rs.start();
+        System.out.println("OSCORE RS (GM) Server starting on port " + PORT);
       
-  	    DtlsConnectorConfig.Builder config = new DtlsConnectorConfig.Builder(dtlsConfig)
-              .setAddress(
-                      new InetSocketAddress(CoAP.DEFAULT_COAP_SECURE_PORT));
-
-  	    ArrayList<CertificateType> certTypes = new ArrayList<CertificateType>();
-  	    certTypes.add(CertificateType.RAW_PUBLIC_KEY);
-  	    AsyncNewAdvancedCertificateVerifier verifier = new AsyncNewAdvancedCertificateVerifier(
-                new X509Certificate[0], new RawPublicKeyIdentity[0], certTypes);
-  	    config.setAdvancedCertificateVerifier(verifier);
-
-  	    DtlspPskStoreGroupOSCORE psk = new DtlspPskStoreGroupOSCORE(ai);
-  	    config.setAdvancedPskStore(psk);
-  	    config.setCertificateIdentityProvider(
-                new SingleCertificateProvider(asymmetric.AsPrivateKey(), asymmetric.AsPublicKey()));
-
-  	    DTLSConnector connector = new DTLSConnector(config.build());
-  	    CoapEndpoint cep = new Builder().setConnector(connector)
-               .setConfiguration(Configuration.getStandard()).build();
-  	    rs.addEndpoint(cep);
-  	    //Add a CoAP (no 's') endpoint for authz-info
-  	    CoapEndpoint aiep = new Builder().setInetSocketAddress(
-               new InetSocketAddress(CoAP.DEFAULT_COAP_PORT)).build();
-  	    rs.addEndpoint(aiep);
-  	    
-  	    dpd = new CoapDeliverer(rs.getRoot(), null, asi, cep);
-  	    rs.setMessageDeliverer(dpd);
-  	    
-  	    rs.start();
-  	    System.out.println("Server starting");
     }
 
     /**
@@ -472,76 +433,76 @@ public class TestDtlspRSGroupOSCORE {
      * @throws IOException 
      * @throws AceException 
      */
-    public static void stop() throws IOException, AceException {
+    public static void stop() throws AceException {
         rs.stop();
         ai.close();
         new File(TestConfig.testFilePath + "tokens.json").delete();
     }
 
     private static boolean OSCOREGroupCreation(String groupName, int signKeyCurve, int ecdhKeyCurve)
-			throws CoseException, Exception
-	{
-		// Create the OSCORE group
-	    final byte[] masterSecret = { (byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04,
-	            					  (byte) 0x05, (byte) 0x06, (byte) 0x07, (byte) 0x08,
-	            					  (byte) 0x09, (byte) 0x0A, (byte) 0x0B, (byte) 0x0C,
-	            					  (byte) 0x0D, (byte) 0x0E, (byte) 0x0F, (byte) 0x10 };
-	
-	    final byte[] masterSalt =   { (byte) 0x9e, (byte) 0x7c, (byte) 0xa9, (byte) 0x22,
-	            					  (byte) 0x23, (byte) 0x78, (byte) 0x63, (byte) 0x40 };
-	
-	    final AlgorithmID hkdf = AlgorithmID.HMAC_SHA_256;
-	    final int credFmt = Constants.COSE_HEADER_PARAM_CCS;
-	    
-	    AlgorithmID gpEncAlg = null;
-	    AlgorithmID signAlg = null;
-	    CBORObject signAlgCapabilities = null;
-	    CBORObject signKeyCapabilities = null;
-	    CBORObject signParams = null;
-	    
-	    AlgorithmID alg = null;
-	    AlgorithmID ecdhAlg = null;
-	    CBORObject ecdhAlgCapabilities = null;
-	    CBORObject ecdhKeyCapabilities = null;
-	    CBORObject ecdhParams = null;
-	    
-		// Generate a pair of asymmetric keys and print them in base 64 (whole version, then public only)
-	    /*
-	    OneKey testKey = null;
-			
-			if (signKeyCurve == KeyKeys.EC2_P256.AsInt32())
-				testKey = OneKey.generateKey(AlgorithmID.ECDSA_256);
-		
-		if (signKeyCurve == KeyKeys.OKP_Ed25519.AsInt32())
-			testKey = OneKey.generateKey(AlgorithmID.EDDSA);
-	    
-		byte[] testKeyBytes = testKey.EncodeToBytes();
-		String testKeyBytesBase64 = Base64.getEncoder().encodeToString(testKeyBytes);
-		System.out.println(testKeyBytesBase64);
-		
-		OneKey testPublicKey = testKey.PublicKey();
-		byte[] testPublicKeyBytes = testPublicKey.EncodeToBytes();
-		String testPublicKeyBytesBase64 = Base64.getEncoder().encodeToString(testPublicKeyBytes);
-		System.out.println(testPublicKeyBytesBase64);
-		*/
-	    
-	    if (signKeyCurve == 0 && ecdhKeyCurve == 0) {
-	    	System.out.println("Both the signature key curve and the ECDH key curve are unspecified");
-	    	return false;
-	    }
-	    int mode = GroupcommParameters.GROUP_OSCORE_GROUP_PAIRWISE_MODE;
-	    if (signKeyCurve != 0 && ecdhKeyCurve == 0)
-	    	mode = GroupcommParameters.GROUP_OSCORE_GROUP_MODE_ONLY;
-	    else if (signKeyCurve == 0 && ecdhKeyCurve != 0)
-	    	mode = GroupcommParameters.GROUP_OSCORE_PAIRWISE_MODE_ONLY;
-	    
-	    
-	    if (mode != GroupcommParameters.GROUP_OSCORE_PAIRWISE_MODE_ONLY) {
-	    	gpEncAlg = AlgorithmID.AES_CCM_16_64_128;
-	        signAlgCapabilities = CBORObject.NewArray();
-	        signKeyCapabilities = CBORObject.NewArray();
-	        signParams = CBORObject.NewArray();
-	    	
+    			throws CoseException, Exception
+    {
+    	// Create the OSCORE group
+        final byte[] masterSecret = { (byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04,
+                					  (byte) 0x05, (byte) 0x06, (byte) 0x07, (byte) 0x08,
+                					  (byte) 0x09, (byte) 0x0A, (byte) 0x0B, (byte) 0x0C,
+                					  (byte) 0x0D, (byte) 0x0E, (byte) 0x0F, (byte) 0x10 };
+
+        final byte[] masterSalt =   { (byte) 0x9e, (byte) 0x7c, (byte) 0xa9, (byte) 0x22,
+                					  (byte) 0x23, (byte) 0x78, (byte) 0x63, (byte) 0x40 };
+
+        final AlgorithmID hkdf = AlgorithmID.HMAC_SHA_256;
+        final int credFmt = Constants.COSE_HEADER_PARAM_CCS;
+        
+        AlgorithmID gpEncAlg = null;
+        AlgorithmID signAlg = null;
+        CBORObject signAlgCapabilities = null;
+        CBORObject signKeyCapabilities = null;
+        CBORObject signParams = null;
+        
+        AlgorithmID alg = null;
+        AlgorithmID ecdhAlg = null;
+        CBORObject ecdhAlgCapabilities = null;
+        CBORObject ecdhKeyCapabilities = null;
+        CBORObject ecdhParams = null;
+        
+    	// Generate a pair of asymmetric keys and print them in base 64 (whole version, then public only)
+        /*
+        OneKey testKey = null;
+ 		
+ 		if (signKeyCurve == KeyKeys.EC2_P256.AsInt32())
+ 			testKey = OneKey.generateKey(AlgorithmID.ECDSA_256);
+    	
+    	if (signKeyCurve == KeyKeys.OKP_Ed25519.AsInt32())
+    		testKey = OneKey.generateKey(AlgorithmID.EDDSA);
+        
+    	byte[] testKeyBytes = testKey.EncodeToBytes();
+    	String testKeyBytesBase64 = Base64.getEncoder().encodeToString(testKeyBytes);
+    	System.out.println(testKeyBytesBase64);
+    	
+    	OneKey testPublicKey = testKey.PublicKey();
+    	byte[] testPublicKeyBytes = testPublicKey.EncodeToBytes();
+    	String testPublicKeyBytesBase64 = Base64.getEncoder().encodeToString(testPublicKeyBytes);
+    	System.out.println(testPublicKeyBytesBase64);
+    	*/
+        
+        if (signKeyCurve == 0 && ecdhKeyCurve == 0) {
+        	System.out.println("Both the signature key curve and the ECDH key curve are unspecified");
+        	return false;
+        }
+        int mode = GroupcommParameters.GROUP_OSCORE_GROUP_PAIRWISE_MODE;
+        if (signKeyCurve != 0 && ecdhKeyCurve == 0)
+        	mode = GroupcommParameters.GROUP_OSCORE_GROUP_MODE_ONLY;
+        else if (signKeyCurve == 0 && ecdhKeyCurve != 0)
+        	mode = GroupcommParameters.GROUP_OSCORE_PAIRWISE_MODE_ONLY;
+        
+        
+        if (mode != GroupcommParameters.GROUP_OSCORE_PAIRWISE_MODE_ONLY) {
+        	gpEncAlg = AlgorithmID.AES_CCM_16_64_128;
+            signAlgCapabilities = CBORObject.NewArray();
+            signKeyCapabilities = CBORObject.NewArray();
+            signParams = CBORObject.NewArray();
+        	
 	        // ECDSA_256
 	        if (signKeyCurve == KeyKeys.EC2_P256.AsInt32()) {
 	        	signAlg = AlgorithmID.ECDSA_256;
@@ -560,11 +521,11 @@ public class TestDtlspRSGroupOSCORE {
 	        
 	    	signParams.Add(signAlgCapabilities);
 	    	signParams.Add(signKeyCapabilities);
-	    }
-		
-	    if (mode != GroupcommParameters.GROUP_OSCORE_GROUP_MODE_ONLY) {
+        }
+    	
+        if (mode != GroupcommParameters.GROUP_OSCORE_GROUP_MODE_ONLY) {
 	        alg = AlgorithmID.AES_CCM_16_64_128;
-	    	ecdhAlg = AlgorithmID.ECDH_SS_HKDF_256;
+        	ecdhAlg = AlgorithmID.ECDH_SS_HKDF_256;
 	        ecdhAlgCapabilities = CBORObject.NewArray();
 	        ecdhKeyCapabilities = CBORObject.NewArray();
 	        ecdhParams = CBORObject.NewArray();
@@ -585,51 +546,51 @@ public class TestDtlspRSGroupOSCORE {
 	        
 	    	ecdhParams.Add(ecdhAlgCapabilities);
 	    	ecdhParams.Add(ecdhKeyCapabilities);
-		
-	    }
-	    
-	     
-	    if (existingGroupInfo.containsKey(groupName)) {
-	    	
-	    	System.out.println("The OSCORE group " + groupName + " already exists.");
-	    	return false;
-	    	
-	    }
-	    
-	    // Prefix (4 byte) and Epoch (2 bytes)
-	    // All Group IDs have the same prefix size, but can have different Epoch sizes
-	    // The current Group ID is: 0xfeedca57f05c, with Prefix 0xfeedca57 and current Epoch 0xf05c 
-		final byte[] groupIdPrefix = new byte[] { (byte) 0xfe, (byte) 0xed, (byte) 0xca, (byte) 0x57 };
-		byte[] groupIdEpoch = new byte[] { (byte) 0xf0, (byte) 0x5c }; // Up to 4 bytes
-		
-		
-		// Set the asymmetric key pair and public key of the Group Manager
-		
-		// Serialization of the COSE Key including both private and public part
-		byte[] gmKeyPairBytes = null;
-		    	
-		// The asymmetric key pair and public key of the Group Manager (ECDSA_256)
-		if (signKeyCurve == KeyKeys.EC2_P256.AsInt32()) {
-			gmKeyPairBytes = Utils.hexToBytes("a60102032620012158202236658ca675bb62d7b24623db0453a3b90533b7c3b221cc1c2c73c4e919d540225820770916bc4c97c3c46604f430b06170c7b3d6062633756628c31180fa3bb65a1b2358204a7b844a4c97ef91ed232aa564c9d5d373f2099647f9e9bd3fe6417a0d0f91ad");
-		}
-		    
-		// The asymmetric key pair and public key of the Group Manager (EDDSA - Ed25519)
-		if (signKeyCurve == KeyKeys.OKP_Ed25519.AsInt32()) {
-			gmKeyPairBytes = Utils.hexToBytes("a5010103272006215820c6ec665e817bd064340e7c24bb93a11e8ec0735ce48790f9c458f7fa340b8ca3235820d0a2ce11b2ba614b048903b72638ef4a3b0af56e1a60c6fb6706b0c1ad8a14fb");
-		}
-	
-		OneKey gmKeyPair = null;
-		gmKeyPair = new OneKey(CBORObject.DecodeFromBytes(gmKeyPairBytes));
-		
-	
-		// Serialization of the authentication credential, according to the format used in the group
-		byte[] gmAuthCred = null;
-		
-		/*
-		// Build the authentication credential according to the format used in the group
-		// Note: most likely, the result will NOT follow the required deterministic
-		//       encoding in byte lexicographic order, and it has to be adjusted offline
-		switch (credFmt) {
+    	
+        }
+        
+         
+        if (existingGroupInfo.containsKey(groupName)) {
+        	
+        	System.out.println("The OSCORE group " + groupName + " already exists.");
+        	return false;
+        	
+        }
+        
+        // Prefix (4 byte) and Epoch (2 bytes)
+        // All Group IDs have the same prefix size, but can have different Epoch sizes
+        // The current Group ID is: 0xfeedca57f05c, with Prefix 0xfeedca57 and current Epoch 0xf05c 
+    	final byte[] groupIdPrefix = new byte[] { (byte) 0xfe, (byte) 0xed, (byte) 0xca, (byte) 0x57 };
+    	byte[] groupIdEpoch = new byte[] { (byte) 0xf0, (byte) 0x5c }; // Up to 4 bytes
+    	
+    	
+    	// Set the asymmetric key pair and public key of the Group Manager
+    	
+    	// Serialization of the COSE Key including both private and public part
+    	byte[] gmKeyPairBytes = null;
+    	    	
+    	// The asymmetric key pair and public key of the Group Manager (ECDSA_256)
+    	if (signKeyCurve == KeyKeys.EC2_P256.AsInt32()) {
+    		gmKeyPairBytes = Utils.hexToBytes("a60102032620012158202236658ca675bb62d7b24623db0453a3b90533b7c3b221cc1c2c73c4e919d540225820770916bc4c97c3c46604f430b06170c7b3d6062633756628c31180fa3bb65a1b2358204a7b844a4c97ef91ed232aa564c9d5d373f2099647f9e9bd3fe6417a0d0f91ad");
+    	}
+    	    
+    	// The asymmetric key pair and public key of the Group Manager (EDDSA - Ed25519)
+    	if (signKeyCurve == KeyKeys.OKP_Ed25519.AsInt32()) {
+    		gmKeyPairBytes = Utils.hexToBytes("a5010103272006215820c6ec665e817bd064340e7c24bb93a11e8ec0735ce48790f9c458f7fa340b8ca3235820d0a2ce11b2ba614b048903b72638ef4a3b0af56e1a60c6fb6706b0c1ad8a14fb");
+    	}
+
+    	OneKey gmKeyPair = null;
+    	gmKeyPair = new OneKey(CBORObject.DecodeFromBytes(gmKeyPairBytes));
+    	
+
+    	// Serialization of the authentication credential, according to the format used in the group
+    	byte[] gmAuthCred = null;
+    	
+    	/*
+    	// Build the authentication credential according to the format used in the group
+    	// Note: most likely, the result will NOT follow the required deterministic
+    	//       encoding in byte lexicographic order, and it has to be adjusted offline
+    	switch (credFmt) {
 	        case Constants.COSE_HEADER_PARAM_CCS:
 	            // A CCS including the public key
 	        	String subjectName = "";
@@ -643,10 +604,10 @@ public class TestDtlspRSGroupOSCORE {
 	            // A certificate including the public key
 	            // TODO
 	            break;
-		}
-		*/
-		
-		switch (credFmt) {
+    	}
+    	*/
+    	
+    	switch (credFmt) {
 	        case Constants.COSE_HEADER_PARAM_CCS:
 	            // A CCS including the public key
 	        	if (signKeyCurve == KeyKeys.EC2_P256.AsInt32()) {
@@ -666,90 +627,90 @@ public class TestDtlspRSGroupOSCORE {
 	            // TODO
 	        	gmAuthCred = null;
 	            break;
-		}
-		
-		
-		GroupInfo myGroupInfo = new GroupInfo(groupName,
-										      masterSecret,
-										      masterSalt,
-										      groupIdPrefixSize,
-										      groupIdPrefix,
-										      groupIdEpoch.length,
-										      Util.bytesToInt(groupIdEpoch),
-										      prefixMonitorNames,
-										      nodeNameSeparator,
-										      hkdf,
-										      credFmt,
-										      mode,
-										      gpEncAlg,
-										      signAlg,
-										      signParams,
-										      alg,
-										      ecdhAlg,
-										      ecdhParams,
-										      null,
-										      gmKeyPair,
-										      gmAuthCred,
-										      maxStaleIdsSets);
-	    
-		myGroupInfo.setStatus(true);
-		
-		byte[] mySid;
-		String myName;
-		String mySubject;
-		
-		
-		// Generate a pair of ECDSA_256 keys and print them in base 64 (whole version, then public only)
-		/*
-		OneKey testKey = OneKey.generateKey(AlgorithmID.ECDSA_256);
-	    
-		byte[] testKeyBytes = testKey.EncodeToBytes();
-		String testKeyBytesBase64 = Base64.getEncoder().encodeToString(testKeyBytes);
-		System.out.println(testKeyBytesBase64);
-		
-		OneKey testPublicKey = testKey.PublicKey();
-		byte[] testPublicKeyBytes = testPublicKey.EncodeToBytes();
-		String testPublicKeyBytesBase64 = Base64.getEncoder().encodeToString(testPublicKeyBytes);
-		System.out.println(testPublicKeyBytesBase64);
-		*/
-		
-		// Add a group member with Sender ID 0x52
-		mySid = new byte[] { (byte) 0x52 };
-		
-		if (!myGroupInfo.allocateSenderId(mySid))
-			return false;
-		myName = myGroupInfo.allocateNodeName(mySid);
-		mySubject = "clientX";
-		
-		int roles = 0;
-		roles = Util.addGroupOSCORERole(roles, GroupcommParameters.GROUP_OSCORE_REQUESTER);
-		
-		if (!myGroupInfo.addGroupMember(mySid, myName, roles, mySubject))
-			return false;
-		
-		
-		// Set the public key of the group member with Sender ID 0x52
-		
-		// The serialization of the COSE Key, including only the public part
-		byte[] coseKeyPub1 = null;
-		if (signKeyCurve == KeyKeys.EC2_P256.AsInt32()) {
-			coseKeyPub1 = Utils.hexToBytes("a501020326200121582035f3656092e1269aaaee6262cd1c0d9d38ed78820803305bc8ea41702a50b3af2258205d31247c2959e7b7d3f62f79622a7082ff01325fc9549e61bb878c2264df4c4f");
-		}
-		// Store the authentication credential of the group member with Sender ID 0x52
-		if (signKeyCurve == KeyKeys.OKP_Ed25519.AsInt32()) {
-			coseKeyPub1 = Utils.hexToBytes("a401010327200621582077ec358c1d344e41ee0e87b8383d23a2099acd39bdf989ce45b52e887463389b");
-		}
-		
-		// Serialization of the authentication credential, according to the format used in the group
-		byte[] authCred1 = null;
-		
-		/*
-		// Build the authentication credential according to the format used in the group
-		// Note: most likely, the result will NOT follow the required deterministic
-		//       encoding in byte lexicographic order, and it has to be adjusted offline
-		OneKey coseKeyPub1OneKey = null;
-		coseKeyPub1OneKey = new OneKey(CBORObject.DecodeFromBytes(coseKeyPub1));
-		switch (credFmt) {
+    	}
+    	
+    	
+    	GroupInfo myGroupInfo = new GroupInfo(groupName,
+    									      masterSecret,
+    									      masterSalt,
+    									      groupIdPrefixSize,
+    									      groupIdPrefix,
+    									      groupIdEpoch.length,
+    									      Util.bytesToInt(groupIdEpoch),
+    									      prefixMonitorNames,
+    									      nodeNameSeparator,
+    									      hkdf,
+    									      credFmt,
+    									      mode,
+    									      gpEncAlg,
+    									      signAlg,
+    									      signParams,
+    									      alg,
+    									      ecdhAlg,
+    									      ecdhParams,
+    									      null,
+    									      gmKeyPair,
+    									      gmAuthCred,
+    									      maxStaleIdsSets);
+        
+    	myGroupInfo.setStatus(true);
+    	
+    	byte[] mySid;
+    	String myName;
+    	String mySubject;
+    	
+    	
+    	// Generate a pair of ECDSA_256 keys and print them in base 64 (whole version, then public only)
+    	/*
+    	OneKey testKey = OneKey.generateKey(AlgorithmID.ECDSA_256);
+        
+    	byte[] testKeyBytes = testKey.EncodeToBytes();
+    	String testKeyBytesBase64 = Base64.getEncoder().encodeToString(testKeyBytes);
+    	System.out.println(testKeyBytesBase64);
+    	
+    	OneKey testPublicKey = testKey.PublicKey();
+    	byte[] testPublicKeyBytes = testPublicKey.EncodeToBytes();
+    	String testPublicKeyBytesBase64 = Base64.getEncoder().encodeToString(testPublicKeyBytes);
+    	System.out.println(testPublicKeyBytesBase64);
+    	*/
+    	
+    	// Add a group member with Sender ID 0x52
+    	mySid = new byte[] { (byte) 0x52 };
+    	
+    	if (!myGroupInfo.allocateSenderId(mySid))
+    		return false;
+    	myName = myGroupInfo.allocateNodeName(mySid);
+    	mySubject = "clientX";
+    	
+    	int roles = 0;
+    	roles = Util.addGroupOSCORERole(roles, GroupcommParameters.GROUP_OSCORE_REQUESTER);
+    	
+    	if (!myGroupInfo.addGroupMember(mySid, myName, roles, mySubject))
+    		return false;
+    	
+    	
+    	// Set the public key of the group member with Sender ID 0x52
+    	
+    	// The serialization of the COSE Key, including only the public part
+    	byte[] coseKeyPub1 = null;
+    	if (signKeyCurve == KeyKeys.EC2_P256.AsInt32()) {
+    		coseKeyPub1 = Utils.hexToBytes("a501020326200121582035f3656092e1269aaaee6262cd1c0d9d38ed78820803305bc8ea41702a50b3af2258205d31247c2959e7b7d3f62f79622a7082ff01325fc9549e61bb878c2264df4c4f");
+    	}
+    	// Store the authentication credential of the group member with Sender ID 0x52
+    	if (signKeyCurve == KeyKeys.OKP_Ed25519.AsInt32()) {
+    		coseKeyPub1 = Utils.hexToBytes("a401010327200621582077ec358c1d344e41ee0e87b8383d23a2099acd39bdf989ce45b52e887463389b");
+    	}
+    	
+    	// Serialization of the authentication credential, according to the format used in the group
+    	byte[] authCred1 = null;
+    	
+    	/*
+    	// Build the authentication credential according to the format used in the group
+    	// Note: most likely, the result will NOT follow the required deterministic
+    	//       encoding in byte lexicographic order, and it has to be adjusted offline
+    	OneKey coseKeyPub1OneKey = null;
+    	coseKeyPub1OneKey = new OneKey(CBORObject.DecodeFromBytes(coseKeyPub1));
+    	switch (credFmt) {
 	        case Constants.COSE_HEADER_PARAM_CCS:
 	            // A CCS including the public key
 	        	String subjectName = "";
@@ -765,10 +726,10 @@ public class TestDtlspRSGroupOSCORE {
 	            // TODO
 	        	authCred1 = null;
 	            break;
-		}
-		*/
-	
-		switch (credFmt) {
+    	}
+    	*/
+
+    	switch (credFmt) {
 	        case Constants.COSE_HEADER_PARAM_CCS:
 	            // A CCS including the public key
 	        	if (signKeyCurve == KeyKeys.EC2_P256.AsInt32()) {
@@ -788,67 +749,67 @@ public class TestDtlspRSGroupOSCORE {
 	            // TODO
 	        	authCred1 = null;
 	            break;
-		}
-		
-		// Store the authentication credential of the group member with Sender ID 0x52
-		myGroupInfo.storeAuthCred(mySid, CBORObject.FromObject(authCred1));
-		
-		
-		// Add a group member with Sender ID 0x77
-		mySid = new byte[] { (byte) 0x77 };
-		if (!myGroupInfo.allocateSenderId(mySid))
-			return false;
-		myName = myGroupInfo.allocateNodeName(mySid);
-		mySubject = "clientY";
-		
-		roles = 0;
-		roles = Util.addGroupOSCORERole(roles, GroupcommParameters.GROUP_OSCORE_REQUESTER);
-		roles = Util.addGroupOSCORERole(roles, GroupcommParameters.GROUP_OSCORE_RESPONDER);
-		
-		if (!myGroupInfo.addGroupMember(mySid, myName, roles, mySubject))
-			return false;
-		
-		// Set the public key of the group member with Sender ID 0x77
-		
-		// The serialization of the COSE Key, including only the public part
-		byte[] coseKeyPub2 = null;
-		if (signKeyCurve == KeyKeys.EC2_P256.AsInt32()) {
-			coseKeyPub2 = Utils.hexToBytes("a50102032620012158209dfa6d63fd1515761460b7b02d54f8d7345819d2e5576c160d3148cc7886d5f122582076c81a0c1a872f1730c10317ab4f3616238fb23a08719e8b982b2d9321a2ef7d");
-		}
-		if (signKeyCurve == KeyKeys.OKP_Ed25519.AsInt32()) {
-			coseKeyPub2 = Utils.hexToBytes("a4010103272006215820105b8c6a8c88019bf0c354592934130baa8007399cc2ac3be845884613d5ba2e");
-		}
-		
-		
-		// Serialization of the authentication credential, according to the format used in the group
-		byte[] authCred2 = null;
-		
-		/*
-		// Build the authentication credential according to the format used in the group
-		// Note: most likely, the result will NOT follow the required deterministic
-		//       encoding in byte lexicographic order, and it has to be adjusted offline
-		OneKey coseKeyPub2OneKey = null;
-		coseKeyPub2OneKey = new OneKey(CBORObject.DecodeFromBytes(coseKeyPub2));
-		switch (credFmt) {
-	    case Constants.COSE_HEADER_PARAM_CCS:
-	        // A CCS including the public key
-	    	String subjectName = "";
-	    	authCred2 = Util.oneKeyToCCS(coseKeyPub2OneKey, subjectName);
-	        break;
-	    case Constants.COSE_HEADER_PARAM_CWT:
-	        // A CWT including the public key
-	        // TODO
-	    	authCred2 = null;
-	        break;
-	    case Constants.COSE_HEADER_PARAM_X5CHAIN:
-	        // A certificate including the public key
-	        // TODO
-	    	authCred2 = null;
-	        break;
-		}
-		*/
-		
-		switch (credFmt) {
+    	}
+    	
+    	// Store the authentication credential of the group member with Sender ID 0x52
+    	myGroupInfo.storeAuthCred(mySid, CBORObject.FromObject(authCred1));
+    	
+    	
+    	// Add a group member with Sender ID 0x77
+    	mySid = new byte[] { (byte) 0x77 };
+    	if (!myGroupInfo.allocateSenderId(mySid))
+    		return false;
+    	myName = myGroupInfo.allocateNodeName(mySid);
+    	mySubject = "clientY";
+    	
+    	roles = 0;
+    	roles = Util.addGroupOSCORERole(roles, GroupcommParameters.GROUP_OSCORE_REQUESTER);
+    	roles = Util.addGroupOSCORERole(roles, GroupcommParameters.GROUP_OSCORE_RESPONDER);
+    	
+    	if (!myGroupInfo.addGroupMember(mySid, myName, roles, mySubject))
+    		return false;
+    	
+    	// Set the public key of the group member with Sender ID 0x77
+    	
+    	// The serialization of the COSE Key, including only the public part
+    	byte[] coseKeyPub2 = null;
+    	if (signKeyCurve == KeyKeys.EC2_P256.AsInt32()) {
+    		coseKeyPub2 = Utils.hexToBytes("a50102032620012158209dfa6d63fd1515761460b7b02d54f8d7345819d2e5576c160d3148cc7886d5f122582076c81a0c1a872f1730c10317ab4f3616238fb23a08719e8b982b2d9321a2ef7d");
+    	}
+    	if (signKeyCurve == KeyKeys.OKP_Ed25519.AsInt32()) {
+    		coseKeyPub2 = Utils.hexToBytes("a4010103272006215820105b8c6a8c88019bf0c354592934130baa8007399cc2ac3be845884613d5ba2e");
+    	}
+    	
+    	
+    	// Serialization of the authentication credential, according to the format used in the group
+    	byte[] authCred2 = null;
+    	
+    	/*
+    	// Build the authentication credential according to the format used in the group
+    	// Note: most likely, the result will NOT follow the required deterministic
+    	//       encoding in byte lexicographic order, and it has to be adjusted offline
+    	OneKey coseKeyPub2OneKey = null;
+    	coseKeyPub2OneKey = new OneKey(CBORObject.DecodeFromBytes(coseKeyPub2));
+    	switch (credFmt) {
+        case Constants.COSE_HEADER_PARAM_CCS:
+            // A CCS including the public key
+        	String subjectName = "";
+        	authCred2 = Util.oneKeyToCCS(coseKeyPub2OneKey, subjectName);
+            break;
+        case Constants.COSE_HEADER_PARAM_CWT:
+            // A CWT including the public key
+            // TODO
+        	authCred2 = null;
+            break;
+        case Constants.COSE_HEADER_PARAM_X5CHAIN:
+            // A certificate including the public key
+            // TODO
+        	authCred2 = null;
+            break;
+    	}
+    	*/
+    	
+    	switch (credFmt) {
 	        case Constants.COSE_HEADER_PARAM_CCS:
 	            // A CCS including the public key
 	        	if (signKeyCurve == KeyKeys.EC2_P256.AsInt32()) {
@@ -868,17 +829,17 @@ public class TestDtlspRSGroupOSCORE {
 	            // TODO
 	        	authCred2 = null;
 	            break;
-		}
-		
-		// Store the authentication credential of the group member with Sender ID 0x77
-		myGroupInfo.storeAuthCred(mySid, CBORObject.FromObject(authCred2));
-		
-		
+    	}
+    	
+    	// Store the authentication credential of the group member with Sender ID 0x77
+    	myGroupInfo.storeAuthCred(mySid, CBORObject.FromObject(authCred2));
+    	
+    	
 		// Store the information on this OSCORE group
-		existingGroupInfo.put(groupName, myGroupInfo);
-		
-		return true;
-		
-	}
+    	existingGroupInfo.put(groupName, myGroupInfo);
+    	
+    	return true;
+    	
+    }
 
 }

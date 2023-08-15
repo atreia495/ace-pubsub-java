@@ -79,7 +79,7 @@ import se.sics.ace.examples.SQLConnector;
 import se.sics.ace.oscore.GroupInfo;
 import se.sics.ace.oscore.as.GroupOSCOREJoinPDP;
 import se.sics.ace.oscore.rs.AuthzInfoGroupOSCORE;
-import se.sics.ace.oscore.rs.GroupOSCOREJoinValidator;
+import se.sics.ace.oscore.rs.GroupOSCOREValidator;
 import se.sics.ace.rs.IntrospectionException;
 import se.sics.ace.rs.IntrospectionHandler4Tests;
 import se.sics.ace.rs.TokenRepository;
@@ -119,9 +119,11 @@ public class TestAuthzInfoGroupOSCORE {
 	// This value must be strictly greater than 1
 	private final static int maxStaleIdsSets = 3;
 	
-    private static Map<String, GroupInfo> activeGroups = new HashMap<>();
+    private static Map<String, GroupInfo> existingGroups = new HashMap<>();
     
 	private static final String rootGroupMembershipResource = "ace-group";
+	
+	private final static String groupCollectionResourcePath = "admin";
     
     /**
      * Set up tests.
@@ -209,7 +211,7 @@ public class TestAuthzInfoGroupOSCORE {
         auds.add("aud1"); // Simple test audience
         auds.add("actuators"); // Simple test audience
         auds.add("aud2"); // OSCORE Group Manager (This audience expects scopes as Byte Strings)
-        GroupOSCOREJoinValidator valid = new GroupOSCOREJoinValidator(auds, myScopes, rootGroupMembershipResource);
+        GroupOSCOREValidator valid = new GroupOSCOREValidator(auds, myScopes, rootGroupMembershipResource, groupCollectionResourcePath);
         
         // Include this audience in the list of audiences recognized as OSCORE Group Managers 
         valid.setGMAudiences(Collections.singleton("aud2"));
@@ -358,8 +360,8 @@ public class TestAuthzInfoGroupOSCORE {
     			                          gmPublicKey,
     			                          maxStaleIdsSets);
         
-    	// Add this OSCORE group to the set of active groups
-    	activeGroups.put(groupName, myGroup);
+    	// Add this OSCORE group to the set of existing groups
+    	existingGroups.put(groupName, myGroup);
        
     	
         String tokenFile = TestConfig.testFilePath + "tokens.json";
@@ -388,8 +390,8 @@ public class TestAuthzInfoGroupOSCORE {
         ai = new AuthzInfoGroupOSCORE(Collections.singletonList("TestAS"), new KissTime(),
         							  null, rsId, valid, ctx, null, 0, tokenFile, valid, false);
         
-        // Provide the authz-info endpoint with the set of active OSCORE groups
-        ai.setActiveGroups(activeGroups);
+        // Provide the authz-info endpoint with the set of existing OSCORE groups
+        ai.setExistingGroups(existingGroups);
         
         
     	rsId = "rs2";
@@ -399,8 +401,8 @@ public class TestAuthzInfoGroupOSCORE {
 						               new KissTime(), new IntrospectionHandler4Tests(i, "rs2", "TestAS"),
 						               rsId, valid, ctx, null, 0, tokenFile, valid, false);
         
-        // Provide the authz-info endpoint with the set of active OSCORE groups
-        ai2.setActiveGroups(activeGroups);
+        // Provide the authz-info endpoint with the set of existing OSCORE groups
+        ai2.setExistingGroups(existingGroups);
         
     }
     

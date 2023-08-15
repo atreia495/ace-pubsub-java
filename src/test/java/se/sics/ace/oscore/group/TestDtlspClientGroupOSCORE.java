@@ -86,7 +86,13 @@ import se.sics.ace.oscore.GroupOSCOREInputMaterialObjectParameters;
 import se.sics.ace.oscore.OSCOREInputMaterialObjectParameters;
 
 /**
- * Tests a client running the DTLS profile.
+
+ * A test case for the DTLS profile interactions between
+ * a candidate OSCORE group member acting as ACE Client and
+ * an OSCORE Group Manager acting as ACE Resource Server.
+ * 
+ * This includes also tests between the ACE Client and the ACE Authorization Server.
+ * 
  * @author Marco Tiloca
  *
  */
@@ -768,7 +774,7 @@ public class TestDtlspClientGroupOSCORE {
         
         Assert.assertEquals(true, joinResponse.ContainsKey(CBORObject.FromObject(GroupcommParameters.EXP)));
         Assert.assertEquals(CBORType.Integer, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).getType());
-        Assert.assertEquals(1000000, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt32());
+        Assert.assertEquals(2682374400L, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt64Value());
         
         if (myMap.ContainsKey(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params))) {
             Assert.assertEquals(CBORType.Array, myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params)).getType());
@@ -1074,7 +1080,7 @@ public class TestDtlspClientGroupOSCORE {
        
         Assert.assertEquals(true, keyDistributionResponse.ContainsKey(CBORObject.FromObject(GroupcommParameters.EXP)));
         Assert.assertEquals(CBORType.Integer, keyDistributionResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).getType());
-        Assert.assertEquals(1000000, keyDistributionResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt32());
+        Assert.assertEquals(2682374400L, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt64Value());
        
         if (myMap.ContainsKey(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params))) {
             Assert.assertEquals(CBORType.Array, myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params)).getType());
@@ -1688,7 +1694,7 @@ public class TestDtlspClientGroupOSCORE {
        
         Assert.assertEquals(true, KeyDistributionResponse.ContainsKey(CBORObject.FromObject(GroupcommParameters.EXP)));
         Assert.assertEquals(CBORType.Integer, KeyDistributionResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).getType());
-        Assert.assertEquals(1000000, KeyDistributionResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt32());
+        Assert.assertEquals(2682374400L, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt64Value());
        
         if (myMap.ContainsKey(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params))) {
             Assert.assertEquals(CBORType.Array, myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params)).getType());
@@ -2535,7 +2541,7 @@ public class TestDtlspClientGroupOSCORE {
         
         Assert.assertEquals(true, joinResponse.ContainsKey(CBORObject.FromObject(GroupcommParameters.EXP)));
         Assert.assertEquals(CBORType.Integer, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).getType());
-        Assert.assertEquals(1000000, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt32());
+        Assert.assertEquals(2682374400L, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt64Value());
 
         if (myMap.ContainsKey(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params))) {
             Assert.assertEquals(CBORType.Array, myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params)).getType());
@@ -2838,7 +2844,7 @@ public class TestDtlspClientGroupOSCORE {
        
         Assert.assertEquals(true, keyDistributionResponse.ContainsKey(CBORObject.FromObject(GroupcommParameters.EXP)));
         Assert.assertEquals(CBORType.Integer, keyDistributionResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).getType());
-        Assert.assertEquals(1000000, keyDistributionResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt32());
+        Assert.assertEquals(2682374400L, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt64Value());
        
         if (myMap.ContainsKey(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params))) {
             Assert.assertEquals(CBORType.Array, myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params)).getType());
@@ -3502,7 +3508,7 @@ public class TestDtlspClientGroupOSCORE {
        
         Assert.assertEquals(true, KeyDistributionResponse.ContainsKey(CBORObject.FromObject(GroupcommParameters.EXP)));
         Assert.assertEquals(CBORType.Integer, KeyDistributionResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).getType());
-        Assert.assertEquals(1000000, KeyDistributionResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt32());
+        Assert.assertEquals(2682374400L, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt64Value());
        
         if (myMap.ContainsKey(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params))) {
             Assert.assertEquals(CBORType.Array, myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params)).getType());
@@ -4455,7 +4461,7 @@ public class TestDtlspClientGroupOSCORE {
         
         Assert.assertEquals(true, joinResponse.ContainsKey(CBORObject.FromObject(GroupcommParameters.EXP)));
         Assert.assertEquals(CBORType.Integer, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).getType());
-        Assert.assertEquals(1000000, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt32());
+        Assert.assertEquals(2682374400L, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt64Value());
         
         if (myMap.ContainsKey(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params))) {
             Assert.assertEquals(CBORType.Array, myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params)).getType());
@@ -4758,7 +4764,7 @@ public class TestDtlspClientGroupOSCORE {
 		
 		Assert.assertEquals(true, keyDistributionResponse.ContainsKey(CBORObject.FromObject(GroupcommParameters.EXP)));
 		Assert.assertEquals(CBORType.Integer, keyDistributionResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).getType());
-		Assert.assertEquals(1000000, keyDistributionResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt32());
+        Assert.assertEquals(2682374400L, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt64Value());
 		
 		if (myMap.ContainsKey(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params))) {
 		    Assert.assertEquals(CBORType.Array, myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params)).getType());
@@ -5374,7 +5380,7 @@ public class TestDtlspClientGroupOSCORE {
        
         Assert.assertEquals(true, KeyDistributionResponse.ContainsKey(CBORObject.FromObject(GroupcommParameters.EXP)));
         Assert.assertEquals(CBORType.Integer, KeyDistributionResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).getType());
-        Assert.assertEquals(1000000, KeyDistributionResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt32());
+        Assert.assertEquals(2682374400L, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt64Value());
        
         if (myMap.ContainsKey(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params))) {
             Assert.assertEquals(CBORType.Array, myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params)).getType());
@@ -6227,7 +6233,7 @@ public class TestDtlspClientGroupOSCORE {
         
         Assert.assertEquals(true, joinResponse.ContainsKey(CBORObject.FromObject(GroupcommParameters.EXP)));
         Assert.assertEquals(CBORType.Integer, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).getType());
-        Assert.assertEquals(1000000, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt32());
+        Assert.assertEquals(2682374400L, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt64Value());
         
         if (myMap.ContainsKey(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params))) {
             Assert.assertEquals(CBORType.Array, myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params)).getType());
@@ -6530,7 +6536,7 @@ public class TestDtlspClientGroupOSCORE {
        
         Assert.assertEquals(true, keyDistributionResponse.ContainsKey(CBORObject.FromObject(GroupcommParameters.EXP)));
         Assert.assertEquals(CBORType.Integer, keyDistributionResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).getType());
-        Assert.assertEquals(1000000, keyDistributionResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt32());
+        Assert.assertEquals(2682374400L, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt64Value());
        
         if (myMap.ContainsKey(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params))) {
             Assert.assertEquals(CBORType.Array, myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params)).getType());
@@ -7199,7 +7205,7 @@ public class TestDtlspClientGroupOSCORE {
        
         Assert.assertEquals(true, KeyDistributionResponse.ContainsKey(CBORObject.FromObject(GroupcommParameters.EXP)));
         Assert.assertEquals(CBORType.Integer, KeyDistributionResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).getType());
-        Assert.assertEquals(1000000, KeyDistributionResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt32());
+        Assert.assertEquals(2682374400L, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt64Value());
        
         if (myMap.ContainsKey(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params))) {
             Assert.assertEquals(CBORType.Array, myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params)).getType());
@@ -8286,7 +8292,7 @@ public class TestDtlspClientGroupOSCORE {
         
         Assert.assertEquals(true, joinResponse.ContainsKey(CBORObject.FromObject(GroupcommParameters.EXP)));
         Assert.assertEquals(CBORType.Integer, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).getType());
-        Assert.assertEquals(1000000, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt32());
+        Assert.assertEquals(2682374400L, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt64Value());
         
         if (myMap.ContainsKey(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params))) {
             Assert.assertEquals(CBORType.Array, myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params)).getType());
@@ -8588,7 +8594,7 @@ public class TestDtlspClientGroupOSCORE {
        
         Assert.assertEquals(true, keyDistributionResponse.ContainsKey(CBORObject.FromObject(GroupcommParameters.EXP)));
         Assert.assertEquals(CBORType.Integer, keyDistributionResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).getType());
-        Assert.assertEquals(1000000, keyDistributionResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt32());
+        Assert.assertEquals(2682374400L, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt64Value());
        
         if (myMap.ContainsKey(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params))) {
             Assert.assertEquals(CBORType.Array, myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params)).getType());
@@ -9205,7 +9211,7 @@ public class TestDtlspClientGroupOSCORE {
        
         Assert.assertEquals(true, KeyDistributionResponse.ContainsKey(CBORObject.FromObject(GroupcommParameters.EXP)));
         Assert.assertEquals(CBORType.Integer, KeyDistributionResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).getType());
-        Assert.assertEquals(1000000, KeyDistributionResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt32());
+        Assert.assertEquals(2682374400L, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt64Value());
        
         if (myMap.ContainsKey(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params))) {
             Assert.assertEquals(CBORType.Array, myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params)).getType());
@@ -9889,7 +9895,7 @@ public class TestDtlspClientGroupOSCORE {
         
         Assert.assertEquals(true, joinResponse.ContainsKey(CBORObject.FromObject(GroupcommParameters.EXP)));
         Assert.assertEquals(CBORType.Integer, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).getType());
-        Assert.assertEquals(1000000, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt32());
+        Assert.assertEquals(2682374400L, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt64Value());
         
         if (myMap.ContainsKey(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params))) {
             Assert.assertEquals(CBORType.Array, myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params)).getType());
@@ -10623,7 +10629,7 @@ public class TestDtlspClientGroupOSCORE {
         
         Assert.assertEquals(true, joinResponse.ContainsKey(CBORObject.FromObject(GroupcommParameters.EXP)));
         Assert.assertEquals(CBORType.Integer, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).getType());
-        Assert.assertEquals(1000000, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt32());
+        Assert.assertEquals(2682374400L, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt64Value());
         
         if (myMap.ContainsKey(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params))) {
             Assert.assertEquals(CBORType.Array, myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params)).getType());
@@ -10927,7 +10933,7 @@ public class TestDtlspClientGroupOSCORE {
        
         Assert.assertEquals(true, keyDistributionResponse.ContainsKey(CBORObject.FromObject(GroupcommParameters.EXP)));
         Assert.assertEquals(CBORType.Integer, keyDistributionResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).getType());
-        Assert.assertEquals(1000000, keyDistributionResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt32());
+        Assert.assertEquals(2682374400L, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt64Value());
        
         if (myMap.ContainsKey(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params))) {
             Assert.assertEquals(CBORType.Array, myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params)).getType());
@@ -11603,7 +11609,7 @@ public class TestDtlspClientGroupOSCORE {
        
         Assert.assertEquals(true, KeyDistributionResponse.ContainsKey(CBORObject.FromObject(GroupcommParameters.EXP)));
         Assert.assertEquals(CBORType.Integer, KeyDistributionResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).getType());
-        Assert.assertEquals(1000000, KeyDistributionResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt32());
+        Assert.assertEquals(2682374400L, joinResponse.get(CBORObject.FromObject(GroupcommParameters.EXP)).AsInt64Value());
        
         if (myMap.ContainsKey(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params))) {
             Assert.assertEquals(CBORType.Array, myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.sign_params)).getType());

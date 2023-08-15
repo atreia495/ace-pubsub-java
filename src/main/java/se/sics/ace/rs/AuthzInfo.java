@@ -335,7 +335,7 @@ public class AuthzInfo implements Endpoint, AutoCloseable {
 	    	}
 	    	else {
 	    		// The version of checkScope() with two arguments is invoked
-	    		// This is currently expecting a structured scope for joining OSCORE groups
+	    		// This is currently expecting a structured scope for operations at the OSCORE Group Manager
 	    		meaningful = TokenRepository.getInstance().checkScope(scope, aud);
 	    	}
 	    } catch (AceException e) {
