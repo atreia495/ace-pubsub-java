@@ -31,6 +31,8 @@
  *******************************************************************************/
 package se.sics.ace;
 
+import com.upokecenter.cbor.CBORObject;
+
 /**
  * Values for the labels of the ACE Groupcomm Errors
  * 
@@ -40,30 +42,30 @@ package se.sics.ace;
 
 public class GroupcommErrors {
 
-	public static final short ONLY_FOR_GROUP_MEMBERS = 0;
+	public static final CBORObject ONLY_FOR_GROUP_MEMBERS = CBORObject.FromObject(0);
 	
-	public static final short INCONSISTENCY_WITH_ROLES = 1;
+	public static final CBORObject INCONSISTENCY_WITH_ROLES = CBORObject.FromObject(1);
 	
-	public static final short INCOMPATIBLE_CRED = 2;
+	public static final CBORObject INCOMPATIBLE_CRED = CBORObject.FromObject(2);
 	
-	public static final short INVALID_POP_EVIDENCE = 3;
+	public static final CBORObject INVALID_POP_EVIDENCE = CBORObject.FromObject(3);
 	
-	public static final short UNAVAILABLE_NODE_IDS = 4;
+	public static final CBORObject UNAVAILABLE_NODE_IDS = CBORObject.FromObject(4);
 	
-	public static final short MEMBERSHIP_TERMINATED = 5;
+	public static final CBORObject MEMBERSHIP_TERMINATED = CBORObject.FromObject(5);
 	
-	public static final short GROUP_DELETED = 6;
+	public static final CBORObject GROUP_DELETED = CBORObject.FromObject(6);
 	
-	public static final short SIGNATURES_NOT_USED = 7;
+	public static final CBORObject SIGNATURES_NOT_USED = CBORObject.FromObject(7);
 	
-	public static final short ONLY_FOR_SIGNATURE_VERIFIERS = 8;
+	public static final CBORObject ONLY_FOR_SIGNATURE_VERIFIERS = CBORObject.FromObject(8);
 	
-	public static final short GROUP_NOT_ACTIVE = 9;
+	public static final CBORObject GROUP_NOT_ACTIVE = CBORObject.FromObject(9);
 	
-	public static final short GROUP_ACTIVE = 10;
+	public static final CBORObject GROUP_ACTIVE = CBORObject.FromObject(10);
 	
-	public static final short UNAVAILABLE_GROUP_NAMES = 11;
+	public static final CBORObject UNAVAILABLE_GROUP_NAMES = CBORObject.FromObject(11);
 	
-	public static final short UNSUPPORTED_GROUP_CONF = 12;
+	public static final CBORObject UNSUPPORTED_GROUP_CONF = CBORObject.FromObject(12);
 
 }

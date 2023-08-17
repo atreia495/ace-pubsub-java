@@ -34,6 +34,9 @@ package se.sics.ace;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.upokecenter.cbor.CBORObject;
+import com.upokecenter.cbor.CBORType;
+
 /**
  * Constants for use with ACE Groupcomm
  * 
@@ -157,124 +160,476 @@ public class GroupcommParameters {
     
     // Defined in draft-ietf-ace-key-groupcomm
     
-    public static final short ERROR = 0;
+    public static final CBORObject ERROR = CBORObject.FromObject(0);
     
-    public static final short ERROR_DECRIPTION = 1;
+    public static final CBORObject ERROR_DESCRIPTION = CBORObject.FromObject(1);
     
-    public static final short GID = 2;
+    public static final CBORObject GID = CBORObject.FromObject(2);
     
-    public static final short GNAME = 3;
+    public static final CBORObject GNAME = CBORObject.FromObject(3);
     
-    public static final short GURI = 4;
+    public static final CBORObject GURI = CBORObject.FromObject(4);
     
-    public static final short SCOPE = 5;
+    public static final CBORObject SCOPE = CBORObject.FromObject(5);
     
-    public static final short GET_CREDS = 6;
+    public static final CBORObject GET_CREDS = CBORObject.FromObject(6);
     
-    public static final short CLIENT_CRED = 7;
+    public static final CBORObject CLIENT_CRED = CBORObject.FromObject(7);
     
-    public static final short CNONCE = 8;
+    public static final CBORObject CNONCE = CBORObject.FromObject(8);
     
-    public static final short CLIENT_CRED_VERIFY = 9;
+    public static final CBORObject CLIENT_CRED_VERIFY = CBORObject.FromObject(9);
     
-    public static final short CREDS_REPO = 10;
+    public static final CBORObject CREDS_REPO = CBORObject.FromObject(10);
     
-    public static final short CONTROL_URI = 11;
+    public static final CBORObject CONTROL_URI = CBORObject.FromObject(11);
     
-    public static final short GKTY = 12;
+    public static final CBORObject GKTY = CBORObject.FromObject(12);
     
-    public static final short KEY = 13;
+    public static final CBORObject KEY = CBORObject.FromObject(13);
     
-    public static final short NUM = 14;
+    public static final CBORObject NUM = CBORObject.FromObject(14);
     
-    public static final short ACE_GROUPCOMM_PROFILE = 15;
+    public static final CBORObject ACE_GROUPCOMM_PROFILE = CBORObject.FromObject(15);
     
-    public static final short EXP = 16;
+    public static final CBORObject EXP = CBORObject.FromObject(16);
     
-    public static final short CREDS = 17;
+    public static final CBORObject CREDS = CBORObject.FromObject(17);
     
-    public static final short PEER_ROLES = 18;
+    public static final CBORObject PEER_ROLES = CBORObject.FromObject(18);
     
-    public static final short PEER_IDENTIFIERS = 19;
+    public static final CBORObject PEER_IDENTIFIERS = CBORObject.FromObject(19);
     
-    public static final short GROUP_POLICIES = 20;
+    public static final CBORObject GROUP_POLICIES = CBORObject.FromObject(20);
     
-    public static final short KDC_CRED = 21;
+    public static final CBORObject KDC_CRED = CBORObject.FromObject(21);
     
-    public static final short KDC_NONCE = 22;
+    public static final CBORObject KDC_NONCE = CBORObject.FromObject(22);
     
-    public static final short KDC_CRED_VERIFY = 23;
+    public static final CBORObject KDC_CRED_VERIFY = CBORObject.FromObject(23);
     
-    public static final short REKEYING_SCHEME = 24;
+    public static final CBORObject REKEYING_SCHEME = CBORObject.FromObject(24);
     
-    public static final short MGT_KEY_MATERIAL = 25;
+    public static final CBORObject MGT_KEY_MATERIAL = CBORObject.FromObject(25);
     
-    public static final short CONTROL_GROUP_URI = 26;
+    public static final CBORObject CONTROL_GROUP_URI = CBORObject.FromObject(26);
     
-    public static final short SIGN_INFO = 27;
+    public static final CBORObject SIGN_INFO = CBORObject.FromObject(27);
     
-    public static final short KDCCHALLENGE = 28;
+    public static final CBORObject KDCCHALLENGE = CBORObject.FromObject(28);
 
     
     // Defined in draft-ietf-ace-key-groupcomm-oscore
     
-    public static final short GROUP_SENDER_ID = 29;
+    public static final CBORObject GROUP_SENDER_ID = CBORObject.FromObject(29);
     
-    public static final short ECDH_INFO = 30;
+    public static final CBORObject ECDH_INFO = CBORObject.FromObject(30);
     
-    public static final short KDC_DH_CREDS = 31;
+    public static final CBORObject KDC_DH_CREDS = CBORObject.FromObject(31);
     
-    public static final short GROUP_ENC_KEY = 32;
+    public static final CBORObject GROUP_ENC_KEY = CBORObject.FromObject(32);
     
-    public static final short STALE_NODE_IDS = 33;
+    public static final CBORObject STALE_NODE_IDS = CBORObject.FromObject(33);
     
    
     // Defined in draft-ietf-ace-oscore-gm-admin
     
-    public static final short HKDF = 34;
+    public static final CBORObject HKDF = CBORObject.FromObject(34);
     
-    public static final short CRED_FMT = 35;
+    public static final CBORObject CRED_FMT = CBORObject.FromObject(35);
     
-    public static final short GROUP_MODE = 36;
+    public static final CBORObject GROUP_MODE = CBORObject.FromObject(36);
     
-    public static final short GP_ENC_ALG = 37;
+    public static final CBORObject GP_ENC_ALG = CBORObject.FromObject(37);
     
-    public static final short SIGN_ALG = 38;
+    public static final CBORObject SIGN_ALG = CBORObject.FromObject(38);
     
-    public static final short SIGN_PARAMS = 39;
+    public static final CBORObject SIGN_PARAMS = CBORObject.FromObject(39);
     
-    public static final short PAIRWISE_MODE = 40;
+    public static final CBORObject PAIRWISE_MODE = CBORObject.FromObject(40);
     
-    public static final short ALG = 41;
+    public static final CBORObject ALG = CBORObject.FromObject(41);
     
-    public static final short ECDH_ALG = 42;
+    public static final CBORObject ECDH_ALG = CBORObject.FromObject(42);
     
-    public static final short ECDH_PARAMS = 43;
+    public static final CBORObject ECDH_PARAMS = CBORObject.FromObject(43);
     
-    public static final short DET_REQ = 44;
+    public static final CBORObject DET_REQ = CBORObject.FromObject(44);
     
-    public static final short DET_HASH_ALG = 45;
+    public static final CBORObject DET_HASH_ALG = CBORObject.FromObject(45);
     
-    public static final short RT = 46;
+    public static final CBORObject RT = CBORObject.FromObject(46);
     
-    public static final short ACTIVE = 47;
+    public static final CBORObject ACTIVE = CBORObject.FromObject(47);
     
-    public static final short GROUP_NAME = 48;
+    public static final CBORObject GROUP_NAME = CBORObject.FromObject(48);
     
-    public static final short GROUP_TITLE = 49;
+    public static final CBORObject GROUP_TITLE = CBORObject.FromObject(49);
     
-    public static final short MAX_STALE_SETS = 50;
+    public static final CBORObject MAX_STALE_SETS = CBORObject.FromObject(50);
     
-    public static final short GID_REUSE = 51;
+    public static final CBORObject GID_REUSE = CBORObject.FromObject(51);
     
-    public static final short APP_GROUPS = 52;
+    public static final CBORObject APP_GROUPS = CBORObject.FromObject(52);
     
-    public static final short JOINING_URI = 53;
+    public static final CBORObject JOINING_URI = CBORObject.FromObject(53);
     
-    public static final short AS_URI = 54;
+    public static final CBORObject AS_URI = CBORObject.FromObject(54);
     
-    public static final short CONF_FILTER = 55;
+    public static final CBORObject CONF_FILTER = CBORObject.FromObject(55);
     
-    public static final short APP_GROUPS_DIFF = 56;
+    public static final CBORObject APP_GROUPS_DIFF = CBORObject.FromObject(56);
+    
+	/**
+     * Check whether the specified parameter is of the correct CBOR type
+     * 
+     * @param name  the CBOR abbreviation of the parameter whose CBOR type has to be checked
+     * @param name  the value of the parameter whose CBOR type has to be checked
+     * @return  true if the parameter value is of the expected CBOR type, or false otherwise
+     */
+    public static boolean correctType(CBORObject name, CBORObject value) {
+    	
+		CBORType type = value.getType();
+    	
+    	if (name.equals(ERROR)) {
+    		CBORType expectedType = CBORType.Integer;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	if (name.equals(ERROR_DESCRIPTION)) {
+    		CBORType expectedType = CBORType.TextString;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	if (name.equals(GID)) {
+    		CBORType expectedType = CBORType.Array;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	if (name.equals(GNAME)) {
+    		CBORType expectedType1 = CBORType.Array;
+    		CBORType expectedType2 = CBORType.TextString;
+    		if (type.equals(expectedType1) || type.equals(expectedType2)) return true;
+    		else return false;
+    	}
+    	if (name.equals(GURI)) {
+    		CBORType expectedType1 = CBORType.Array;
+    		CBORType expectedType2 = CBORType.TextString;
+    		if (type.equals(expectedType1) || type.equals(expectedType2)) return true;
+    		else return false;
+    	}
+    	if (name.equals(SCOPE)) {
+    		CBORType expectedType = CBORType.ByteString;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	if (name.equals(GET_CREDS)) {
+    		CBORType expectedType = CBORType.Array;
+    		CBORObject expectedValue = CBORObject.Null;
+    		if (type.equals(expectedType) || value.equals(expectedValue)) return true;
+    		else return false;
+    	}
+    	if (name.equals(CLIENT_CRED)) {
+    		CBORType expectedType = CBORType.ByteString;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	if (name.equals(CNONCE)) {
+    		CBORType expectedType = CBORType.ByteString;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	if (name.equals(CLIENT_CRED_VERIFY)) {
+    		CBORType expectedType = CBORType.ByteString;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	if (name.equals(CREDS_REPO)) {
+    		CBORType expectedType = CBORType.TextString;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	if (name.equals(CONTROL_URI)) {
+    		CBORType expectedType = CBORType.TextString;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	if (name.equals(GKTY)) {
+    		CBORType expectedType1 = CBORType.Integer;
+    		CBORType expectedType2 = CBORType.TextString;
+    		if (type.equals(expectedType1) || type.equals(expectedType2)) return true;
+    		else return false;
+    	}
+    	if (name.equals(KEY)) {
+    		CBORType expectedType = CBORType.Map;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	if (name.equals(NUM)) {
+    		CBORType expectedType = CBORType.Integer;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	if (name.equals(ACE_GROUPCOMM_PROFILE)) {
+    		CBORType expectedType = CBORType.Integer;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	if (name.equals(EXP)) {
+    		CBORType expectedType = CBORType.Integer;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	if (name.equals(CREDS)) {
+    		CBORType expectedType = CBORType.Array;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	if (name.equals(PEER_ROLES)) {
+    		CBORType expectedType = CBORType.Array;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	if (name.equals(PEER_IDENTIFIERS)) {
+    		CBORType expectedType = CBORType.Array;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	if (name.equals(GROUP_POLICIES)) {
+    		CBORType expectedType = CBORType.Map;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	if (name.equals(KDC_CRED)) {
+    		CBORType expectedType = CBORType.ByteString;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	if (name.equals(KDC_NONCE)) {
+    		CBORType expectedType = CBORType.ByteString;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	if (name.equals(KDC_CRED_VERIFY)) {
+    		CBORType expectedType = CBORType.ByteString;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	if (name.equals(REKEYING_SCHEME)) {
+    		CBORType expectedType = CBORType.Integer;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	if (name.equals(MGT_KEY_MATERIAL)) {
+    		CBORType expectedType = CBORType.ByteString;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	if (name.equals(CONTROL_GROUP_URI)) {
+    		CBORType expectedType = CBORType.TextString;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	if (name.equals(SIGN_INFO)) {
+    		CBORType expectedType = CBORType.Array;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	if (name.equals(KDCCHALLENGE)) {
+    		CBORType expectedType = CBORType.ByteString;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	
+    	if (name.equals(GROUP_SENDER_ID)) {
+    		CBORType expectedType = CBORType.ByteString;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	
+    	if (name.equals(ECDH_INFO)) {
+    		CBORType expectedType = CBORType.Array;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	
+    	if (name.equals(KDC_DH_CREDS)) {
+    		CBORType expectedType = CBORType.Array;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	
+    	if (name.equals(GROUP_ENC_KEY)) {
+    		CBORType expectedType = CBORType.ByteString;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	
+    	if (name.equals(STALE_NODE_IDS)) {
+    		CBORType expectedType = CBORType.Array;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	
+    	
+    	
+    	if (name.equals(HKDF)) {
+    		CBORType expectedType1 = CBORType.TextString;
+    		CBORType expectedType2 = CBORType.Integer;
+    		if (type.equals(expectedType1) || type.equals(expectedType2)) return true;
+    		else return false;
+    	}
+    	
+    	if (name.equals(CRED_FMT)) {
+    		CBORType expectedType = CBORType.Integer;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	
+    	if (name.equals(GROUP_MODE)) {
+    		CBORObject expectedValue1 = CBORObject.True;
+    		CBORObject expectedValue2 = CBORObject.False;
+    		if (value.equals(expectedValue1) || value.equals(expectedValue2)) return true;
+    		else return false;
+    	}
+    	
+    	if (name.equals(GP_ENC_ALG)) {
+    		CBORType expectedType1 = CBORType.TextString;
+    		CBORType expectedType2 = CBORType.Integer;
+    		CBORObject expectedValue = CBORObject.Null;
+    		if (type.equals(expectedType1) || type.equals(expectedType2) || value.equals(expectedValue)) return true;
+    		else return false;
+    	}
+    	
+    	if (name.equals(SIGN_ALG)) {
+    		CBORType expectedType1 = CBORType.TextString;
+    		CBORType expectedType2 = CBORType.Integer;
+    		CBORObject expectedValue = CBORObject.Null;
+    		if (type.equals(expectedType1) || type.equals(expectedType2) || value.equals(expectedValue)) return true;
+    		else return false;
+    	}
+    	
+    	if (name.equals(SIGN_PARAMS)) {
+    		CBORType expectedType = CBORType.Array;
+    		CBORObject expectedValue = CBORObject.Null;
+    		if (type.equals(expectedType) || value.equals(expectedValue)) return true;
+    		else return false;
+    	}
+    	
+    	if (name.equals(PAIRWISE_MODE)) {
+    		CBORObject expectedValue1 = CBORObject.True;
+    		CBORObject expectedValue2 = CBORObject.False;
+    		if (value.equals(expectedValue1) || value.equals(expectedValue2)) return true;
+    		else return false;
+    	}
+    	
+    	if (name.equals(ALG)) {
+    		CBORType expectedType1 = CBORType.TextString;
+    		CBORType expectedType2 = CBORType.Integer;
+    		CBORObject expectedValue = CBORObject.Null;
+    		if (type.equals(expectedType1) || type.equals(expectedType2) || value.equals(expectedValue)) return true;
+    		else return false;
+    	}
+    	
+    	if (name.equals(ECDH_ALG)) {
+    		CBORType expectedType1 = CBORType.TextString;
+    		CBORType expectedType2 = CBORType.Integer;
+    		CBORObject expectedValue = CBORObject.Null;
+    		if (type.equals(expectedType1) || type.equals(expectedType2) || value.equals(expectedValue)) return true;
+    		else return false;
+    	}
+    	
+    	if (name.equals(ECDH_PARAMS)) {
+    		CBORType expectedType = CBORType.Array;
+    		CBORObject expectedValue = CBORObject.Null;
+    		if (type.equals(expectedType) || value.equals(expectedValue)) return true;
+    		else return false;
+    	}
+    	
+    	if (name.equals(DET_REQ)) {
+    		CBORObject expectedValue1 = CBORObject.True;
+    		CBORObject expectedValue2 = CBORObject.False;
+    		if (value.equals(expectedValue1) || value.equals(expectedValue2)) return true;
+    		else return false;
+    	}
+    	
+    	if (name.equals(DET_HASH_ALG)) {
+    		CBORType expectedType1 = CBORType.TextString;
+    		CBORType expectedType2 = CBORType.Integer;
+    		if (type.equals(expectedType1) || type.equals(expectedType2)) return true;
+    		else return false;
+    	}
+    	
+    	if (name.equals(RT)) {
+    		CBORType expectedType = CBORType.TextString;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	
+    	if (name.equals(ACTIVE)) {
+    		CBORObject expectedValue1 = CBORObject.True;
+    		CBORObject expectedValue2 = CBORObject.False;
+    		if (value.equals(expectedValue1) || value.equals(expectedValue2)) return true;
+    		else return false;
+    	}
+    	
+    	if (name.equals(GROUP_NAME)) {
+    		CBORType expectedType = CBORType.TextString;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	
+    	if (name.equals(GROUP_TITLE)) {
+    		CBORType expectedType = CBORType.TextString;
+    		CBORObject expectedValue = CBORObject.Null;
+    		if (type.equals(expectedType) || value.equals(expectedValue)) return true;
+    		else return false;
+    	}
+
+    	if (name.equals(MAX_STALE_SETS)) {
+    		CBORType expectedType = CBORType.Integer;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	
+    	if (name.equals(GID_REUSE)) {
+    		CBORObject expectedValue1 = CBORObject.True;
+    		CBORObject expectedValue2 = CBORObject.False;
+    		if (value.equals(expectedValue1) || value.equals(expectedValue2)) return true;
+    		else return false;
+    	}
+    	
+    	if (name.equals(APP_GROUPS)) {
+    		CBORType expectedType = CBORType.Array;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	
+    	if (name.equals(JOINING_URI)) {
+    		CBORType expectedType = CBORType.TextString;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	
+    	if (name.equals(AS_URI)) {
+    		CBORType expectedType = CBORType.TextString;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	
+    	if (name.equals(CONF_FILTER)) {
+    		CBORType expectedType = CBORType.Array;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	
+    	if (name.equals(APP_GROUPS_DIFF)) {
+    		CBORType expectedType = CBORType.Array;
+    		if (type.equals(expectedType)) return true;
+    		else return false;
+    	}
+    	
+    	return false;
+    }
     
 }

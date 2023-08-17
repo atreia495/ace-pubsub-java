@@ -339,7 +339,7 @@ public class TestAdminOscorepClient2RSGroupOSCORE {
         adminReq.getOptions().setOscore(new byte[0]);
         adminReq.getOptions().setContentFormat(Constants.APPLICATION_ACE_GROUPCOMM_CBOR);
         requestPayloadCbor = CBORObject.NewMap();
-        requestPayloadCbor.Add(GroupcommParameters.GROUP_NAME, CBORObject.FromObject("gp1"));
+        requestPayloadCbor.Add(GroupcommParameters.GROUP_NAME, "gp1");
         adminReq.setPayload(requestPayloadCbor.EncodeToBytes());
         
         adminRes = c.advanced(adminReq);

@@ -424,47 +424,68 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
     public CBORObject getConfigurationParameters() {
     	return this.groupConfiguration;
     }
-    
+
+	/**
+     * Return the default value for a certain parameter
+     * 
+     * @param paramAbbreviation  the parameter for which to retrieve the default value
+     * @return  the default value, or null in case of invalid parameter
+     */
     public static CBORObject getDefaultValue(short paramAbbreviation) {
     	
-    	switch(paramAbbreviation) {
-    		case GroupcommParameters.HKDF:
-    			return CBORObject.FromObject(AlgorithmID.HMAC_SHA_256); // HMAC 256/256 for HKDF SHA-256
-    		case GroupcommParameters.CRED_FMT:
-    			return CBORObject.FromObject(Constants.COSE_HEADER_PARAM_CCS); // CWT Claims Set (CCS)
-    		case GroupcommParameters.GROUP_MODE:
-    			return CBORObject.True;
-    		case GroupcommParameters.GP_ENC_ALG:
-    			return CBORObject.FromObject(AlgorithmID.AES_CCM_16_64_128); // AES-CCM-16-64-128
-    		case GroupcommParameters.SIGN_ALG:
-    			return CBORObject.FromObject(AlgorithmID.EDDSA); // EdDSA
-    		case GroupcommParameters.PAIRWISE_MODE:
-    			return CBORObject.True;
-    		case GroupcommParameters.ALG:
-    			return CBORObject.FromObject(AlgorithmID.AES_CCM_16_64_128); // AES-CCM-16-64-128
-    		case GroupcommParameters.ECDH_ALG:
-    			return CBORObject.FromObject(AlgorithmID.ECDH_SS_HKDF_256); // ECDH-SS + HKDF-256
-    		case GroupcommParameters.DET_REQ:
-    			return CBORObject.False;
-    		case GroupcommParameters.DET_HASH_ALG:
-    			return CBORObject.FromObject(AlgorithmID.HMAC_SHA_256);
-    		case GroupcommParameters.ACTIVE:
-    			return CBORObject.False;
-    		case GroupcommParameters.GROUP_TITLE:
-    			return CBORObject.Null;
-    		case GroupcommParameters.MAX_STALE_SETS:
-    			return CBORObject.FromObject(3);
-    		case GroupcommParameters.GID_REUSE:
-    			return CBORObject.False;
-    		case GroupcommParameters.APP_GROUPS:
-    			return CBORObject.NewArray();
-    		case GroupcommParameters.GROUP_POLICIES:
-    			CBORObject ret = CBORObject.NewMap();
-    			ret.Add(GroupcommPolicies.KEY_CHECK_INTERVAL, 3600);
-    			ret.Add(GroupcommPolicies.EXP_DELTA, 0);
-    		default:
-    			return null;
+    	if (paramAbbreviation == GroupcommParameters.HKDF.AsInt32()) {
+    		return CBORObject.FromObject(AlgorithmID.HMAC_SHA_256); // HMAC 256/256 for HKDF SHA-256
     	}
+    	if (paramAbbreviation == GroupcommParameters.CRED_FMT.AsInt32()) {
+    		return CBORObject.FromObject(Constants.COSE_HEADER_PARAM_CCS); // CWT Claims Set (CCS)
+    	}
+    	if (paramAbbreviation == GroupcommParameters.GROUP_MODE.AsInt32()) {
+			return CBORObject.True;
+    	}
+    	if (paramAbbreviation == GroupcommParameters.GP_ENC_ALG.AsInt32()) {
+    		return CBORObject.FromObject(AlgorithmID.AES_CCM_16_64_128); // AES-CCM-16-64-128
+    	}
+    	if (paramAbbreviation == GroupcommParameters.SIGN_ALG.AsInt32()) {
+    		return CBORObject.FromObject(AlgorithmID.EDDSA); // EdDSA
+    	}    	
+    	if (paramAbbreviation == GroupcommParameters.PAIRWISE_MODE.AsInt32()) {
+			return CBORObject.True;
+    	}
+    	if (paramAbbreviation == GroupcommParameters.ALG.AsInt32()) {
+    		return CBORObject.FromObject(AlgorithmID.AES_CCM_16_64_128); // AES-CCM-16-64-128
+    	}
+    	if (paramAbbreviation == GroupcommParameters.ECDH_ALG.AsInt32()) {
+			return CBORObject.FromObject(AlgorithmID.ECDH_SS_HKDF_256); // ECDH-SS + HKDF-256
+    	}
+    	if (paramAbbreviation == GroupcommParameters.DET_REQ.AsInt32()) {
+			return CBORObject.False;
+    	}
+    	if (paramAbbreviation == GroupcommParameters.DET_HASH_ALG.AsInt32()) {
+			return CBORObject.FromObject(AlgorithmID.HMAC_SHA_256);
+    	}
+    	if (paramAbbreviation == GroupcommParameters.ACTIVE.AsInt32()) {
+    		return CBORObject.False;
+    	}
+    	if (paramAbbreviation == GroupcommParameters.GROUP_TITLE.AsInt32()) {
+    		return CBORObject.Null;
+    	}
+    	if (paramAbbreviation == GroupcommParameters.MAX_STALE_SETS.AsInt32()) {
+    		return CBORObject.FromObject(3);
+    	}
+    	if (paramAbbreviation == GroupcommParameters.GID_REUSE.AsInt32()) {
+    		return CBORObject.False;
+    	}
+    	if (paramAbbreviation == GroupcommParameters.APP_GROUPS.AsInt32()) {
+    		return CBORObject.NewArray();
+    	}
+    	if (paramAbbreviation == GroupcommParameters.GROUP_POLICIES.AsInt32()) {
+			CBORObject ret = CBORObject.NewMap();
+			ret.Add(GroupcommPolicies.KEY_CHECK_INTERVAL, 3600);
+			ret.Add(GroupcommPolicies.EXP_DELTA, 0);
+			return ret;
+    	}
+    	
+    	return null;
     	
     }
     

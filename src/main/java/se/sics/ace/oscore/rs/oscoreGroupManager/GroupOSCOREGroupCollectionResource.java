@@ -126,6 +126,8 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
     	// Process the request for retrieving the full list of Group Configurations
     	
     	String subject = null;
+    	String errorString = null;
+    	
     	Request request = exchange.advanced().getCurrentRequest();
         
         try {
@@ -135,19 +137,20 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
 		}
         if (subject == null) {
         	// At this point, this should not really happen, due to the earlier check at the Token Repository
-        	exchange.respond(CoAP.ResponseCode.UNAUTHORIZED,
-        					 "Unauthenticated client tried to get access");
+        	errorString = new String("Unauthenticated client tried to get access");
+        	System.err.println(errorString);
+        	exchange.respond(CoAP.ResponseCode.UNAUTHORIZED, errorString);
         	return;
         }
         
     	// Check that at least one scope entry in the access token allows the "List" admin permission
     	CBORObject[] permissionSetToken = Util.getGroupOSCOREAdminPermissionsFromToken(subject, null);
     	if (permissionSetToken == null) {
-    		exchange.respond(CoAP.ResponseCode.FORBIDDEN,
-    						 "Operation not permitted");
+        	errorString = new String("Operation not permitted");
+    		System.err.println(errorString);
+    		exchange.respond(CoAP.ResponseCode.FORBIDDEN, errorString);
     		return;
-    	}        
-    	
+    	}
     	
     	String auxString = new String("");
     	
@@ -202,6 +205,8 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
     	// Process the request for retrieving a list of Group Configurations by filters
     	
     	String subject = null;
+    	String errorString = null;
+    	
     	Request request = exchange.advanced().getCurrentRequest();
         
         try {
@@ -211,31 +216,35 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
 		}
         if (subject == null) {
         	// At this point, this should not really happen, due to the earlier check at the Token Repository
-        	exchange.respond(CoAP.ResponseCode.UNAUTHORIZED,
-        					 "Unauthenticated client tried to get access");
+        	errorString = new String("Unauthenticated client tried to get access");
+    		System.err.println(errorString);
+        	exchange.respond(CoAP.ResponseCode.UNAUTHORIZED, errorString);
         	return;
         }
     	
     	// Check that at least one scope entry in the access token allows the "List" admin permission
     	CBORObject[] permissionSetToken = Util.getGroupOSCOREAdminPermissionsFromToken(subject, null);
     	if (permissionSetToken == null) {
-    		exchange.respond(CoAP.ResponseCode.FORBIDDEN,
-    						 "Operation not permitted");
+        	errorString = new String("Operation not permitted");
+    		System.err.println(errorString);
+    		exchange.respond(CoAP.ResponseCode.FORBIDDEN, errorString);
     		return;
     	}
         
     	byte[] requestPayload = exchange.getRequestPayload();
     	
     	if(requestPayload == null || (requestPayload.length == 0)) {
-    		exchange.respond(CoAP.ResponseCode.BAD_REQUEST,
-    						 "A payload must be present");
+        	errorString = new String("A payload must be present");
+    		System.err.println(errorString);
+    		exchange.respond(CoAP.ResponseCode.BAD_REQUEST, errorString);
     		return;
     	}
     	
     	if(exchange.getRequestOptions().hasContentFormat() == false ||
     	   exchange.getRequestOptions().getContentFormat() != Constants.APPLICATION_ACE_GROUPCOMM_CBOR) {
-    		exchange.respond(CoAP.ResponseCode.BAD_REQUEST,
-    						 "The CoAP option Content-Format must be present, with value application/ace-groupcomm+cbor");
+        	errorString = new String("The CoAP option Content-Format must be present, with value application/ace-groupcomm+cbor");
+    		System.err.println(errorString);
+    		exchange.respond(CoAP.ResponseCode.BAD_REQUEST, errorString);
     		return;
     	}
 
@@ -243,9 +252,19 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
     	
     	// The payload of the request must be a CBOR Map
     	if (!requestCBOR.getType().equals(CBORType.Map)) {
-			exchange.respond(CoAP.ResponseCode.BAD_REQUEST,
-							 "Invalid payload format");
+        	errorString = new String("Invalid payload format");
+    		System.err.println(errorString);
+			exchange.respond(CoAP.ResponseCode.BAD_REQUEST, errorString);
     		return;
+    	}
+    	
+    	for (CBORObject key : requestCBOR.getKeys()) {
+    		if (!GroupcommParameters.correctType(key, requestCBOR.get(key))) {
+            	errorString = new String("Invalid format of paramemeter with CBOR abbreviation: " + key.AsInt32());
+        		System.err.println(errorString);
+    			exchange.respond(CoAP.ResponseCode.BAD_REQUEST, errorString);
+    			return;
+    		}
     	}
     	
     	String auxString = new String("");
@@ -325,6 +344,8 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
     	// Process the request for creating a new Group Configuration
     	
     	String subject = null;
+    	String errorString = null;
+    	
     	Request request = exchange.advanced().getCurrentRequest();
         
         try {
@@ -334,23 +355,53 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
 		}
         if (subject == null) {
         	// At this point, this should not really happen, due to the earlier check at the Token Repository
-        	exchange.respond(CoAP.ResponseCode.UNAUTHORIZED,
-        					 "Unauthenticated client tried to get access");
+        	errorString = new String("Unauthenticated client tried to get access");
+        	System.err.println(errorString);
+        	exchange.respond(CoAP.ResponseCode.UNAUTHORIZED, errorString);
         	return;
         }
+        
+    	// Check that at least one scope entry in the access token allows the "List" admin permission
+        boolean permitted = false;
+    	CBORObject[] permissionSetToken = Util.getGroupOSCOREAdminPermissionsFromToken(subject, null);
+    	if (permissionSetToken == null) {
+        	errorString = new String("Operation not permitted");
+    		System.err.println(errorString);
+    		exchange.respond(CoAP.ResponseCode.FORBIDDEN, errorString);
+    		return;
+    	}
+    	for (int i = 0; i < permissionSetToken.length; i++) {
+    		try {
+        		short permissions = (short) permissionSetToken[i].get(1).AsInt32(); 
+        		permitted = Util.checkGroupOSCOREAdminPermission(permissions, GroupcommParameters.GROUP_OSCORE_ADMIN_CREATE);
+			} catch (AceException e) {
+				System.err.println("Error while verifying the admin permissions: " + e.getMessage());
+			}
+    		if (permitted) {
+    			break;
+    		}
+    	}
+    	if (!permitted) {
+        	errorString = new String("Operation not permitted");
+    		System.err.println(errorString);
+    		exchange.respond(CoAP.ResponseCode.FORBIDDEN, errorString);
+    		return;
+    	}
     	
     	byte[] requestPayload = exchange.getRequestPayload();
     	
     	if(requestPayload == null || (requestPayload.length == 0)) {
-    		exchange.respond(CoAP.ResponseCode.BAD_REQUEST,
-    						 "A payload must be present");
+        	errorString = new String("A payload must be present");
+    		System.err.println(errorString);
+    		exchange.respond(CoAP.ResponseCode.BAD_REQUEST, errorString);
     		return;
     	}
     	
     	if(exchange.getRequestOptions().hasContentFormat() == false ||
     	   exchange.getRequestOptions().getContentFormat() != Constants.APPLICATION_ACE_GROUPCOMM_CBOR) {
-    		exchange.respond(CoAP.ResponseCode.BAD_REQUEST,
-    						 "The CoAP option Content-Format must be present, with value application/ace-groupcomm+cbor");
+        	errorString = new String("The CoAP option Content-Format must be present, with value application/ace-groupcomm+cbor");
+    		System.err.println(errorString);
+    		exchange.respond(CoAP.ResponseCode.BAD_REQUEST, errorString);
     		return;
     	}
 
@@ -358,10 +409,44 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
     	
     	// The payload of the request must be a CBOR Map
     	if (!requestCBOR.getType().equals(CBORType.Map)) {
-			exchange.respond(CoAP.ResponseCode.BAD_REQUEST,
-							 "Invalid payload format");
+        	errorString = new String("Invalid payload format");
+    		System.err.println(errorString);
+			exchange.respond(CoAP.ResponseCode.BAD_REQUEST, errorString);
     		return;
     	}
+    	
+    	// The payload of the request must include the status parameter 'group_name'
+    	if (!requestCBOR.getKeys().contains(GroupcommParameters.GROUP_NAME)) {
+    		errorString = new String("The status parameter 'group_name' must be present");
+    		System.err.println(errorString);
+			exchange.respond(CoAP.ResponseCode.BAD_REQUEST, errorString);
+    		return;
+    	}
+    	
+    	// The payload of the request must not include the status parameters
+    	// 'rt', 'ace_groupcomm_profile', and 'joining_uri'
+    	if (requestCBOR.getKeys().contains(GroupcommParameters.RT) ||
+    		requestCBOR.getKeys().contains(GroupcommParameters.ACE_GROUPCOMM_PROFILE) ||
+    		requestCBOR.getKeys().contains(GroupcommParameters.JOINING_URI)) {
+    		errorString = new String("The status parameters 'rt', 'ace_groupcomm_profile', " +
+			 		   				 "and 'joining_uri' must not be be present");
+    		System.err.println(errorString);
+    		exchange.respond(CoAP.ResponseCode.BAD_REQUEST, errorString);
+    		return;
+    	}
+    	
+    	for (CBORObject key : requestCBOR.getKeys()) {
+    		if (!GroupcommParameters.correctType(key, requestCBOR.get(key))) {
+    			errorString = new String("Invalid format of paramemeter with CBOR abbreviation: " + key.AsInt32());
+    			System.err.println(errorString);
+    			exchange.respond(CoAP.ResponseCode.BAD_REQUEST, errorString);
+    			return;
+    		}
+    	}
+    	
+
+    	
+    	
     	
     	// TODO
     	

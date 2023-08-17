@@ -31,6 +31,8 @@
  *******************************************************************************/
 package se.sics.ace;
 
+import com.upokecenter.cbor.CBORObject;
+
 /**
  * Values for the labels of the ACE Groupcomm Policies
  * 
@@ -45,20 +47,20 @@ public class GroupcommPolicies {
 	 * 
 	 * This policy is not used by this application profile
 	 */
-	public static final short SN_SYNCH = 1;
+	public static final CBORObject SN_SYNCH = CBORObject.FromObject(1);
 	
 	/**
 	 * Value for the label of "Key Update Check Interval"
 	 * 
 	 * Default: 3600 s
 	 */
-	public static final short KEY_CHECK_INTERVAL = 2;
+	public static final CBORObject KEY_CHECK_INTERVAL = CBORObject.FromObject(2);
 	
 	/**
 	 * Value for the label of "Expiration delta"
 	 * 
 	 * Default: 0 s
 	 */
-	public static final short EXP_DELTA = 3;
+	public static final CBORObject EXP_DELTA = CBORObject.FromObject(3);
 
 }
