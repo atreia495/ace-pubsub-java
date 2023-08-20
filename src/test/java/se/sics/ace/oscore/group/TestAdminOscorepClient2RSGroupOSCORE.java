@@ -257,23 +257,30 @@ public class TestAdminOscorepClient2RSGroupOSCORE {
             = CwtCryptoCtx.encrypt0(keyASRS, coseP.getAlg().AsCBOR());
         Map<Short, CBORObject> params = new HashMap<>(); 
         
-        //Create the scope        
+        //Create the scope
+        String groupNamePattern = null;
+        int myPermissions;
+        CBORObject cborArrayEntry;
         CBORObject cborArrayScope = CBORObject.NewArray();
-        CBORObject cborArrayEntry = CBORObject.NewArray();
         
-        String groupNamePattern = new String("gp1");
-        cborArrayEntry.Add(groupNamePattern);
-        
-    	int myPermissions = 0;
+        cborArrayEntry = CBORObject.NewArray();
+        groupNamePattern = new String("gp500");
+    	myPermissions = 0;
     	myPermissions = Util.addGroupOSCOREAdminPermission(myPermissions, GroupcommParameters.GROUP_OSCORE_ADMIN_LIST);
     	myPermissions = Util.addGroupOSCOREAdminPermission(myPermissions, GroupcommParameters.GROUP_OSCORE_ADMIN_CREATE);
     	myPermissions = Util.addGroupOSCOREAdminPermission(myPermissions, GroupcommParameters.GROUP_OSCORE_ADMIN_READ);
     	myPermissions = Util.addGroupOSCOREAdminPermission(myPermissions, GroupcommParameters.GROUP_OSCORE_ADMIN_WRITE);
     	myPermissions = Util.addGroupOSCOREAdminPermission(myPermissions, GroupcommParameters.GROUP_OSCORE_ADMIN_DELETE);
+        cborArrayEntry.Add(groupNamePattern);
     	cborArrayEntry.Add(myPermissions);
+    	cborArrayScope.Add(cborArrayEntry);
     	
-        
-        cborArrayScope.Add(cborArrayEntry);
+    	cborArrayEntry = CBORObject.NewArray();
+        groupNamePattern = new String("gp500");
+        cborArrayEntry.Add(groupNamePattern);
+    	cborArrayEntry.Add(myPermissions);
+    	cborArrayScope.Add(cborArrayEntry);
+    	
     	byte[] byteStringScope = cborArrayScope.EncodeToBytes();
         
         params.put(Constants.SCOPE, CBORObject.FromObject(byteStringScope));
@@ -323,7 +330,11 @@ public class TestAdminOscorepClient2RSGroupOSCORE {
         
         adminRes = c.advanced(adminReq);
         
-        System.out.println(new String(adminRes.getPayload()));
+        System.out.println("Response code: " + adminRes.advanced().getCode());
+        if (adminRes.getOptions().hasContentFormat()) {
+        	System.out.println("Response Content-Format: " + adminRes.getOptions().getContentFormat());
+        }
+        System.out.println("Response payload:\n" + new String(adminRes.getPayload()));
         // Assert.assertEquals(0, adminRes.getPayloadSize());
         
         // ============================================
@@ -339,13 +350,16 @@ public class TestAdminOscorepClient2RSGroupOSCORE {
         adminReq.getOptions().setOscore(new byte[0]);
         adminReq.getOptions().setContentFormat(Constants.APPLICATION_ACE_GROUPCOMM_CBOR);
         requestPayloadCbor = CBORObject.NewMap();
-        requestPayloadCbor.Add(GroupcommParameters.GROUP_NAME, "gp1");
+        requestPayloadCbor.Add(GroupcommParameters.GROUP_NAME, "gp500");
         adminReq.setPayload(requestPayloadCbor.EncodeToBytes());
         
         adminRes = c.advanced(adminReq);
         
-        System.out.println(new String(adminRes.getPayload()));
-        // Assert.assertEquals(0, adminRes.getPayloadSize());
+        System.out.println("Response code: " + adminRes.advanced().getCode());
+        if (adminRes.getOptions().hasContentFormat()) {
+        	System.out.println("Response Content-Format: " + adminRes.getOptions().getContentFormat());
+        }
+        System.out.println("Response payload:\n" + new String(adminRes.getPayload()));
         
         // ============================================
         
@@ -371,8 +385,12 @@ public class TestAdminOscorepClient2RSGroupOSCORE {
         Assert.assertNotNull(responsePayloadCbor);
         
         Assert.assertEquals(CBORType.Map, responsePayloadCbor.getType());
-        System.out.println(responsePayloadCbor.toString());
-        // Assert.assertEquals(0, responsePayloadCbor.size());
+        System.out.println("Response code: " + adminRes.advanced().getCode());
+        if (adminRes.getOptions().hasContentFormat()) {
+        	System.out.println("Response Content-Format: " + adminRes.getOptions().getContentFormat());
+        }
+        System.out.println("Response payload:\n" + responsePayloadCbor.toString() + "\n");
+        Assert.assertEquals(3, responsePayloadCbor.size());
 
     }
     

@@ -34,11 +34,13 @@ package se.sics.ace.oscore.rs.oscoreGroupManager;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -76,24 +78,26 @@ import se.sics.ace.rs.TokenRepository;
  */
 public class GroupOSCOREGroupConfigurationResource extends CoapResource {
 	
-	private Map<String, GroupInfo> existingGroupInfo = new HashMap<>();
-	
 	private final String groupAdminResourcePath = "admin";
 	
+	private CBORObject groupConfiguration;
+	
+	private Map<String, GroupInfo> existingGroupInfo;
+		
 	private Map<String, Map<String, Set<Short>>> myScopes;
 	
 	private GroupOSCOREValidator valid;
-
-	private CBORObject groupConfiguration = CBORObject.NewMap();
 	
 	/**
      * Constructor
      * @param resId  the resource identifier
+     * @param groupConfiguration  the group configuration, as a CBOR map
      * @param existingGroupInfo  the set of information of the existing OSCORE groups
      * @param myScopes  the scopes of this OSCORE Group Manager
      * @param valid  the access validator of this OSCORE Group Manager
      */
     public GroupOSCOREGroupConfigurationResource(String resId,
+    											 CBORObject groupConfiguration,
 			  									 Map<String, GroupInfo> existingGroupInfo,
     										     Map<String, Map<String, Set<Short>>> myScopes,
     										     GroupOSCOREValidator valid) {
@@ -104,9 +108,11 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
         // set display name
         getAttributes().setTitle("Group OSCORE Group Configuration Resource " + resId);
      
+        this.groupConfiguration = groupConfiguration;
         this.existingGroupInfo = existingGroupInfo;
         this.myScopes = myScopes;
         this.valid = valid;
+
     }
 
     @Override
@@ -428,67 +434,79 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
 	/**
      * Return the default value for a certain parameter
      * 
-     * @param paramAbbreviation  the parameter for which to retrieve the default value
+     * @param paramAbbreviation  the abbreviation parameter for which to retrieve the default value, as CBOR integer
      * @return  the default value, or null in case of invalid parameter
      */
-    public static CBORObject getDefaultValue(short paramAbbreviation) {
+    public static CBORObject getDefaultValue(CBORObject paramAbbreviation) {
     	
-    	if (paramAbbreviation == GroupcommParameters.HKDF.AsInt32()) {
+    	if (paramAbbreviation.equals(GroupcommParameters.HKDF)) {
     		return CBORObject.FromObject(AlgorithmID.HMAC_SHA_256); // HMAC 256/256 for HKDF SHA-256
     	}
-    	if (paramAbbreviation == GroupcommParameters.CRED_FMT.AsInt32()) {
+    	if (paramAbbreviation.equals(GroupcommParameters.CRED_FMT)) {
     		return CBORObject.FromObject(Constants.COSE_HEADER_PARAM_CCS); // CWT Claims Set (CCS)
     	}
-    	if (paramAbbreviation == GroupcommParameters.GROUP_MODE.AsInt32()) {
+    	if (paramAbbreviation.equals(GroupcommParameters.GROUP_MODE)) {
 			return CBORObject.True;
     	}
-    	if (paramAbbreviation == GroupcommParameters.GP_ENC_ALG.AsInt32()) {
+    	if (paramAbbreviation.equals(GroupcommParameters.GP_ENC_ALG)) {
     		return CBORObject.FromObject(AlgorithmID.AES_CCM_16_64_128); // AES-CCM-16-64-128
     	}
-    	if (paramAbbreviation == GroupcommParameters.SIGN_ALG.AsInt32()) {
+    	if (paramAbbreviation.equals(GroupcommParameters.SIGN_ALG)) {
     		return CBORObject.FromObject(AlgorithmID.EDDSA); // EdDSA
     	}    	
-    	if (paramAbbreviation == GroupcommParameters.PAIRWISE_MODE.AsInt32()) {
+    	if (paramAbbreviation.equals(GroupcommParameters.PAIRWISE_MODE)) {
 			return CBORObject.True;
     	}
-    	if (paramAbbreviation == GroupcommParameters.ALG.AsInt32()) {
+    	if (paramAbbreviation.equals(GroupcommParameters.ALG)) {
     		return CBORObject.FromObject(AlgorithmID.AES_CCM_16_64_128); // AES-CCM-16-64-128
     	}
-    	if (paramAbbreviation == GroupcommParameters.ECDH_ALG.AsInt32()) {
+    	if (paramAbbreviation.equals(GroupcommParameters.ECDH_ALG)) {
 			return CBORObject.FromObject(AlgorithmID.ECDH_SS_HKDF_256); // ECDH-SS + HKDF-256
     	}
-    	if (paramAbbreviation == GroupcommParameters.DET_REQ.AsInt32()) {
+    	if (paramAbbreviation.equals(GroupcommParameters.DET_REQ)) {
 			return CBORObject.False;
     	}
-    	if (paramAbbreviation == GroupcommParameters.DET_HASH_ALG.AsInt32()) {
+    	if (paramAbbreviation.equals(GroupcommParameters.DET_HASH_ALG)) {
 			return CBORObject.FromObject(AlgorithmID.HMAC_SHA_256);
     	}
-    	if (paramAbbreviation == GroupcommParameters.ACTIVE.AsInt32()) {
+    	if (paramAbbreviation.equals(GroupcommParameters.ACTIVE)) {
     		return CBORObject.False;
     	}
-    	if (paramAbbreviation == GroupcommParameters.GROUP_TITLE.AsInt32()) {
+    	if (paramAbbreviation.equals(GroupcommParameters.GROUP_TITLE)) {
     		return CBORObject.Null;
     	}
-    	if (paramAbbreviation == GroupcommParameters.MAX_STALE_SETS.AsInt32()) {
+    	if (paramAbbreviation.equals(GroupcommParameters.MAX_STALE_SETS)) {
     		return CBORObject.FromObject(3);
     	}
-    	if (paramAbbreviation == GroupcommParameters.GID_REUSE.AsInt32()) {
+    	if (paramAbbreviation.equals(GroupcommParameters.GID_REUSE)) {
     		return CBORObject.False;
     	}
-    	if (paramAbbreviation == GroupcommParameters.APP_GROUPS.AsInt32()) {
+    	if (paramAbbreviation.equals(GroupcommParameters.APP_GROUPS)) {
     		return CBORObject.NewArray();
     	}
-    	if (paramAbbreviation == GroupcommParameters.GROUP_POLICIES.AsInt32()) {
+    	if (paramAbbreviation.equals(GroupcommParameters.GROUP_POLICIES)) {
 			CBORObject ret = CBORObject.NewMap();
 			ret.Add(GroupcommPolicies.KEY_CHECK_INTERVAL, 3600);
 			ret.Add(GroupcommPolicies.EXP_DELTA, 0);
 			return ret;
+    	}
+    	if (paramAbbreviation.equals(GroupcommParameters.EXP)) {
+    		long currentUnixTime = System.currentTimeMillis() / 1000L;
+    		long lifetime = 3600 * 24 * 365; // Set the lifetime of the group for 1 year from now
+    		CBORObject ret = CBORObject.FromObject(currentUnixTime + lifetime); 
+    		return ret;
     	}
     	
     	return null;
     	
     }
     
+	/**
+     * Return the default value for the 'sign_params' parameter
+     * 
+     * @param signAlg  the value of the parameter sign_alg
+     * @return  the default value, or null in case of invalid parameter
+     */
     public static CBORObject getDefaultValueSignParams(CBORObject signAlg) {
     	CBORObject ret = null;
     	if (signAlg.equals(CBORObject.FromObject(AlgorithmID.EDDSA))) {
@@ -540,6 +558,12 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
     	return ret;
     }
     
+	/**
+     * Return the default value for the 'ecdh_params' parameter
+     * 
+     * @param signAlg  the value of the parameter sign_alg
+     * @return  the default value, or null in case of invalid parameter
+     */
     public static CBORObject getDefaultValueEcdhParams(CBORObject signAlg, boolean groupMode) {
     	CBORObject ret = null;
     	if (signAlg.equals(CBORObject.FromObject(AlgorithmID.EDDSA)) || (groupMode == false)) {
@@ -578,7 +602,206 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
         	ret.get(1).Add(KeyKeys.EC2_P521);
     		return ret;
     	}
+    	
     	return ret;
+    }
+    
+	/**
+     * Create a preliminary group configuration
+     * 
+     * @param requestCBOR  the payload of the request from the administrator, as a CBOR map
+     * @param creation  true (false) if the request was a POST (PUT) request to the group-collection (group-configuration) resource 
+     * @return  a CBOR array with up to four elements, in this order
+     * 			- The CoAP response code for the response to the Administrator, as a CBOR integer
+     * 			- The CoAP Content-Format to use in the response to the Administrator, as a CBOR integer. It can be null
+     * 			- The payload for the response to the Administrator, as a CBOR map or a CBOR text string. It can be null
+     * 			- Present only in case of success, the preliminary group configuration, as a CBOR map
+     * 
+     */
+    static public CBORObject buildGroupConfiguration(final CBORObject requestCBOR, final boolean creation) {
+    	
+    	CBORObject parameterName;
+		CBORObject parameterValue = null;
+    	CBORObject groupConfiguration = CBORObject.NewMap();
+    	CBORObject ret = CBORObject.NewArray();
+    	int responseCode = -1;
+    	int contentFormat = -1;
+    	CBORObject responsePayload = null;
+    	String errorString = null;
+    	
+    	List<Integer> parameterList = new ArrayList<>();
+    	
+    	// Configuration parameters
+    	parameterList.add(GroupcommParameters.HKDF.AsInt32());
+    	parameterList.add(GroupcommParameters.CRED_FMT.AsInt32());
+    	parameterList.add(GroupcommParameters.GROUP_MODE.AsInt32());
+    	parameterList.add(GroupcommParameters.GP_ENC_ALG.AsInt32());
+    	parameterList.add(GroupcommParameters.SIGN_ALG.AsInt32());
+    	parameterList.add(GroupcommParameters.SIGN_PARAMS.AsInt32());
+    	parameterList.add(GroupcommParameters.PAIRWISE_MODE.AsInt32());
+    	parameterList.add(GroupcommParameters.ALG.AsInt32());
+    	parameterList.add(GroupcommParameters.ECDH_ALG.AsInt32());
+    	parameterList.add(GroupcommParameters.ECDH_PARAMS.AsInt32());
+    	parameterList.add(GroupcommParameters.DET_REQ.AsInt32());
+    	parameterList.add(GroupcommParameters.DET_HASH_ALG.AsInt32());
+    	
+    	// Status parameters
+    	parameterList.add(GroupcommParameters.RT.AsInt32());
+    	parameterList.add(GroupcommParameters.ACTIVE.AsInt32());
+    	parameterList.add(GroupcommParameters.GROUP_NAME.AsInt32());
+    	parameterList.add(GroupcommParameters.GROUP_TITLE.AsInt32());
+    	parameterList.add(GroupcommParameters.ACE_GROUPCOMM_PROFILE.AsInt32());
+    	parameterList.add(GroupcommParameters.MAX_STALE_SETS.AsInt32());
+    	parameterList.add(GroupcommParameters.EXP.AsInt32());
+    	parameterList.add(GroupcommParameters.GROUP_POLICIES.AsInt32());
+    	parameterList.add(GroupcommParameters.GID_REUSE.AsInt32());
+    	parameterList.add(GroupcommParameters.APP_GROUPS.AsInt32());
+    	parameterList.add(GroupcommParameters.JOINING_URI.AsInt32());
+    	parameterList.add(GroupcommParameters.AS_URI.AsInt32());
+    	    	
+    	for (Integer i : parameterList) {
+    		parameterName = CBORObject.FromObject(i.intValue());
+    		
+    		// Some parameters require additional, special handling
+    		boolean omit = false;
+    		boolean postpone = false;
+    		CBORObject forcedValue = null;
+    		
+    		if (parameterName.equals(GroupcommParameters.GP_ENC_ALG) ||
+    			parameterName.equals(GroupcommParameters.SIGN_ALG)   ||
+    			parameterName.equals(GroupcommParameters.SIGN_PARAMS)) {
+    			if (groupConfiguration.get(GroupcommParameters.GROUP_MODE).equals(CBORObject.False)) {
+    				forcedValue = CBORObject.Null;
+    			}
+    		}
+    		else if (parameterName.equals(GroupcommParameters.ALG) ||
+    				 parameterName.equals(GroupcommParameters.ECDH_ALG)   ||
+    				 parameterName.equals(GroupcommParameters.ECDH_PARAMS)) {
+        		if (groupConfiguration.get(GroupcommParameters.PAIRWISE_MODE).equals(CBORObject.False)) {
+        			forcedValue = CBORObject.Null;
+        		}
+        	}
+    		else if (parameterName.equals(GroupcommParameters.DET_REQ)) {
+        		if (groupConfiguration.get(GroupcommParameters.GROUP_MODE).equals(CBORObject.False)) {
+        			omit = true;
+        		}
+        	}
+    		else if (parameterName.equals(GroupcommParameters.DET_HASH_ALG)) {
+        		if ((groupConfiguration.ContainsKey(GroupcommParameters.DET_REQ) == false) ||
+        			(groupConfiguration.get(GroupcommParameters.DET_REQ).equals(CBORObject.False))) {
+        			omit = true;
+        		}
+        	}
+    		else if (parameterName.equals(GroupcommParameters.RT)) {
+    			forcedValue = CBORObject.FromObject("core.osc.gconf");
+    		}
+    		else if (parameterName.equals(GroupcommParameters.GROUP_NAME)) {
+    			// The group name will be assigned later
+    			postpone = true;
+    		}
+    		else if (parameterName.equals(GroupcommParameters.ACE_GROUPCOMM_PROFILE)) {
+    			forcedValue = CBORObject.FromObject(GroupcommParameters.COAP_GROUP_OSCORE_APP);
+    		}
+    		else if (parameterName.equals(GroupcommParameters.JOINING_URI)) {
+    			// The URI of the group-membership resource will be assigned later
+    			postpone = true;
+    		}
+    		else if (parameterName.equals(GroupcommParameters.AS_URI)) {
+    			// The URI of the associated Authorization Server will be assigned later
+    			
+    			// (This Group Manager is not going to accept any Authorization Server
+    			//  suggested by the Administrator, and always force its preferred one)
+    			postpone = true;
+    		}
+    		
+			if ((requestCBOR.ContainsKey(parameterName)) && (postpone == false)) {
+				// The Administrator has specified a value for this parameter
+				
+				parameterValue = requestCBOR.get(parameterName);
+				
+				boolean inconsistentValue = ((forcedValue != null) && (parameterValue.equals(forcedValue) == false));
+				
+				if (omit || inconsistentValue) {
+					errorString = new String ("Invalid use of the parameter with abbreviation1'" + parameterName + "'");
+					responseCode = CoAP.ResponseCode.BAD_REQUEST.value;
+					contentFormat = Constants.APPLICATION_ACE_GROUPCOMM_CBOR;
+					responsePayload = CBORObject.NewMap();
+					responsePayload.Add(GroupcommParameters.ERROR, GroupcommErrors.UNSUPPORTED_GROUP_CONF);
+					responsePayload.Add(GroupcommParameters.ERROR_DESCRIPTION, errorString);
+					System.err.println(errorString);
+					break;
+				}
+				
+				// Check that the parameter value is meaningful
+				boolean isMeaningful = GroupcommParameters.isAdminParameterValueMeaningful(parameterName, parameterValue);
+				
+				if (isMeaningful == false) {
+					errorString = new String ("Invalid use of the parameter with abbreviation' " + parameterName + "'");
+					responseCode = CoAP.ResponseCode.BAD_REQUEST.value;
+					responsePayload = CBORObject.FromObject(errorString);
+					System.err.println(errorString);
+					break;
+				}
+				
+			}
+			else {
+				// The Administrator has not specified a value for this parameter
+				
+				if (omit || postpone) {
+					continue;
+				}
+				
+				if (forcedValue != null) {
+					parameterValue = forcedValue;
+				}
+				else {
+					// Retrieve the default value
+					if (parameterName.equals(GroupcommParameters.SIGN_PARAMS)) {
+						parameterValue = getDefaultValueSignParams(groupConfiguration.get(GroupcommParameters.SIGN_ALG));
+					}
+					else if (parameterName.equals(GroupcommParameters.ECDH_PARAMS)) {
+						boolean groupMode = groupConfiguration.get(GroupcommParameters.GROUP_MODE).equals(CBORObject.True) ? true : false;
+						parameterValue = getDefaultValueEcdhParams(groupConfiguration.get(GroupcommParameters.SIGN_ALG), groupMode);
+					}
+					else {
+						parameterValue = getDefaultValue(parameterName);
+					}
+					
+					if (parameterValue == null) {
+						// This should never happen
+						errorString = new String("Error determining the default value for the parameter with abbreviation' " + parameterName + "'");
+						responseCode = CoAP.ResponseCode.INTERNAL_SERVER_ERROR.value;
+						responsePayload = CBORObject.FromObject(errorString);
+						System.err.println(errorString);
+						break;
+					}
+				}
+			}
+
+			// No error has occurred, and the parameter has to be included in the group configuration
+			groupConfiguration.Add(parameterName, parameterValue);
+				
+    	}
+    	
+    	// Failure
+    	if (responseCode != -1) {
+    		ret.Add(responseCode);
+	    	ret.Add((contentFormat == -1) ? null : CBORObject.FromObject(contentFormat));
+			ret.Add(responsePayload);
+    	}
+    	// Success
+    	else {
+	    	responseCode = creation ? CoAP.ResponseCode.CONTENT.value : CoAP.ResponseCode.CHANGED.value;
+	    	contentFormat = Constants.APPLICATION_ACE_GROUPCOMM_CBOR;
+	    	responsePayload = CBORObject.NewMap();
+	    	ret.Add(responseCode);
+			ret.Add(contentFormat);
+			ret.Add(responsePayload);
+			ret.Add(groupConfiguration);
+    	}
+    	
+    	return ret;
+    	
     }
     
 }

@@ -37,6 +37,9 @@ import java.util.Set;
 import com.upokecenter.cbor.CBORObject;
 import com.upokecenter.cbor.CBORType;
 
+import COSE.AlgorithmID;
+import COSE.KeyKeys;
+
 /**
  * Constants for use with ACE Groupcomm
  * 
@@ -281,208 +284,27 @@ public class GroupcommParameters {
     public static final CBORObject APP_GROUPS_DIFF = CBORObject.FromObject(56);
     
 	/**
-     * Check whether the specified parameter is of the correct CBOR type
+     * Check whether the specified parameter is meaningful, i.e., it is of the expected CBOR type
+     * and it has right value if it has CBOR type simple value.
      * 
-     * @param name  the CBOR abbreviation of the parameter whose CBOR type has to be checked
-     * @param name  the value of the parameter whose CBOR type has to be checked
-     * @return  true if the parameter value is of the expected CBOR type, or false otherwise
+     * @param name  the CBOR abbreviation of the parameter to be checked
+     * @param name  the value of the parameter to be checked
+     * @return  true if the parameter is meaningful, or false if not meaningful or not recognized
      */
-    public static boolean correctType(CBORObject name, CBORObject value) {
+    public static boolean isAdminRequestParameterMeaningful(CBORObject name, CBORObject value) {
     	
 		CBORType type = value.getType();
-    	
-    	if (name.equals(ERROR)) {
-    		CBORType expectedType = CBORType.Integer;
-    		if (type.equals(expectedType)) return true;
-    		else return false;
-    	}
-    	if (name.equals(ERROR_DESCRIPTION)) {
-    		CBORType expectedType = CBORType.TextString;
-    		if (type.equals(expectedType)) return true;
-    		else return false;
-    	}
-    	if (name.equals(GID)) {
-    		CBORType expectedType = CBORType.Array;
-    		if (type.equals(expectedType)) return true;
-    		else return false;
-    	}
-    	if (name.equals(GNAME)) {
-    		CBORType expectedType1 = CBORType.Array;
-    		CBORType expectedType2 = CBORType.TextString;
-    		if (type.equals(expectedType1) || type.equals(expectedType2)) return true;
-    		else return false;
-    	}
-    	if (name.equals(GURI)) {
-    		CBORType expectedType1 = CBORType.Array;
-    		CBORType expectedType2 = CBORType.TextString;
-    		if (type.equals(expectedType1) || type.equals(expectedType2)) return true;
-    		else return false;
-    	}
-    	if (name.equals(SCOPE)) {
-    		CBORType expectedType = CBORType.ByteString;
-    		if (type.equals(expectedType)) return true;
-    		else return false;
-    	}
-    	if (name.equals(GET_CREDS)) {
-    		CBORType expectedType = CBORType.Array;
-    		CBORObject expectedValue = CBORObject.Null;
-    		if (type.equals(expectedType) || value.equals(expectedValue)) return true;
-    		else return false;
-    	}
-    	if (name.equals(CLIENT_CRED)) {
-    		CBORType expectedType = CBORType.ByteString;
-    		if (type.equals(expectedType)) return true;
-    		else return false;
-    	}
-    	if (name.equals(CNONCE)) {
-    		CBORType expectedType = CBORType.ByteString;
-    		if (type.equals(expectedType)) return true;
-    		else return false;
-    	}
-    	if (name.equals(CLIENT_CRED_VERIFY)) {
-    		CBORType expectedType = CBORType.ByteString;
-    		if (type.equals(expectedType)) return true;
-    		else return false;
-    	}
-    	if (name.equals(CREDS_REPO)) {
-    		CBORType expectedType = CBORType.TextString;
-    		if (type.equals(expectedType)) return true;
-    		else return false;
-    	}
-    	if (name.equals(CONTROL_URI)) {
-    		CBORType expectedType = CBORType.TextString;
-    		if (type.equals(expectedType)) return true;
-    		else return false;
-    	}
-    	if (name.equals(GKTY)) {
-    		CBORType expectedType1 = CBORType.Integer;
-    		CBORType expectedType2 = CBORType.TextString;
-    		if (type.equals(expectedType1) || type.equals(expectedType2)) return true;
-    		else return false;
-    	}
-    	if (name.equals(KEY)) {
-    		CBORType expectedType = CBORType.Map;
-    		if (type.equals(expectedType)) return true;
-    		else return false;
-    	}
-    	if (name.equals(NUM)) {
-    		CBORType expectedType = CBORType.Integer;
-    		if (type.equals(expectedType)) return true;
-    		else return false;
-    	}
-    	if (name.equals(ACE_GROUPCOMM_PROFILE)) {
-    		CBORType expectedType = CBORType.Integer;
-    		if (type.equals(expectedType)) return true;
-    		else return false;
-    	}
-    	if (name.equals(EXP)) {
-    		CBORType expectedType = CBORType.Integer;
-    		if (type.equals(expectedType)) return true;
-    		else return false;
-    	}
-    	if (name.equals(CREDS)) {
-    		CBORType expectedType = CBORType.Array;
-    		if (type.equals(expectedType)) return true;
-    		else return false;
-    	}
-    	if (name.equals(PEER_ROLES)) {
-    		CBORType expectedType = CBORType.Array;
-    		if (type.equals(expectedType)) return true;
-    		else return false;
-    	}
-    	if (name.equals(PEER_IDENTIFIERS)) {
-    		CBORType expectedType = CBORType.Array;
-    		if (type.equals(expectedType)) return true;
-    		else return false;
-    	}
-    	if (name.equals(GROUP_POLICIES)) {
-    		CBORType expectedType = CBORType.Map;
-    		if (type.equals(expectedType)) return true;
-    		else return false;
-    	}
-    	if (name.equals(KDC_CRED)) {
-    		CBORType expectedType = CBORType.ByteString;
-    		if (type.equals(expectedType)) return true;
-    		else return false;
-    	}
-    	if (name.equals(KDC_NONCE)) {
-    		CBORType expectedType = CBORType.ByteString;
-    		if (type.equals(expectedType)) return true;
-    		else return false;
-    	}
-    	if (name.equals(KDC_CRED_VERIFY)) {
-    		CBORType expectedType = CBORType.ByteString;
-    		if (type.equals(expectedType)) return true;
-    		else return false;
-    	}
-    	if (name.equals(REKEYING_SCHEME)) {
-    		CBORType expectedType = CBORType.Integer;
-    		if (type.equals(expectedType)) return true;
-    		else return false;
-    	}
-    	if (name.equals(MGT_KEY_MATERIAL)) {
-    		CBORType expectedType = CBORType.ByteString;
-    		if (type.equals(expectedType)) return true;
-    		else return false;
-    	}
-    	if (name.equals(CONTROL_GROUP_URI)) {
-    		CBORType expectedType = CBORType.TextString;
-    		if (type.equals(expectedType)) return true;
-    		else return false;
-    	}
-    	if (name.equals(SIGN_INFO)) {
-    		CBORType expectedType = CBORType.Array;
-    		if (type.equals(expectedType)) return true;
-    		else return false;
-    	}
-    	if (name.equals(KDCCHALLENGE)) {
-    		CBORType expectedType = CBORType.ByteString;
-    		if (type.equals(expectedType)) return true;
-    		else return false;
-    	}
-    	
-    	if (name.equals(GROUP_SENDER_ID)) {
-    		CBORType expectedType = CBORType.ByteString;
-    		if (type.equals(expectedType)) return true;
-    		else return false;
-    	}
-    	
-    	if (name.equals(ECDH_INFO)) {
-    		CBORType expectedType = CBORType.Array;
-    		if (type.equals(expectedType)) return true;
-    		else return false;
-    	}
-    	
-    	if (name.equals(KDC_DH_CREDS)) {
-    		CBORType expectedType = CBORType.Array;
-    		if (type.equals(expectedType)) return true;
-    		else return false;
-    	}
-    	
-    	if (name.equals(GROUP_ENC_KEY)) {
-    		CBORType expectedType = CBORType.ByteString;
-    		if (type.equals(expectedType)) return true;
-    		else return false;
-    	}
-    	
-    	if (name.equals(STALE_NODE_IDS)) {
-    		CBORType expectedType = CBORType.Array;
-    		if (type.equals(expectedType)) return true;
-    		else return false;
-    	}
-    	
-    	
     	
     	if (name.equals(HKDF)) {
     		CBORType expectedType1 = CBORType.TextString;
     		CBORType expectedType2 = CBORType.Integer;
-    		if (type.equals(expectedType1) || type.equals(expectedType2)) return true;
+    		if ((type == expectedType1) || (type == expectedType2)) return true;
     		else return false;
     	}
     	
     	if (name.equals(CRED_FMT)) {
     		CBORType expectedType = CBORType.Integer;
-    		if (type.equals(expectedType)) return true;
+    		if (type == expectedType) return true;
     		else return false;
     	}
     	
@@ -497,7 +319,7 @@ public class GroupcommParameters {
     		CBORType expectedType1 = CBORType.TextString;
     		CBORType expectedType2 = CBORType.Integer;
     		CBORObject expectedValue = CBORObject.Null;
-    		if (type.equals(expectedType1) || type.equals(expectedType2) || value.equals(expectedValue)) return true;
+    		if ((type == expectedType1) || (type == expectedType2) || value.equals(expectedValue)) return true;
     		else return false;
     	}
     	
@@ -505,14 +327,14 @@ public class GroupcommParameters {
     		CBORType expectedType1 = CBORType.TextString;
     		CBORType expectedType2 = CBORType.Integer;
     		CBORObject expectedValue = CBORObject.Null;
-    		if (type.equals(expectedType1) || type.equals(expectedType2) || value.equals(expectedValue)) return true;
+    		if ((type == expectedType1) || (type == expectedType2) || value.equals(expectedValue)) return true;
     		else return false;
     	}
     	
     	if (name.equals(SIGN_PARAMS)) {
     		CBORType expectedType = CBORType.Array;
     		CBORObject expectedValue = CBORObject.Null;
-    		if (type.equals(expectedType) || value.equals(expectedValue)) return true;
+    		if ((type == expectedType) || value.equals(expectedValue)) return true;
     		else return false;
     	}
     	
@@ -527,7 +349,7 @@ public class GroupcommParameters {
     		CBORType expectedType1 = CBORType.TextString;
     		CBORType expectedType2 = CBORType.Integer;
     		CBORObject expectedValue = CBORObject.Null;
-    		if (type.equals(expectedType1) || type.equals(expectedType2) || value.equals(expectedValue)) return true;
+    		if ((type == expectedType1) || (type == expectedType2) || value.equals(expectedValue)) return true;
     		else return false;
     	}
     	
@@ -535,14 +357,14 @@ public class GroupcommParameters {
     		CBORType expectedType1 = CBORType.TextString;
     		CBORType expectedType2 = CBORType.Integer;
     		CBORObject expectedValue = CBORObject.Null;
-    		if (type.equals(expectedType1) || type.equals(expectedType2) || value.equals(expectedValue)) return true;
+    		if ((type == expectedType1) || (type == expectedType2) || value.equals(expectedValue)) return true;
     		else return false;
     	}
     	
     	if (name.equals(ECDH_PARAMS)) {
     		CBORType expectedType = CBORType.Array;
     		CBORObject expectedValue = CBORObject.Null;
-    		if (type.equals(expectedType) || value.equals(expectedValue)) return true;
+    		if ((type == expectedType) || value.equals(expectedValue)) return true;
     		else return false;
     	}
     	
@@ -556,13 +378,7 @@ public class GroupcommParameters {
     	if (name.equals(DET_HASH_ALG)) {
     		CBORType expectedType1 = CBORType.TextString;
     		CBORType expectedType2 = CBORType.Integer;
-    		if (type.equals(expectedType1) || type.equals(expectedType2)) return true;
-    		else return false;
-    	}
-    	
-    	if (name.equals(RT)) {
-    		CBORType expectedType = CBORType.TextString;
-    		if (type.equals(expectedType)) return true;
+    		if ((type == expectedType1) || (type == expectedType2)) return true;
     		else return false;
     	}
     	
@@ -575,20 +391,32 @@ public class GroupcommParameters {
     	
     	if (name.equals(GROUP_NAME)) {
     		CBORType expectedType = CBORType.TextString;
-    		if (type.equals(expectedType)) return true;
+    		if (type == expectedType) return true;
     		else return false;
     	}
     	
     	if (name.equals(GROUP_TITLE)) {
     		CBORType expectedType = CBORType.TextString;
     		CBORObject expectedValue = CBORObject.Null;
-    		if (type.equals(expectedType) || value.equals(expectedValue)) return true;
+    		if ((type == expectedType) || value.equals(expectedValue)) return true;
     		else return false;
     	}
 
     	if (name.equals(MAX_STALE_SETS)) {
     		CBORType expectedType = CBORType.Integer;
-    		if (type.equals(expectedType)) return true;
+    		if ((type == expectedType) && (value.AsInt32() > 1)) return true;
+    		else return false;
+    	}
+    	
+    	if (name.equals(EXP)) {
+    		CBORType expectedType = CBORType.Integer;
+    		if ((type == expectedType) && (value.AsInt32() > 0)) return true;
+    		else return false;
+    	}
+    	
+    	if (name.equals(GROUP_POLICIES)) {
+    		CBORType expectedType = CBORType.Map;
+    		if (type == expectedType) return true;
     		else return false;
     	}
     	
@@ -601,35 +429,224 @@ public class GroupcommParameters {
     	
     	if (name.equals(APP_GROUPS)) {
     		CBORType expectedType = CBORType.Array;
-    		if (type.equals(expectedType)) return true;
+    		if (type == expectedType) return true;
     		else return false;
     	}
-    	
-    	if (name.equals(JOINING_URI)) {
-    		CBORType expectedType = CBORType.TextString;
-    		if (type.equals(expectedType)) return true;
-    		else return false;
-    	}
-    	
+    	    	
     	if (name.equals(AS_URI)) {
     		CBORType expectedType = CBORType.TextString;
-    		if (type.equals(expectedType)) return true;
+    		if (type == expectedType) return true;
     		else return false;
     	}
     	
     	if (name.equals(CONF_FILTER)) {
     		CBORType expectedType = CBORType.Array;
-    		if (type.equals(expectedType)) return true;
+    		if (type == expectedType) return true;
     		else return false;
     	}
     	
     	if (name.equals(APP_GROUPS_DIFF)) {
     		CBORType expectedType = CBORType.Array;
-    		if (type.equals(expectedType)) return true;
+    		if (type == expectedType) return true;
     		else return false;
     	}
     	
+    	// Unrecognized parameter
     	return false;
+    }
+    
+	/**
+     * Check whether the specified parameter value is meaningful.
+     * 
+     * This takes into account admitted values altogether (e.g,. per the relevant COSE registries),
+     * as well as the local support for algorithms and other functionalities at the Group Manager.
+     * 
+     * Note that the parameters have been checked already for being of the correct CBOR type.
+     * The parameters of type CBOR simple value has also already been checked as to their value.
+     * 
+     * @param name  the CBOR abbreviation of the parameter to be checked
+     * @param name  the value of the parameter to be checked
+     * @return  true if the parameter value is meaningful, or false if not meaningful or not recognized
+     */
+    public static boolean isAdminParameterValueMeaningful(CBORObject name, CBORObject value) {
+    	
+    	if (name.equals(HKDF)) {
+    		if (value.getType().equals(CBORType.Integer)) {
+    			if (value.equals(AlgorithmID.HMAC_SHA_256.AsCBOR()) ||
+    				value.equals(AlgorithmID.HMAC_SHA_512.AsCBOR())) {
+    				return true;
+    			}
+    		}
+    		return false;
+    	}
+
+    	if (name.equals(CRED_FMT)) {
+			if (value.equals(CBORObject.FromObject(Constants.COSE_HEADER_PARAM_X5BAG)) ||
+				value.equals(CBORObject.FromObject(Constants.COSE_HEADER_PARAM_X5CHAIN)) ||
+				value.equals(CBORObject.FromObject(Constants.COSE_HEADER_PARAM_CWT)) ||
+				value.equals(CBORObject.FromObject(Constants.COSE_HEADER_PARAM_CCS)) ||
+				value.equals(CBORObject.FromObject(Constants.COSE_HEADER_PARAM_C5B)) ||
+				value.equals(CBORObject.FromObject(Constants.COSE_HEADER_PARAM_C5C))) {
+				return true;
+			}
+    		return false;
+    	}
+    	
+    	if (name.equals(GP_ENC_ALG)) {
+    		if (value.getType().equals(CBORType.Integer)) {
+    			if (value.equals(AlgorithmID.AES_CCM_16_64_128.AsCBOR()) ||
+    				value.equals(AlgorithmID.AES_CCM_16_64_256.AsCBOR()) ||
+    				value.equals(AlgorithmID.AES_CCM_64_64_128.AsCBOR()) ||
+    				value.equals(AlgorithmID.AES_CCM_64_64_256.AsCBOR()) ||
+    				value.equals(AlgorithmID.AES_CCM_16_128_128.AsCBOR()) ||
+    				value.equals(AlgorithmID.AES_CCM_16_128_256.AsCBOR()) ||
+    				value.equals(AlgorithmID.AES_CCM_64_128_128.AsCBOR()) ||
+    				value.equals(AlgorithmID.AES_CCM_64_128_256.AsCBOR())) {
+    				return true;
+    			}
+    		}
+    		return false;
+    	}
+    	
+    	if (name.equals(SIGN_ALG)) {
+    		if (value.getType().equals(CBORType.Integer)) {
+    			if (value.equals(AlgorithmID.EDDSA.AsCBOR()) ||
+    				value.equals(AlgorithmID.ECDSA_256.AsCBOR()) ||
+    				value.equals(AlgorithmID.ECDSA_384.AsCBOR()) ||
+    				value.equals(AlgorithmID.ECDSA_512.AsCBOR())) {
+    				return true;
+    			}
+    		}
+    		return false;
+    	}
+    	
+    	if (name.equals(SIGN_PARAMS)) {
+    		if (value.size() != 2)
+    			return false;
+    		if ((value.get(0).getType() != CBORType.Array) || (value.get(0).getType() != CBORType.Array))
+    			return false;
+    		if ((value.get(0).size() != 1) || (value.get(0).size() != 2))
+    			return false;
+    		
+			CBORObject keyType = value.get(0).get(0);
+			if (value.get(1).get(0) != keyType)
+				return false;
+			
+			CBORObject curve = value.get(1).get(1);
+			if (keyType.equals(KeyKeys.KeyType_OKP)) {
+				if (curve.equals(KeyKeys.OKP_Ed25519) || curve.equals(KeyKeys.OKP_Ed448)) {
+					return true;
+				}
+			}
+			if (keyType.equals(KeyKeys.KeyType_EC2)) {
+				if (curve.equals(KeyKeys.EC2_P256) || curve.equals(KeyKeys.EC2_P384) || curve.equals(KeyKeys.EC2_P521)) {
+					return true;
+				}
+			// This Group Manager does not support RSA as signature algorithm
+			}
+			
+    		return false;
+    	}
+    	
+    	if (name.equals(ALG)) {
+    		if (value.getType().equals(CBORType.Integer)) {
+    			if (value.equals(AlgorithmID.AES_CCM_16_64_128.AsCBOR()) ||
+    				value.equals(AlgorithmID.AES_CCM_16_64_256.AsCBOR()) ||
+    				value.equals(AlgorithmID.AES_CCM_64_64_128.AsCBOR()) ||
+    				value.equals(AlgorithmID.AES_CCM_64_64_256.AsCBOR()) ||
+    				value.equals(AlgorithmID.AES_CCM_16_128_128.AsCBOR()) ||
+    				value.equals(AlgorithmID.AES_CCM_16_128_256.AsCBOR()) ||
+    				value.equals(AlgorithmID.AES_CCM_64_128_128.AsCBOR()) ||
+    				value.equals(AlgorithmID.AES_CCM_64_128_256.AsCBOR())) {
+    				return true;
+    			}
+    		}
+    		return false;
+    	}
+    	
+    	if (name.equals(ECDH_ALG)) {
+    		if (value.getType().equals(CBORType.Integer)) {
+    			if (value.equals(AlgorithmID.ECDH_SS_HKDF_256.AsCBOR()) ||
+    				value.equals(AlgorithmID.ECDH_SS_HKDF_512.AsCBOR())) {
+    				return true;
+    			}
+    		}
+    		return false;
+    	}
+    	
+    	if (name.equals(ECDH_PARAMS)) {
+    		if (value.size() != 2)
+    			return false;
+    		if ((value.get(0).getType() != CBORType.Array) || (value.get(0).getType() != CBORType.Array))
+    			return false;
+    		if ((value.get(0).size() != 1) || (value.get(0).size() != 2))
+    			return false;
+    		
+			CBORObject keyType = value.get(0).get(0);
+			if (value.get(1).get(0) != keyType)
+				return false;
+			
+			CBORObject curve = value.get(1).get(1);
+			if (keyType.equals(KeyKeys.KeyType_OKP)) {
+				if (curve.equals(KeyKeys.OKP_X25519) || curve.equals(KeyKeys.OKP_X448)) {
+					return true;
+				}
+			}
+			if (keyType.equals(KeyKeys.KeyType_EC2)) {
+				if (curve.equals(KeyKeys.EC2_P256) || curve.equals(KeyKeys.EC2_P384) || curve.equals(KeyKeys.EC2_P521)) {
+					return true;
+				}
+			}
+			
+    		return false;
+    	}
+
+    	if (name.equals(DET_HASH_ALG)) {
+    		if (value.getType().equals(CBORType.Integer)) {
+    			if (value.equals(AlgorithmID.HMAC_SHA_256.AsCBOR()) ||
+    				value.equals(AlgorithmID.HMAC_SHA_384.AsCBOR()) ||
+    				value.equals(AlgorithmID.HMAC_SHA_512.AsCBOR())) {
+    				return true;
+    			}
+    		}
+    		return false;
+    	}
+    	
+    	if (name.equals(GROUP_POLICIES)) {
+    		Set<Integer> admittedPolicies = new HashSet<>();
+    		admittedPolicies.add(GroupcommPolicies.KEY_CHECK_INTERVAL.AsInt32());
+    		admittedPolicies.add(GroupcommPolicies.EXP_DELTA.AsInt32());
+    		
+    		for (CBORObject policyName : value.getKeys()) {
+    			if (!admittedPolicies.contains(policyName.AsInt32()))
+    				return false;
+    			if (policyName.equals(GroupcommPolicies.KEY_CHECK_INTERVAL)) {
+    				if (value.get(policyName).getType() != CBORType.Integer ||
+    					value.get(policyName).AsInt32() < 0)
+    					return false;
+    			}
+    			if (policyName.equals(GroupcommPolicies.EXP_DELTA)) {
+    				if (value.get(policyName).getType() != CBORType.Integer ||
+    					value.get(policyName).AsInt32() < 0)
+    					return false;
+    			}
+    		}
+    		
+    		return true;
+    	}
+    	
+    	if (name.equals(APP_GROUPS)) {
+
+    		for (int i = 0; i < value.size(); i++) {
+    			if (value.get(i).getType() != CBORType.TextString)
+    				return false;
+    		}
+    		
+    		return true;
+    	}
+    	
+    	return true;
+    	
     }
     
 }

@@ -44,6 +44,7 @@ import java.util.Set;
 
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP;
+import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
@@ -85,6 +86,8 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
 	
 	private GroupOSCOREValidator valid;
 	
+	private final String asUri = new String("coap://as.example.com/token");
+	
 	/**
      * Constructor
      * @param resId  the resource identifier
@@ -111,10 +114,11 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
         // ============
         // Force the presence of an already existing group configuration for early testing
         GroupOSCOREGroupConfigurationResource testConf = new GroupOSCOREGroupConfigurationResource(
-        													"gp1", this.existingGroupInfo,
+        													"gp500", CBORObject.NewMap(),
+        													this.existingGroupInfo,
         													this.myScopes, this.valid);
-        testConf.getConfigurationParameters().Add(GroupcommParameters.GROUP_NAME, CBORObject.FromObject("gp1"));
-        this.groupConfigurationResources.put("gp1", testConf);
+        testConf.getConfigurationParameters().Add(GroupcommParameters.GROUP_NAME, CBORObject.FromObject("gp500"));
+        this.groupConfigurationResources.put("gp500", testConf);
         // ============
         
     }
@@ -181,7 +185,8 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
     		if (auxString.equals("") == false) {
     			auxString += ",";
     		}
-    		auxString += "<" + this.getURI() + "/" + groupName + ">;rt=\"core.osc.gconf\"";
+    		
+    		auxString += "<" + request.getURI() + "/" + groupName + ">;rt=\"core.osc.gconf\"";
     	}
     	
     	// Respond to the request for retrieving the full list of Group Configurations
@@ -259,7 +264,7 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
     	}
     	
     	for (CBORObject key : requestCBOR.getKeys()) {
-    		if (!GroupcommParameters.correctType(key, requestCBOR.get(key))) {
+    		if (!GroupcommParameters.isAdminRequestParameterMeaningful(key, requestCBOR.get(key))) {
             	errorString = new String("Invalid format of paramemeter with CBOR abbreviation: " + key.AsInt32());
         		System.err.println(errorString);
     			exchange.respond(CoAP.ResponseCode.BAD_REQUEST, errorString);
@@ -316,7 +321,7 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
 	    		if (auxString.equals("") == false) {
 	    			auxString += ",";
 	    		}
-        		auxString += "<" + this.getURI() + "/" + groupName + ">;rt=\"core.osc.gconf\"";
+        		auxString += "<" + request.getURI() + "/" + groupName + ">;rt=\"core.osc.gconf\"";
 			}
 
     	}
@@ -363,16 +368,16 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
         
     	// Check that at least one scope entry in the access token allows the "List" admin permission
         boolean permitted = false;
-    	CBORObject[] permissionSetToken = Util.getGroupOSCOREAdminPermissionsFromToken(subject, null);
-    	if (permissionSetToken == null) {
+    	CBORObject[] adminScopeEntries = Util.getGroupOSCOREAdminPermissionsFromToken(subject, null);
+    	if (adminScopeEntries == null) {
         	errorString = new String("Operation not permitted");
     		System.err.println(errorString);
     		exchange.respond(CoAP.ResponseCode.FORBIDDEN, errorString);
     		return;
     	}
-    	for (int i = 0; i < permissionSetToken.length; i++) {
+    	for (int i = 0; i < adminScopeEntries.length; i++) {
     		try {
-        		short permissions = (short) permissionSetToken[i].get(1).AsInt32(); 
+        		short permissions = (short) adminScopeEntries[i].get(1).AsInt32(); 
         		permitted = Util.checkGroupOSCOREAdminPermission(permissions, GroupcommParameters.GROUP_OSCORE_ADMIN_CREATE);
 			} catch (AceException e) {
 				System.err.println("Error while verifying the admin permissions: " + e.getMessage());
@@ -427,43 +432,188 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
     	// 'rt', 'ace_groupcomm_profile', and 'joining_uri'
     	if (requestCBOR.getKeys().contains(GroupcommParameters.RT) ||
     		requestCBOR.getKeys().contains(GroupcommParameters.ACE_GROUPCOMM_PROFILE) ||
-    		requestCBOR.getKeys().contains(GroupcommParameters.JOINING_URI)) {
-    		errorString = new String("The status parameters 'rt', 'ace_groupcomm_profile', " +
-			 		   				 "and 'joining_uri' must not be be present");
+    		requestCBOR.getKeys().contains(GroupcommParameters.JOINING_URI) ||
+    		requestCBOR.getKeys().contains(GroupcommParameters.CONF_FILTER) ||
+    		requestCBOR.getKeys().contains(GroupcommParameters.APP_GROUPS_DIFF)) {
+    		errorString = new String("Invalid set of parameters in the request");
     		System.err.println(errorString);
     		exchange.respond(CoAP.ResponseCode.BAD_REQUEST, errorString);
     		return;
     	}
     	
+    	// This Group Manager does not support RSA an signature algorithm
+    	if (requestCBOR.getKeys().contains(GroupcommParameters.SIGN_ALG)) {
+    		CBORObject signAlg = requestCBOR.get(GroupcommParameters.SIGN_ALG);
+    		if (signAlg.equals(AlgorithmID.RSA_PSS_256) ||
+    			signAlg.equals(AlgorithmID.RSA_PSS_384) ||
+    			signAlg.equals(AlgorithmID.RSA_PSS_512)) {
+    			
+    		}
+    		CBORObject myResponse = CBORObject.NewMap();
+    		errorString = new String("RSA is not supported as signature algorithm");
+    		myResponse.Add(GroupcommParameters.ERROR, GroupcommErrors.UNSUPPORTED_GROUP_CONF);
+    		myResponse.Add(GroupcommParameters.ERROR_DESCRIPTION, errorString);
+    		System.err.println(errorString);
+    		exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, myResponse.EncodeToBytes(), Constants.APPLICATION_ACE_GROUPCOMM_CBOR);
+    		return;
+    	}
+    	
     	for (CBORObject key : requestCBOR.getKeys()) {
-    		if (!GroupcommParameters.correctType(key, requestCBOR.get(key))) {
-    			errorString = new String("Invalid format of paramemeter with CBOR abbreviation: " + key.AsInt32());
+    		if (!GroupcommParameters.isAdminRequestParameterMeaningful(key, requestCBOR.get(key))) {
+    			errorString = new String("Malformed or unrecognized paramemeter with CBOR abbreviation: " + key.AsInt32());
     			System.err.println(errorString);
     			exchange.respond(CoAP.ResponseCode.BAD_REQUEST, errorString);
     			return;
     		}
     	}
-    	
 
-    	
-    	
-    	
-    	// TODO
-    	
+    	CBORObject ret = createNewGroupConfiguration(request, adminScopeEntries);
     	
     	// Respond to the request for creating a new Group Configuration
         
-    	CBORObject myResponse = CBORObject.NewMap();
-    	
-    	// Fill in the response
-
-    	byte[] responsePayload = myResponse.EncodeToBytes();
-    	
-    	Response coapResponse = new Response(CoAP.ResponseCode.CONTENT);
-    	coapResponse.setPayload(responsePayload);
+    	ResponseCode responseCode = CoAP.ResponseCode.valueOf(ret.get(0).AsInt32());
+    	Response coapResponse = new Response(responseCode);
+    	if (ret.get(1) != null) {
+    		int contentFormat = ret.get(1).AsInt32();
+    		if (contentFormat != Constants.APPLICATION_ACE_GROUPCOMM_CBOR) {
+    			System.out.println("Forcing the CoAP Content-Format application/ace-groupcomm+cbor for the successsful response.");
+    		}
+    	}
     	coapResponse.getOptions().setContentFormat(Constants.APPLICATION_ACE_GROUPCOMM_CBOR);
+    	byte[] responsePayload = ret.get(2).EncodeToBytes();
+    	coapResponse.setPayload(responsePayload);
 
     	exchange.respond(coapResponse);
     	
     }
+    
+	/**
+     * Create a new group-configuration resource
+     * 
+     * @param requestCBOR  the payload of the POST request to the group-collection resource, as a CBOR map
+     * @param adminScopeEntries  the adminScopeEntries retrieved from the access token for the requester Administrator
+     * @return  a CBOR array with three elements, in this order
+     * 			- The CoAP response code for the response to the Administrator, as a CBOR integer
+     * 			- The CoAP Content-Format to use in the response to the Administrator, as a CBOR integer. It can be null
+     * 			- The payload for the response to the Administrator, as a CBOR map or a CBOR text string. It can be null
+     * 
+     */
+    private CBORObject createNewGroupConfiguration(final Request request, final CBORObject[] adminScopeEntries) {
+    	
+    	String groupName = null;
+    	CBORObject ret = CBORObject.NewArray();
+    	
+    	CBORObject requestCBOR = CBORObject.DecodeFromBytes(request.getPayload());
+
+    	// Build a preliminary group configuration, with the final name still to be determined
+    	CBORObject buildOutput = GroupOSCOREGroupConfigurationResource.buildGroupConfiguration(requestCBOR, true);
+    	
+    	// In case of failure, return the information to return an error response to the Administrator
+    	if (buildOutput.size() == 3) {
+
+    		for (int i = 0; i < buildOutput.size(); i++) {
+    			ret.Add(buildOutput.get(i));
+    		}
+    		return ret;
+    	}
+    	
+    	// Determine the group name to use
+    	String proposedName = requestCBOR.get(GroupcommParameters.GROUP_NAME).AsString();
+    	groupName = allocateGroupName(proposedName, adminScopeEntries);
+    	
+    	if (groupName == null) {
+    		// No available and suitable name could be allocated for the new group.
+    		//
+    		// Return the information for replying with an error response.
+    		ret = CBORObject.NewArray();
+    		ret.Add(CoAP.ResponseCode.INTERNAL_SERVER_ERROR.value);
+    		ret.Add(Constants.APPLICATION_ACE_GROUPCOMM_CBOR);
+    		CBORObject payloadCBOR = CBORObject.NewMap();
+    		payloadCBOR.Add(GroupcommParameters.ERROR, GroupcommErrors.UNAVAILABLE_GROUP_NAMES);
+    		ret.Add(payloadCBOR);
+    		return ret;
+    	}
+    	
+    	// The new name is available and suitable. Add the group configuration to the collection
+    	CBORObject groupConfiguration = buildOutput.get(3);
+    	groupConfiguration.Add(GroupcommParameters.GROUP_NAME, groupName);
+    	String requestUri = request.getURI();
+    	int index = requestUri.lastIndexOf(super.getURI());
+    	String baseUri = request.getURI().substring(0, index + 1);
+    	String joiningUri = baseUri + rootGroupMembershipResourcePath + "/" + groupName;
+    	groupConfiguration.Add(GroupcommParameters.JOINING_URI, joiningUri);
+    	
+    	
+    	// Create the internal GroupInfo data structure first
+    	// TODO
+    	
+    	synchronized(groupConfigurationResources) {
+            GroupOSCOREGroupConfigurationResource newConf =
+            	new GroupOSCOREGroupConfigurationResource(groupName, groupConfiguration,
+														  this.existingGroupInfo,
+														  this.myScopes, this.valid);
+            	groupConfigurationResources.put(groupName, newConf);
+            	
+    	}
+    	
+    	// Make the group-configuration resource actually accessible
+    	// TODO
+    	
+    	// Create the group-membership resource and make it actually accessible
+    	// TODO
+    	
+    	// Finalize the payload for the response to the Administrator
+    	
+    	CBORObject finalPayloadCBOR = CBORObject.NewMap();
+    	
+    	finalPayloadCBOR = buildOutput.get(2);
+    	/*
+    	for (CBORObject key : buildOutput.get(2).getKeys()) {
+    		finalPayloadCBOR.Add(buildOutput).get(key);
+    	}
+    	*/
+    	
+    	finalPayloadCBOR.Add(GroupcommParameters.GROUP_NAME, groupName);
+    	finalPayloadCBOR.Add(GroupcommParameters.JOINING_URI, joiningUri);
+    	finalPayloadCBOR.Add(GroupcommParameters.AS_URI, this.asUri);
+    	
+    	ret.Add(buildOutput.get(0));
+    	ret.Add(buildOutput.get(1));
+    	ret.Add(finalPayloadCBOR);
+    	
+    	return ret;
+    	
+    }
+
+	/**
+     * Try to find an alternative name for a new group to be created
+     * 
+     * @param proposedGroupName  the group name originally proposed in the POST request from the Administrator
+     * @param adminScopeEntries  the adminScopeEntries retrieved from the access token for the requester Administrator
+     * @return  the new, alternative name to assign to the group, or null if it was not possible to determine one
+     * 
+     */
+    private String allocateGroupName(final String proposedGroupName, final CBORObject[] adminScopeEntries) {
+    	
+    	String newName = null;
+    	
+    	synchronized (groupConfigurationResources) {
+    		
+        	if (!groupConfigurationResources.containsKey(proposedGroupName)) {
+        		// The proposed name is available. Reserve it, by adding a dummy entry
+        		// in the collection of group-configuration resources
+        		newName = new String(proposedGroupName);
+        		groupConfigurationResources.put(newName, null);
+        		return newName;
+        	}
+        	// The proposed name is not available. Try to find a new one.
+        	
+        	// TBD
+    		
+    	}
+    	
+    	return newName;
+    	
+    }
+
 }

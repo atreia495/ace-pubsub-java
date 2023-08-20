@@ -907,8 +907,11 @@ public class Constants {
       * COSE Header Parameters
       * https://www.iana.org/assignments/cose/cose.xhtml
       */
+     public static final int COSE_HEADER_PARAM_X5BAG = 32;
      public static final int COSE_HEADER_PARAM_X5CHAIN = 33;
      public static final int COSE_HEADER_PARAM_CWT = 36;
      public static final int COSE_HEADER_PARAM_CCS = 37;
+     public static final int COSE_HEADER_PARAM_C5B = 38;
+     public static final int COSE_HEADER_PARAM_C5C = 39;
      
 }
