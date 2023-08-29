@@ -440,7 +440,7 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
     public static CBORObject getDefaultValue(CBORObject paramAbbreviation) {
     	
     	if (paramAbbreviation.equals(GroupcommParameters.HKDF)) {
-    		return CBORObject.FromObject(AlgorithmID.HMAC_SHA_256); // HMAC 256/256 for HKDF SHA-256
+    		return CBORObject.FromObject(AlgorithmID.HMAC_SHA_256.AsCBOR().AsInt32()); // HMAC 256/256 for HKDF SHA-256
     	}
     	if (paramAbbreviation.equals(GroupcommParameters.CRED_FMT)) {
     		return CBORObject.FromObject(Constants.COSE_HEADER_PARAM_CCS); // CWT Claims Set (CCS)
@@ -449,25 +449,25 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
 			return CBORObject.True;
     	}
     	if (paramAbbreviation.equals(GroupcommParameters.GP_ENC_ALG)) {
-    		return CBORObject.FromObject(AlgorithmID.AES_CCM_16_64_128); // AES-CCM-16-64-128
+    		return CBORObject.FromObject(AlgorithmID.AES_CCM_16_64_128.AsCBOR().AsInt32()); // AES-CCM-16-64-128
     	}
     	if (paramAbbreviation.equals(GroupcommParameters.SIGN_ALG)) {
-    		return CBORObject.FromObject(AlgorithmID.EDDSA); // EdDSA
+    		return CBORObject.FromObject(AlgorithmID.EDDSA.AsCBOR().AsInt32Value()); // EdDSA
     	}    	
     	if (paramAbbreviation.equals(GroupcommParameters.PAIRWISE_MODE)) {
 			return CBORObject.True;
     	}
     	if (paramAbbreviation.equals(GroupcommParameters.ALG)) {
-    		return CBORObject.FromObject(AlgorithmID.AES_CCM_16_64_128); // AES-CCM-16-64-128
+    		return CBORObject.FromObject(AlgorithmID.AES_CCM_16_64_128.AsCBOR().AsInt32Value()); // AES-CCM-16-64-128
     	}
     	if (paramAbbreviation.equals(GroupcommParameters.ECDH_ALG)) {
-			return CBORObject.FromObject(AlgorithmID.ECDH_SS_HKDF_256); // ECDH-SS + HKDF-256
+			return CBORObject.FromObject(AlgorithmID.ECDH_SS_HKDF_256.AsCBOR().AsInt32Value()); // ECDH-SS + HKDF-256
     	}
     	if (paramAbbreviation.equals(GroupcommParameters.DET_REQ)) {
 			return CBORObject.False;
     	}
     	if (paramAbbreviation.equals(GroupcommParameters.DET_HASH_ALG)) {
-			return CBORObject.FromObject(AlgorithmID.HMAC_SHA_256);
+			return CBORObject.FromObject(AlgorithmID.HMAC_SHA_256.AsCBOR().AsInt32Value());
     	}
     	if (paramAbbreviation.equals(GroupcommParameters.ACTIVE)) {
     		return CBORObject.False;
@@ -509,7 +509,7 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
      */
     public static CBORObject getDefaultValueSignParams(CBORObject signAlg) {
     	CBORObject ret = null;
-    	if (signAlg.equals(CBORObject.FromObject(AlgorithmID.EDDSA))) {
+    	if (signAlg.equals(CBORObject.FromObject(AlgorithmID.EDDSA.AsCBOR()))) {
     		ret = CBORObject.NewArray();
         	ret.Add(CBORObject.NewArray());
         	ret.Add(CBORObject.NewArray());
@@ -518,7 +518,7 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
         	ret.get(1).Add(KeyKeys.OKP_Ed25519);
     		return ret;
     	}
-    	if (signAlg.equals(CBORObject.FromObject(AlgorithmID.ECDSA_256))) {
+    	if (signAlg.equals(CBORObject.FromObject(AlgorithmID.ECDSA_256.AsCBOR()))) {
     		ret = CBORObject.NewArray();
         	ret.Add(CBORObject.NewArray());
         	ret.Add(CBORObject.NewArray());
@@ -527,7 +527,7 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
         	ret.get(1).Add(KeyKeys.EC2_P256);
     		return ret;
     	}
-    	if (signAlg.equals(CBORObject.FromObject(AlgorithmID.ECDSA_384))) {
+    	if (signAlg.equals(CBORObject.FromObject(AlgorithmID.ECDSA_384.AsCBOR()))) {
     		ret = CBORObject.NewArray();
         	ret.Add(CBORObject.NewArray());
         	ret.Add(CBORObject.NewArray());
@@ -536,7 +536,7 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
         	ret.get(1).Add(KeyKeys.EC2_P384);
     		return ret;
     	}
-    	if (signAlg.equals(CBORObject.FromObject(AlgorithmID.ECDSA_512))) {
+    	if (signAlg.equals(CBORObject.FromObject(AlgorithmID.ECDSA_512.AsCBOR()))) {
     		ret = CBORObject.NewArray();
         	ret.Add(CBORObject.NewArray());
         	ret.Add(CBORObject.NewArray());
@@ -545,9 +545,9 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
         	ret.get(1).Add(KeyKeys.EC2_P521);
     		return ret;
     	}
-    	if (signAlg.equals(CBORObject.FromObject(AlgorithmID.RSA_PSS_256)) ||
-    		signAlg.equals(CBORObject.FromObject(AlgorithmID.RSA_PSS_384)) ||
-    		signAlg.equals(CBORObject.FromObject(AlgorithmID.RSA_PSS_512))) {
+    	if (signAlg.equals(CBORObject.FromObject(AlgorithmID.RSA_PSS_256.AsCBOR())) ||
+    		signAlg.equals(CBORObject.FromObject(AlgorithmID.RSA_PSS_384.AsCBOR())) ||
+    		signAlg.equals(CBORObject.FromObject(AlgorithmID.RSA_PSS_512.AsCBOR()))) {
     		ret = CBORObject.NewArray();
         	ret.Add(CBORObject.NewArray());
         	ret.Add(CBORObject.NewArray());
@@ -566,7 +566,7 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
      */
     public static CBORObject getDefaultValueEcdhParams(CBORObject signAlg, boolean groupMode) {
     	CBORObject ret = null;
-    	if (signAlg.equals(CBORObject.FromObject(AlgorithmID.EDDSA)) || (groupMode == false)) {
+    	if (signAlg.equals(CBORObject.FromObject(AlgorithmID.EDDSA.AsCBOR())) || (groupMode == false)) {
     		ret = CBORObject.NewArray();
         	ret.Add(CBORObject.NewArray());
         	ret.Add(CBORObject.NewArray());
@@ -575,7 +575,7 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
         	ret.get(1).Add(KeyKeys.OKP_X25519);
     		return ret;
     	}
-    	if (signAlg.equals(CBORObject.FromObject(AlgorithmID.ECDSA_256))) {
+    	if (signAlg.equals(CBORObject.FromObject(AlgorithmID.ECDSA_256.AsCBOR()))) {
     		ret = CBORObject.NewArray();
         	ret.Add(CBORObject.NewArray());
         	ret.Add(CBORObject.NewArray());
@@ -584,7 +584,7 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
         	ret.get(1).Add(KeyKeys.EC2_P256);
     		return ret;
     	}
-    	if (signAlg.equals(CBORObject.FromObject(AlgorithmID.ECDSA_384))) {
+    	if (signAlg.equals(CBORObject.FromObject(AlgorithmID.ECDSA_384.AsCBOR()))) {
     		ret = CBORObject.NewArray();
         	ret.Add(CBORObject.NewArray());
         	ret.Add(CBORObject.NewArray());
@@ -593,7 +593,7 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
         	ret.get(1).Add(KeyKeys.EC2_P384);
     		return ret;
     	}
-    	if (signAlg.equals(CBORObject.FromObject(AlgorithmID.ECDSA_512))) {
+    	if (signAlg.equals(CBORObject.FromObject(AlgorithmID.ECDSA_512.AsCBOR()))) {
     		ret = CBORObject.NewArray();
         	ret.Add(CBORObject.NewArray());
         	ret.Add(CBORObject.NewArray());
@@ -715,14 +715,15 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
     		}
     		
 			if ((requestCBOR.ContainsKey(parameterName)) && (postpone == false)) {
-				// The Administrator has specified a value for this parameter
+				// The Administrator has specified a value for this parameter,
+				// which also has to be included now in the group configuration
 				
 				parameterValue = requestCBOR.get(parameterName);
 				
 				boolean inconsistentValue = ((forcedValue != null) && (parameterValue.equals(forcedValue) == false));
 				
 				if (omit || inconsistentValue) {
-					errorString = new String ("Invalid use of the parameter with abbreviation1'" + parameterName + "'");
+					errorString = new String ("Invalid use of the parameter with abbreviation' " + parameterName + "'");
 					responseCode = CoAP.ResponseCode.BAD_REQUEST.value;
 					contentFormat = Constants.APPLICATION_ACE_GROUPCOMM_CBOR;
 					responsePayload = CBORObject.NewMap();
@@ -745,11 +746,13 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
 				
 			}
 			else {
-				// The Administrator has not specified a value for this parameter
-				
-				if (omit || postpone) {
+				if (postpone || omit) {
+					// This parameter does not have to be included
+					// now or at all in the group configuration
 					continue;
 				}
+				
+				// This parameter has to be included now in the group configuration
 				
 				if (forcedValue != null) {
 					parameterValue = forcedValue;
@@ -778,7 +781,7 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
 				}
 			}
 
-			// No error has occurred, and the parameter has to be included in the group configuration
+			// No error has occurred; include the parameter in the group configuration
 			groupConfiguration.Add(parameterName, parameterValue);
 				
     	}
@@ -791,7 +794,7 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
     	}
     	// Success
     	else {
-	    	responseCode = creation ? CoAP.ResponseCode.CONTENT.value : CoAP.ResponseCode.CHANGED.value;
+	    	responseCode = creation ? CoAP.ResponseCode.CREATED.value : CoAP.ResponseCode.CHANGED.value;
 	    	contentFormat = Constants.APPLICATION_ACE_GROUPCOMM_CBOR;
 	    	responsePayload = CBORObject.NewMap();
 	    	ret.Add(responseCode);

@@ -50,6 +50,7 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
+import org.eclipse.californium.elements.util.Bytes;
 
 import com.upokecenter.cbor.CBORObject;
 import com.upokecenter.cbor.CBORType;
@@ -480,7 +481,16 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
     		}
     	}
     	coapResponse.getOptions().setContentFormat(Constants.APPLICATION_ACE_GROUPCOMM_CBOR);
-    	byte[] responsePayload = ret.get(2).EncodeToBytes();
+    	byte[] responsePayload = null;
+    	if (ret.get(2) == null) {
+    		responsePayload = Bytes.EMPTY;
+    	}
+    	else if (ret.get(2).getType() == CBORType.Map) {
+    		responsePayload = ret.get(2).EncodeToBytes();
+    	}
+    	else if (ret.get(2).getType() == CBORType.TextString) {
+    		responsePayload = ret.get(2).AsString().getBytes(Constants.charset);
+    	}
     	coapResponse.setPayload(responsePayload);
 
     	exchange.respond(coapResponse);
@@ -490,7 +500,7 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
 	/**
      * Create a new group-configuration resource
      * 
-     * @param requestCBOR  the payload of the POST request to the group-collection resource, as a CBOR map
+     * @param requestCBOR  the POST request to the group-collection resource
      * @param adminScopeEntries  the adminScopeEntries retrieved from the access token for the requester Administrator
      * @return  a CBOR array with three elements, in this order
      * 			- The CoAP response code for the response to the Administrator, as a CBOR integer
@@ -525,7 +535,6 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
     		// No available and suitable name could be allocated for the new group.
     		//
     		// Return the information for replying with an error response.
-    		ret = CBORObject.NewArray();
     		ret.Add(CoAP.ResponseCode.INTERNAL_SERVER_ERROR.value);
     		ret.Add(Constants.APPLICATION_ACE_GROUPCOMM_CBOR);
     		CBORObject payloadCBOR = CBORObject.NewMap();
@@ -535,24 +544,31 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
     	}
     	
     	// The new name is available and suitable. Add the group configuration to the collection
+    	
+    	// Complete the group configuration with the selected group name
     	CBORObject groupConfiguration = buildOutput.get(3);
     	groupConfiguration.Add(GroupcommParameters.GROUP_NAME, groupName);
+    	
+    	// Complete the group configuration with the URI of the associated group-membership resource
     	String requestUri = request.getURI();
     	int index = requestUri.lastIndexOf(super.getURI());
     	String baseUri = request.getURI().substring(0, index + 1);
     	String joiningUri = baseUri + rootGroupMembershipResourcePath + "/" + groupName;
     	groupConfiguration.Add(GroupcommParameters.JOINING_URI, joiningUri);
     	
+    	// DEBUG
+    	System.err.println(AlgorithmID.HMAC_SHA_256.AsCBOR().AsInt32());
+    	System.err.println("\n\n" + groupConfiguration.toString());
     	
     	// Create the internal GroupInfo data structure first
     	// TODO
     	
     	synchronized(groupConfigurationResources) {
-            GroupOSCOREGroupConfigurationResource newConf =
+            GroupOSCOREGroupConfigurationResource newGroupConfigurationResource =
             	new GroupOSCOREGroupConfigurationResource(groupName, groupConfiguration,
 														  this.existingGroupInfo,
 														  this.myScopes, this.valid);
-            	groupConfigurationResources.put(groupName, newConf);
+            	groupConfigurationResources.put(groupName, newGroupConfigurationResource);
             	
     	}
     	
@@ -566,13 +582,7 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
     	
     	CBORObject finalPayloadCBOR = CBORObject.NewMap();
     	
-    	finalPayloadCBOR = buildOutput.get(2);
-    	/*
-    	for (CBORObject key : buildOutput.get(2).getKeys()) {
-    		finalPayloadCBOR.Add(buildOutput).get(key);
-    	}
-    	*/
-    	
+    	finalPayloadCBOR = buildOutput.get(2);    	
     	finalPayloadCBOR.Add(GroupcommParameters.GROUP_NAME, groupName);
     	finalPayloadCBOR.Add(GroupcommParameters.JOINING_URI, joiningUri);
     	finalPayloadCBOR.Add(GroupcommParameters.AS_URI, this.asUri);

@@ -285,7 +285,7 @@ public class GroupcommParameters {
     
 	/**
      * Check whether the specified parameter is meaningful, i.e., it is of the expected CBOR type
-     * and it has right value if it has CBOR type simple value.
+     * and it has the right value if it of CBOR type simple value.
      * 
      * @param name  the CBOR abbreviation of the parameter to be checked
      * @param name  the value of the parameter to be checked
