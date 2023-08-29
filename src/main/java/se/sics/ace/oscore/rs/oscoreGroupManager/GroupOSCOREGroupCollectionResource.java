@@ -557,8 +557,7 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
     	groupConfiguration.Add(GroupcommParameters.JOINING_URI, joiningUri);
     	
     	// DEBUG
-    	System.err.println(AlgorithmID.HMAC_SHA_256.AsCBOR().AsInt32());
-    	System.err.println("\n\n" + groupConfiguration.toString());
+    	// System.err.println("\n\n" + groupConfiguration.toString());
     	
     	// Create the internal GroupInfo data structure first
     	// TODO

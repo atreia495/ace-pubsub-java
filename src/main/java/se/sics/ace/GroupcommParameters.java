@@ -483,8 +483,8 @@ public class GroupcommParameters {
     	if (name.equals(CRED_FMT)) {
 			if (value.equals(CBORObject.FromObject(Constants.COSE_HEADER_PARAM_X5BAG)) ||
 				value.equals(CBORObject.FromObject(Constants.COSE_HEADER_PARAM_X5CHAIN)) ||
-				value.equals(CBORObject.FromObject(Constants.COSE_HEADER_PARAM_CWT)) ||
-				value.equals(CBORObject.FromObject(Constants.COSE_HEADER_PARAM_CCS)) ||
+				value.equals(CBORObject.FromObject(Constants.COSE_HEADER_PARAM_KCWT)) ||
+				value.equals(CBORObject.FromObject(Constants.COSE_HEADER_PARAM_KCCS)) ||
 				value.equals(CBORObject.FromObject(Constants.COSE_HEADER_PARAM_C5B)) ||
 				value.equals(CBORObject.FromObject(Constants.COSE_HEADER_PARAM_C5C))) {
 				return true;

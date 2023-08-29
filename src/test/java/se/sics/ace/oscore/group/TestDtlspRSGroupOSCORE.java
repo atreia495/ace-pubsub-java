@@ -491,7 +491,7 @@ public class TestDtlspRSGroupOSCORE {
 	            					  (byte) 0x23, (byte) 0x78, (byte) 0x63, (byte) 0x40 };
 	
 	    final AlgorithmID hkdf = AlgorithmID.HMAC_SHA_256;
-	    final int credFmt = Constants.COSE_HEADER_PARAM_CCS;
+	    final int credFmt = Constants.COSE_HEADER_PARAM_KCCS;
 	    
 	    AlgorithmID gpEncAlg = null;
 	    AlgorithmID signAlg = null;
@@ -630,12 +630,12 @@ public class TestDtlspRSGroupOSCORE {
 		// Note: most likely, the result will NOT follow the required deterministic
 		//       encoding in byte lexicographic order, and it has to be adjusted offline
 		switch (credFmt) {
-	        case Constants.COSE_HEADER_PARAM_CCS:
+	        case Constants.COSE_HEADER_PARAM_KCCS:
 	            // A CCS including the public key
 	        	String subjectName = "";
 	            gmAuthCred = Util.oneKeyToCCS(gmKeyPair, subjectName);
 	            break;
-	        case Constants.COSE_HEADER_PARAM_CWT:
+	        case Constants.COSE_HEADER_PARAM_KCWT:
 	            // A CWT including the public key
 	            // TODO
 	            break;
@@ -647,7 +647,7 @@ public class TestDtlspRSGroupOSCORE {
 		*/
 		
 		switch (credFmt) {
-	        case Constants.COSE_HEADER_PARAM_CCS:
+	        case Constants.COSE_HEADER_PARAM_KCCS:
 	            // A CCS including the public key
 	        	if (signKeyCurve == KeyKeys.EC2_P256.AsInt32()) {
 	        		gmAuthCred = Utils.hexToBytes("A2026008A101A50102032620012158202236658CA675BB62D7B24623DB0453A3B90533B7C3B221CC1C2C73C4E919D540225820770916BC4C97C3C46604F430B06170C7B3D6062633756628C31180FA3BB65A1B");
@@ -656,7 +656,7 @@ public class TestDtlspRSGroupOSCORE {
 	        		gmAuthCred = Utils.hexToBytes("A2026008A101A4010103272006215820C6EC665E817BD064340E7C24BB93A11E8EC0735CE48790F9C458F7FA340B8CA3");
 	        	}
 	            break;
-	        case Constants.COSE_HEADER_PARAM_CWT:
+	        case Constants.COSE_HEADER_PARAM_KCWT:
 	            // A CWT including the public key
 	            // TODO
 	        	gmAuthCred = null;
@@ -750,12 +750,12 @@ public class TestDtlspRSGroupOSCORE {
 		OneKey coseKeyPub1OneKey = null;
 		coseKeyPub1OneKey = new OneKey(CBORObject.DecodeFromBytes(coseKeyPub1));
 		switch (credFmt) {
-	        case Constants.COSE_HEADER_PARAM_CCS:
+	        case Constants.COSE_HEADER_PARAM_KCCS:
 	            // A CCS including the public key
 	        	String subjectName = "";
 	        	authCred1 = Util.oneKeyToCCS(coseKeyPub1OneKey, subjectName);
 	            break;
-	        case Constants.COSE_HEADER_PARAM_CWT:
+	        case Constants.COSE_HEADER_PARAM_KCWT:
 	            // A CWT including the public key
 	            // TODO
 	        	authCred1 = null;
@@ -769,7 +769,7 @@ public class TestDtlspRSGroupOSCORE {
 		*/
 	
 		switch (credFmt) {
-	        case Constants.COSE_HEADER_PARAM_CCS:
+	        case Constants.COSE_HEADER_PARAM_KCCS:
 	            // A CCS including the public key
 	        	if (signKeyCurve == KeyKeys.EC2_P256.AsInt32()) {
 	        		authCred1 = Utils.hexToBytes("A2026008A101A501020326200121582035F3656092E1269AAAEE6262CD1C0D9D38ED78820803305BC8EA41702A50B3AF2258205D31247C2959E7B7D3F62F79622A7082FF01325FC9549E61BB878C2264DF4C4F");
@@ -778,7 +778,7 @@ public class TestDtlspRSGroupOSCORE {
 	        		authCred1 = Utils.hexToBytes("A2026008A101A401010327200621582077EC358C1D344E41EE0E87B8383D23A2099ACD39BDF989CE45B52E887463389B");
 	        	}
 	            break;
-	        case Constants.COSE_HEADER_PARAM_CWT:
+	        case Constants.COSE_HEADER_PARAM_KCWT:
 	            // A CWT including the public key
 	            // TODO
 	        	authCred1 = null;
@@ -830,12 +830,12 @@ public class TestDtlspRSGroupOSCORE {
 		OneKey coseKeyPub2OneKey = null;
 		coseKeyPub2OneKey = new OneKey(CBORObject.DecodeFromBytes(coseKeyPub2));
 		switch (credFmt) {
-	    case Constants.COSE_HEADER_PARAM_CCS:
+	    case Constants.COSE_HEADER_PARAM_KCCS:
 	        // A CCS including the public key
 	    	String subjectName = "";
 	    	authCred2 = Util.oneKeyToCCS(coseKeyPub2OneKey, subjectName);
 	        break;
-	    case Constants.COSE_HEADER_PARAM_CWT:
+	    case Constants.COSE_HEADER_PARAM_KCWT:
 	        // A CWT including the public key
 	        // TODO
 	    	authCred2 = null;
@@ -849,7 +849,7 @@ public class TestDtlspRSGroupOSCORE {
 		*/
 		
 		switch (credFmt) {
-	        case Constants.COSE_HEADER_PARAM_CCS:
+	        case Constants.COSE_HEADER_PARAM_KCCS:
 	            // A CCS including the public key
 	        	if (signKeyCurve == KeyKeys.EC2_P256.AsInt32()) {
 	        		authCred2 = Utils.hexToBytes("A2026008A101A50102032620012158209DFA6D63FD1515761460B7B02D54F8D7345819D2E5576C160D3148CC7886D5F122582076C81A0C1A872F1730C10317AB4F3616238FB23A08719E8B982B2D9321A2EF7D");
@@ -858,7 +858,7 @@ public class TestDtlspRSGroupOSCORE {
 	        		authCred2 = Utils.hexToBytes("A2026008A101A4010103272006215820105B8C6A8C88019BF0C354592934130BAA8007399CC2AC3BE845884613D5BA2E");
 	        	}
 	            break;
-	        case Constants.COSE_HEADER_PARAM_CWT:
+	        case Constants.COSE_HEADER_PARAM_KCWT:
 	            // A CWT including the public key
 	            // TODO
 	        	authCred2 = null;

@@ -443,7 +443,7 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
     		return CBORObject.FromObject(AlgorithmID.HMAC_SHA_256.AsCBOR().AsInt32()); // HMAC 256/256 for HKDF SHA-256
     	}
     	if (paramAbbreviation.equals(GroupcommParameters.CRED_FMT)) {
-    		return CBORObject.FromObject(Constants.COSE_HEADER_PARAM_CCS); // CWT Claims Set (CCS)
+    		return CBORObject.FromObject(Constants.COSE_HEADER_PARAM_KCCS); // CWT Claims Set (CCS)
     	}
     	if (paramAbbreviation.equals(GroupcommParameters.GROUP_MODE)) {
 			return CBORObject.True;

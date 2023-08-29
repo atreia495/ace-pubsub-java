@@ -909,8 +909,8 @@ public class Constants {
       */
      public static final int COSE_HEADER_PARAM_X5BAG = 32;
      public static final int COSE_HEADER_PARAM_X5CHAIN = 33;
-     public static final int COSE_HEADER_PARAM_CWT = 36;
-     public static final int COSE_HEADER_PARAM_CCS = 37;
+     public static final int COSE_HEADER_PARAM_KCWT = 36;
+     public static final int COSE_HEADER_PARAM_KCCS = 37;
      public static final int COSE_HEADER_PARAM_C5B = 38;
      public static final int COSE_HEADER_PARAM_C5C = 39;
      

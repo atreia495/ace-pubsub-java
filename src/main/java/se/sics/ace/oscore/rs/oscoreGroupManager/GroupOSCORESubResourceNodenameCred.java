@@ -222,7 +222,7 @@ public class GroupOSCORESubResourceNodenameCred extends CoapResource {
 		
 		byte[] clientCredBytes = clientCred.GetByteString();
 		switch(targetedGroup.getAuthCredFormat()) {
-		    case Constants.COSE_HEADER_PARAM_CCS:
+		    case Constants.COSE_HEADER_PARAM_KCCS:
 		        CBORObject ccs = CBORObject.DecodeFromBytes(clientCredBytes);
 		        if (ccs.getType() == CBORType.Map) {
 		            // Retrieve the public key from the CCS
@@ -235,7 +235,7 @@ public class GroupOSCORESubResourceNodenameCred extends CoapResource {
 				    return;
 		        }
 		        break;
-		    case Constants.COSE_HEADER_PARAM_CWT:
+		    case Constants.COSE_HEADER_PARAM_KCWT:
 		        CBORObject cwt = CBORObject.DecodeFromBytes(clientCredBytes);
 		        if (cwt.getType() == CBORType.Array) {
 		            // Retrieve the public key from the CWT

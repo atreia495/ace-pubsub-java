@@ -195,7 +195,7 @@ public class TestDtlspAuthzInfoGroupOSCORE {
                 					  (byte) 0x23, (byte) 0x78, (byte) 0x63, (byte) 0x40 };
 
         final AlgorithmID hkdf = AlgorithmID.HMAC_SHA_256;
-        final int credFmt = Constants.COSE_HEADER_PARAM_CCS;
+        final int credFmt = Constants.COSE_HEADER_PARAM_KCCS;
         
         int mode = GroupcommParameters.GROUP_OSCORE_GROUP_MODE_ONLY;
 
@@ -264,12 +264,12 @@ public class TestDtlspAuthzInfoGroupOSCORE {
     	// Note: most likely, the result will NOT follow the required deterministic
     	//       encoding in byte lexicographic order, and it has to be adjusted offline
     	switch (credFmt) {
-        case Constants.COSE_HEADER_PARAM_CCS:
+        case Constants.COSE_HEADER_PARAM_KCCS:
             // A CCS including the public key
         	String subjectName = "";
             gmAuthenticationCredential = Util.oneKeyToCCS(gmKeyPair, subjectName);
             break;
-        case Constants.COSE_HEADER_PARAM_CWT:
+        case Constants.COSE_HEADER_PARAM_KCWT:
             // A CWT including the public key
             // TODO
             break;
@@ -281,7 +281,7 @@ public class TestDtlspAuthzInfoGroupOSCORE {
     	*/
     	
     	switch (credFmt) {
-	        case Constants.COSE_HEADER_PARAM_CCS:
+	        case Constants.COSE_HEADER_PARAM_KCCS:
 	            // A CCS including the public key
 	        	if (signKeyCurve == KeyKeys.EC2_P256.AsInt32()) {
 	        		gmAuthenticationCredential = Utils.hexToBytes("A2026008A101A50102032620012158202236658CA675BB62D7B24623DB0453A3B90533B7C3B221CC1C2C73C4E919D540225820770916BC4C97C3C46604F430B06170C7B3D6062633756628C31180FA3BB65A1B");
@@ -290,7 +290,7 @@ public class TestDtlspAuthzInfoGroupOSCORE {
 	        		gmAuthenticationCredential = Utils.hexToBytes("A2026008A101A4010103272006215820C6EC665E817BD064340E7C24BB93A11E8EC0735CE48790F9C458F7FA340B8CA3");
 	        	}
 	            break;
-	        case Constants.COSE_HEADER_PARAM_CWT:
+	        case Constants.COSE_HEADER_PARAM_KCWT:
 	            // A CWT including the public key
 	            // TODO
 	        	gmAuthenticationCredential = null;

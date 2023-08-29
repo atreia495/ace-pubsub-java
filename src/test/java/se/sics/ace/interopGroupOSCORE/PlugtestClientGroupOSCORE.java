@@ -1107,7 +1107,7 @@ public class PlugtestClientGroupOSCORE {
         }
         
         
-        final CBORObject credFmtExpected = CBORObject.FromObject(Constants.COSE_HEADER_PARAM_CCS);
+        final CBORObject credFmtExpected = CBORObject.FromObject(Constants.COSE_HEADER_PARAM_KCCS);
         
         
         // DEBUG: START SET OF ASSERTIONS
@@ -1243,11 +1243,11 @@ public class PlugtestClientGroupOSCORE {
         	//       encoding in byte lexicographic order, and it has to be adjusted offline
         	OneKey publicKey = C1keyPair.PublicKey();
         	switch (credFmtExpected.AsInt32()) {
-        	    case Constants.COSE_HEADER_PARAM_CCS:
+        	    case Constants.COSE_HEADER_PARAM_KCCS:
         	        // Build a CCS including the public key
         	        authCred = Util.oneKeyToCCS(publicKey, "");
         	        break;
-        	    case Constants.COSE_HEADER_PARAM_CWT:
+        	    case Constants.COSE_HEADER_PARAM_KCWT:
         	        // Build a CWT including the public key
         	        // TODO
         	        break;
@@ -1259,7 +1259,7 @@ public class PlugtestClientGroupOSCORE {
         	*/
 
         	switch (credFmtExpected.AsInt32()) {
-	        	case Constants.COSE_HEADER_PARAM_CCS:
+	        	case Constants.COSE_HEADER_PARAM_KCCS:
 	        	    // A CCS including the public key
 	        	    if (signKeyCurve == KeyKeys.EC2_P256.AsInt32()) {
 	        	    	authCred =net.i2p.crypto.eddsa.Utils.hexToBytes("A2026008A101A5010203262001215820E8F9A8D5850A533CDA24B9FA8A1EE293F6A0E1E81E1E560A64FF134D65F7ECEC225820164A6D5D4B97F56D1F60A12811D55DE7A055EBAC6164C9EF9302CBCBFF1F0ABE");
@@ -1268,7 +1268,7 @@ public class PlugtestClientGroupOSCORE {
 	        	    	authCred = net.i2p.crypto.eddsa.Utils.hexToBytes("A2026008A101A4010103272006215820069E912B83963ACC5941B63546867DEC106E5B9051F2EE14F3BC5CC961ACD43A");
 	        	    }
 	        	    break;
-	        	case Constants.COSE_HEADER_PARAM_CWT:
+	        	case Constants.COSE_HEADER_PARAM_KCWT:
 	        	    // A CWT including the public key
 	        	    // TODO
 	        		authCred = null;
@@ -1365,7 +1365,7 @@ public class PlugtestClientGroupOSCORE {
         // Check the presence, type and value of the signature key encoding
         Assert.assertEquals(true, myMap.ContainsKey(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.cred_fmt)));
         Assert.assertEquals(CBORType.Integer, myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.cred_fmt)).getType());        
-        Assert.assertEquals(CBORObject.FromObject(Constants.COSE_HEADER_PARAM_CCS), myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.cred_fmt)));
+        Assert.assertEquals(CBORObject.FromObject(Constants.COSE_HEADER_PARAM_KCCS), myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.cred_fmt)));
         
         credFmt = myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.cred_fmt)).AsInt32();
         
@@ -1501,7 +1501,7 @@ public class PlugtestClientGroupOSCORE {
 	        }
 	        byte[] peerAuthCredRetrievedBytes = peerAuthCredRetrieved.GetByteString();
 	        switch (credFmt) {
-	            case Constants.COSE_HEADER_PARAM_CCS:
+	            case Constants.COSE_HEADER_PARAM_KCCS:
 	            	CBORObject ccs = CBORObject.DecodeFromBytes(peerAuthCredRetrievedBytes);
 	                if (ccs.getType() == CBORType.Map) {
 	                	// Retrieve the public key from the CCS
@@ -1511,7 +1511,7 @@ public class PlugtestClientGroupOSCORE {
 	                    Assert.fail("Invalid format of authentication credential");
 	                }
 	                break;
-	            case Constants.COSE_HEADER_PARAM_CWT:
+	            case Constants.COSE_HEADER_PARAM_KCWT:
 	            	CBORObject cwt = CBORObject.DecodeFromBytes(peerAuthCredRetrievedBytes);
 	                if (cwt.getType() == CBORType.Array) {
 	                    // Retrieve the public key from the CWT
@@ -1559,7 +1559,7 @@ public class PlugtestClientGroupOSCORE {
 	        }
 	        peerAuthCredRetrievedBytes = peerAuthCredRetrieved.GetByteString();
 	        switch (credFmt) {
-	            case Constants.COSE_HEADER_PARAM_CCS:
+	            case Constants.COSE_HEADER_PARAM_KCCS:
 	            	CBORObject ccs = CBORObject.DecodeFromBytes(peerAuthCredRetrievedBytes);
 	                if (ccs.getType() == CBORType.Map) {
 	                	// Retrieve the public key from the CCS
@@ -1569,7 +1569,7 @@ public class PlugtestClientGroupOSCORE {
 	                    Assert.fail("Invalid format of authentication credential");
 	                }
 	                break;
-	            case Constants.COSE_HEADER_PARAM_CWT:
+	            case Constants.COSE_HEADER_PARAM_KCWT:
 	            	CBORObject cwt = CBORObject.DecodeFromBytes(peerAuthCredRetrievedBytes);
 	                if (cwt.getType() == CBORType.Array) {
 	                    // Retrieve the public key from the CWT
@@ -1651,7 +1651,7 @@ public class PlugtestClientGroupOSCORE {
         OneKey gmPublicKeyRetrieved = null;
         byte[] kdcCredBytes = joinResponse.get(CBORObject.FromObject(GroupcommParameters.KDC_CRED)).GetByteString();
         switch (credFmt) {
-            case Constants.COSE_HEADER_PARAM_CCS:
+            case Constants.COSE_HEADER_PARAM_KCCS:
                 CBORObject ccs = CBORObject.DecodeFromBytes(kdcCredBytes);
                 if (ccs.getType() == CBORType.Map) {
                     // Retrieve the public key from the CCS
@@ -1661,7 +1661,7 @@ public class PlugtestClientGroupOSCORE {
                     Assert.fail("Invalid format of Group Manager authentication credential");
                 }
                 break;
-            case Constants.COSE_HEADER_PARAM_CWT:
+            case Constants.COSE_HEADER_PARAM_KCWT:
                 CBORObject cwt = CBORObject.DecodeFromBytes(kdcCredBytes);
                 if (cwt.getType() == CBORType.Array) {
                     // Retrieve the public key from the CWT
@@ -1824,7 +1824,7 @@ public class PlugtestClientGroupOSCORE {
         }
         
         
-        final CBORObject credFmtExpected = CBORObject.FromObject(Constants.COSE_HEADER_PARAM_CCS);
+        final CBORObject credFmtExpected = CBORObject.FromObject(Constants.COSE_HEADER_PARAM_KCCS);
         
         
         // DEBUG: START SET OF ASSERTIONS
@@ -1956,11 +1956,11 @@ public class PlugtestClientGroupOSCORE {
         	//       encoding in byte lexicographic order, and it has to be adjusted offline
         	OneKey publicKey = C1keyPair.PublicKey();
         	switch (credFmtExpected.AsInt32()) {
-        	    case Constants.COSE_HEADER_PARAM_CCS:
+        	    case Constants.COSE_HEADER_PARAM_KCCS:
         	        // Build a CCS including the public key
         	        authCred = Util.oneKeyToCCS(publicKey, "");
         	        break;
-        	    case Constants.COSE_HEADER_PARAM_CWT:
+        	    case Constants.COSE_HEADER_PARAM_KCWT:
         	        // Build a CWT including the public key
         	        // TODO
         	        break;
@@ -1972,7 +1972,7 @@ public class PlugtestClientGroupOSCORE {
         	*/
 
         	switch (credFmtExpected.AsInt32()) {
-	        	case Constants.COSE_HEADER_PARAM_CCS:
+	        	case Constants.COSE_HEADER_PARAM_KCCS:
 	        	    // A CCS including the public key
 	        	    if (signKeyCurve == KeyKeys.EC2_P256.AsInt32()) {
 	        	    	authCred = net.i2p.crypto.eddsa.Utils.hexToBytes("A2026008A101A5010203262001215820E8F9A8D5850A533CDA24B9FA8A1EE293F6A0E1E81E1E560A64FF134D65F7ECEC225820164A6D5D4B97F56D1F60A12811D55DE7A055EBAC6164C9EF9302CBCBFF1F0ABE");
@@ -1981,7 +1981,7 @@ public class PlugtestClientGroupOSCORE {
 	        	    	authCred = net.i2p.crypto.eddsa.Utils.hexToBytes("A2026008A101A4010103272006215820069E912B83963ACC5941B63546867DEC106E5B9051F2EE14F3BC5CC961ACD43A");
 	        	    }
 	        	    break;
-	        	case Constants.COSE_HEADER_PARAM_CWT:
+	        	case Constants.COSE_HEADER_PARAM_KCWT:
 	        	    // A CWT including the public key
 	        	    // TODO
 	        		authCred = null;
@@ -2079,7 +2079,7 @@ public class PlugtestClientGroupOSCORE {
         // Check the presence, type and value of the signature key encoding
         Assert.assertEquals(true, myMap.ContainsKey(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.cred_fmt)));
         Assert.assertEquals(CBORType.Integer, myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.cred_fmt)).getType());        
-        Assert.assertEquals(CBORObject.FromObject(Constants.COSE_HEADER_PARAM_CCS), myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.cred_fmt)));
+        Assert.assertEquals(CBORObject.FromObject(Constants.COSE_HEADER_PARAM_KCCS), myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.cred_fmt)));
 
         credFmt = myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.cred_fmt)).AsInt32();
 
@@ -2215,7 +2215,7 @@ public class PlugtestClientGroupOSCORE {
 	        }
 	        byte[] peerAuthCredRetrievedBytes = peerAuthCredRetrieved.GetByteString();
 	        switch (credFmt) {
-	            case Constants.COSE_HEADER_PARAM_CCS:
+	            case Constants.COSE_HEADER_PARAM_KCCS:
 	            	CBORObject ccs = CBORObject.DecodeFromBytes(peerAuthCredRetrievedBytes);
 	                if (ccs.getType() == CBORType.Map) {
 	                	// Retrieve the public key from the CCS
@@ -2225,7 +2225,7 @@ public class PlugtestClientGroupOSCORE {
 	                    Assert.fail("Invalid format of authentication credential");
 	                }
 	                break;
-	            case Constants.COSE_HEADER_PARAM_CWT:
+	            case Constants.COSE_HEADER_PARAM_KCWT:
 	            	CBORObject cwt = CBORObject.DecodeFromBytes(peerAuthCredRetrievedBytes);
 	                if (cwt.getType() == CBORType.Array) {
 	                    // Retrieve the public key from the CWT
@@ -2273,7 +2273,7 @@ public class PlugtestClientGroupOSCORE {
 	        }
 	        peerAuthCredRetrievedBytes = peerAuthCredRetrieved.GetByteString();
 	        switch (credFmt) {
-	            case Constants.COSE_HEADER_PARAM_CCS:
+	            case Constants.COSE_HEADER_PARAM_KCCS:
 	            	CBORObject ccs = CBORObject.DecodeFromBytes(peerAuthCredRetrievedBytes);
 	                if (ccs.getType() == CBORType.Map) {
 	                	// Retrieve the public key from the CCS
@@ -2283,7 +2283,7 @@ public class PlugtestClientGroupOSCORE {
 	                    Assert.fail("Invalid format of authentication credential");
 	                }
 	                break;
-	            case Constants.COSE_HEADER_PARAM_CWT:
+	            case Constants.COSE_HEADER_PARAM_KCWT:
 	            	CBORObject cwt = CBORObject.DecodeFromBytes(peerAuthCredRetrievedBytes);
 	                if (cwt.getType() == CBORType.Array) {
 	                    // Retrieve the public key from the CWT
@@ -2366,7 +2366,7 @@ public class PlugtestClientGroupOSCORE {
         OneKey gmPublicKeyRetrieved = null;
         byte[] kdcCredBytes = joinResponse.get(CBORObject.FromObject(GroupcommParameters.KDC_CRED)).GetByteString();
         switch (credFmt) {
-            case Constants.COSE_HEADER_PARAM_CCS:
+            case Constants.COSE_HEADER_PARAM_KCCS:
                 CBORObject ccs = CBORObject.DecodeFromBytes(kdcCredBytes);
                 if (ccs.getType() == CBORType.Map) {
                     // Retrieve the public key from the CCS
@@ -2376,7 +2376,7 @@ public class PlugtestClientGroupOSCORE {
                     Assert.fail("Invalid format of Group Manager authentication credential");
                 }
                 break;
-            case Constants.COSE_HEADER_PARAM_CWT:
+            case Constants.COSE_HEADER_PARAM_KCWT:
                 CBORObject cwt = CBORObject.DecodeFromBytes(kdcCredBytes);
                 if (cwt.getType() == CBORType.Array) {
                     // Retrieve the public key from the CWT
@@ -2538,7 +2538,7 @@ public class PlugtestClientGroupOSCORE {
         ecdhKeyParamsExpected.Add(KeyKeys.OKP_X25519); // Curve
         }
         
-        final CBORObject credFmtExpected = CBORObject.FromObject(Constants.COSE_HEADER_PARAM_CCS);
+        final CBORObject credFmtExpected = CBORObject.FromObject(Constants.COSE_HEADER_PARAM_KCCS);
         
         
         // DEBUG: START SET OF ASSERTIONS
@@ -2670,11 +2670,11 @@ public class PlugtestClientGroupOSCORE {
         	//       encoding in byte lexicographic order, and it has to be adjusted offline
         	OneKey publicKey = C1keyPair.PublicKey();
         	switch (credFmtExpected.AsInt32()) {
-        	    case Constants.COSE_HEADER_PARAM_CCS:
+        	    case Constants.COSE_HEADER_PARAM_KCCS:
         	        // Build a CCS including the public key
         	        authCred = Util.oneKeyToCCS(publicKey, "");
         	        break;
-        	    case Constants.COSE_HEADER_PARAM_CWT:
+        	    case Constants.COSE_HEADER_PARAM_KCWT:
         	        // Build a CWT including the public key
         	        // TODO
         	        break;
@@ -2686,7 +2686,7 @@ public class PlugtestClientGroupOSCORE {
         	*/
 
         	switch (credFmtExpected.AsInt32()) {
-	        	case Constants.COSE_HEADER_PARAM_CCS:
+	        	case Constants.COSE_HEADER_PARAM_KCCS:
 	        	    // A CCS including the public key
 	        	    if (signKeyCurve == KeyKeys.EC2_P256.AsInt32()) {
 	        	    	authCred = net.i2p.crypto.eddsa.Utils.hexToBytes("A2026008A101A5010203262001215820E8F9A8D5850A533CDA24B9FA8A1EE293F6A0E1E81E1E560A64FF134D65F7ECEC225820164A6D5D4B97F56D1F60A12811D55DE7A055EBAC6164C9EF9302CBCBFF1F0ABE");
@@ -2695,7 +2695,7 @@ public class PlugtestClientGroupOSCORE {
 	        	    	authCred = net.i2p.crypto.eddsa.Utils.hexToBytes("A2026008A101A4010103272006215820069E912B83963ACC5941B63546867DEC106E5B9051F2EE14F3BC5CC961ACD43A");
 	        	    }
 	        	    break;
-	        	case Constants.COSE_HEADER_PARAM_CWT:
+	        	case Constants.COSE_HEADER_PARAM_KCWT:
 	        	    // A CWT including the public key
 	        	    // TODO
 	        		authCred = null;
@@ -2792,7 +2792,7 @@ public class PlugtestClientGroupOSCORE {
         // Check the presence, type and value of the signature key encoding
         Assert.assertEquals(true, myMap.ContainsKey(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.cred_fmt)));
         Assert.assertEquals(CBORType.Integer, myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.cred_fmt)).getType());        
-        Assert.assertEquals(CBORObject.FromObject(Constants.COSE_HEADER_PARAM_CCS), myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.cred_fmt)));
+        Assert.assertEquals(CBORObject.FromObject(Constants.COSE_HEADER_PARAM_KCCS), myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.cred_fmt)));
        
         credFmt = myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.cred_fmt)).AsInt32();
                 
@@ -2929,7 +2929,7 @@ public class PlugtestClientGroupOSCORE {
 	        }
 	        byte[] peerAuthCredRetrievedBytes = peerAuthCredRetrieved.GetByteString();
 	        switch (credFmt) {
-	            case Constants.COSE_HEADER_PARAM_CCS:
+	            case Constants.COSE_HEADER_PARAM_KCCS:
 	            	CBORObject ccs = CBORObject.DecodeFromBytes(peerAuthCredRetrievedBytes);
 	                if (ccs.getType() == CBORType.Map) {
 	                	// Retrieve the public key from the CCS
@@ -2939,7 +2939,7 @@ public class PlugtestClientGroupOSCORE {
 	                    Assert.fail("Invalid format of authentication credential");
 	                }
 	                break;
-	            case Constants.COSE_HEADER_PARAM_CWT:
+	            case Constants.COSE_HEADER_PARAM_KCWT:
 	            	CBORObject cwt = CBORObject.DecodeFromBytes(peerAuthCredRetrievedBytes);
 	                if (cwt.getType() == CBORType.Array) {
 	                    // Retrieve the public key from the CWT
@@ -2987,7 +2987,7 @@ public class PlugtestClientGroupOSCORE {
 	        }
 	        peerAuthCredRetrievedBytes = peerAuthCredRetrieved.GetByteString();
 	        switch (credFmt) {
-	            case Constants.COSE_HEADER_PARAM_CCS:
+	            case Constants.COSE_HEADER_PARAM_KCCS:
 	            	CBORObject ccs = CBORObject.DecodeFromBytes(peerAuthCredRetrievedBytes);
 	                if (ccs.getType() == CBORType.Map) {
 	                	// Retrieve the public key from the CCS
@@ -2997,7 +2997,7 @@ public class PlugtestClientGroupOSCORE {
 	                    Assert.fail("Invalid format of authentication credential");
 	                }
 	                break;
-	            case Constants.COSE_HEADER_PARAM_CWT:
+	            case Constants.COSE_HEADER_PARAM_KCWT:
 	            	CBORObject cwt = CBORObject.DecodeFromBytes(peerAuthCredRetrievedBytes);
 	                if (cwt.getType() == CBORType.Array) {
 	                    // Retrieve the public key from the CWT
@@ -3079,7 +3079,7 @@ public class PlugtestClientGroupOSCORE {
         OneKey gmPublicKeyRetrieved = null;
         byte[] kdcCredBytes = joinResponse.get(CBORObject.FromObject(GroupcommParameters.KDC_CRED)).GetByteString();
         switch (credFmt) {
-            case Constants.COSE_HEADER_PARAM_CCS:
+            case Constants.COSE_HEADER_PARAM_KCCS:
                 CBORObject ccs = CBORObject.DecodeFromBytes(kdcCredBytes);
                 if (ccs.getType() == CBORType.Map) {
                     // Retrieve the public key from the CCS
@@ -3089,7 +3089,7 @@ public class PlugtestClientGroupOSCORE {
                     Assert.fail("Invalid format of Group Manager authentication credential");
                 }
                 break;
-            case Constants.COSE_HEADER_PARAM_CWT:
+            case Constants.COSE_HEADER_PARAM_KCWT:
                 CBORObject cwt = CBORObject.DecodeFromBytes(kdcCredBytes);
                 if (cwt.getType() == CBORType.Array) {
                     // Retrieve the public key from the CWT
@@ -3252,7 +3252,7 @@ public class PlugtestClientGroupOSCORE {
         ecdhKeyParamsExpected.Add(KeyKeys.OKP_X25519); // Curve
         }
         
-        final CBORObject credFmtExpected = CBORObject.FromObject(Constants.COSE_HEADER_PARAM_CCS);
+        final CBORObject credFmtExpected = CBORObject.FromObject(Constants.COSE_HEADER_PARAM_KCCS);
         
         // DEBUG: START SET OF ASSERTIONS
         /*
@@ -3383,11 +3383,11 @@ public class PlugtestClientGroupOSCORE {
         	//       encoding in byte lexicographic order, and it has to be adjusted offline
         	OneKey publicKey = C1keyPair.PublicKey();
         	switch (credFmtExpected.AsInt32()) {
-        	    case Constants.COSE_HEADER_PARAM_CCS:
+        	    case Constants.COSE_HEADER_PARAM_KCCS:
         	        // Build a CCS including the public key
         	        authCred = Util.oneKeyToCCS(publicKey, "");
         	        break;
-        	    case Constants.COSE_HEADER_PARAM_CWT:
+        	    case Constants.COSE_HEADER_PARAM_KCWT:
         	        // Build a CWT including the public key
         	        // TODO
         	        break;
@@ -3399,7 +3399,7 @@ public class PlugtestClientGroupOSCORE {
         	*/
 
         	switch (credFmtExpected.AsInt32()) {
-	        	case Constants.COSE_HEADER_PARAM_CCS:
+	        	case Constants.COSE_HEADER_PARAM_KCCS:
 	        	    // A CCS including the public key
 	        	    if (signKeyCurve == KeyKeys.EC2_P256.AsInt32()) {
 	        	    	authCred = net.i2p.crypto.eddsa.Utils.hexToBytes("A2026008A101A5010203262001215820E8F9A8D5850A533CDA24B9FA8A1EE293F6A0E1E81E1E560A64FF134D65F7ECEC225820164A6D5D4B97F56D1F60A12811D55DE7A055EBAC6164C9EF9302CBCBFF1F0ABE");
@@ -3408,7 +3408,7 @@ public class PlugtestClientGroupOSCORE {
 	        	    	authCred = net.i2p.crypto.eddsa.Utils.hexToBytes("A2026008A101A4010103272006215820069E912B83963ACC5941B63546867DEC106E5B9051F2EE14F3BC5CC961ACD43A");
 	        	    }
 	        	    break;
-	        	case Constants.COSE_HEADER_PARAM_CWT:
+	        	case Constants.COSE_HEADER_PARAM_KCWT:
 	        	    // A CWT including the public key
 	        	    // TODO
 	        		authCred = null;
@@ -3505,7 +3505,7 @@ public class PlugtestClientGroupOSCORE {
         // Check the presence, type and value of the signature key encoding
         Assert.assertEquals(true, myMap.ContainsKey(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.cred_fmt)));
         Assert.assertEquals(CBORType.Integer, myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.cred_fmt)).getType());
-        Assert.assertEquals(CBORObject.FromObject(Constants.COSE_HEADER_PARAM_CCS), myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.cred_fmt)));
+        Assert.assertEquals(CBORObject.FromObject(Constants.COSE_HEADER_PARAM_KCCS), myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.cred_fmt)));
        
         credFmt = myMap.get(CBORObject.FromObject(GroupOSCOREInputMaterialObjectParameters.cred_fmt)).AsInt32();
         
@@ -3651,7 +3651,7 @@ public class PlugtestClientGroupOSCORE {
 	        }
 	        byte[] peerAuthCredRetrievedBytes = peerAuthCredRetrieved.GetByteString();
 	        switch (credFmt) {
-	            case Constants.COSE_HEADER_PARAM_CCS:
+	            case Constants.COSE_HEADER_PARAM_KCCS:
 	            	CBORObject ccs = CBORObject.DecodeFromBytes(peerAuthCredRetrievedBytes);
 	                if (ccs.getType() == CBORType.Map) {
 	                	// Retrieve the public key from the CCS
@@ -3661,7 +3661,7 @@ public class PlugtestClientGroupOSCORE {
 	                    Assert.fail("Invalid format of authentication credential");
 	                }
 	                break;
-	            case Constants.COSE_HEADER_PARAM_CWT:
+	            case Constants.COSE_HEADER_PARAM_KCWT:
 	            	CBORObject cwt = CBORObject.DecodeFromBytes(peerAuthCredRetrievedBytes);
 	                if (cwt.getType() == CBORType.Array) {
 	                    // Retrieve the public key from the CWT
@@ -3709,7 +3709,7 @@ public class PlugtestClientGroupOSCORE {
 	        }
 	        peerAuthCredRetrievedBytes = peerAuthCredRetrieved.GetByteString();
 	        switch (credFmt) {
-	            case Constants.COSE_HEADER_PARAM_CCS:
+	            case Constants.COSE_HEADER_PARAM_KCCS:
 	            	CBORObject ccs = CBORObject.DecodeFromBytes(peerAuthCredRetrievedBytes);
 	                if (ccs.getType() == CBORType.Map) {
 	                	// Retrieve the public key from the CCS
@@ -3719,7 +3719,7 @@ public class PlugtestClientGroupOSCORE {
 	                    Assert.fail("Invalid format of authentication credential");
 	                }
 	                break;
-	            case Constants.COSE_HEADER_PARAM_CWT:
+	            case Constants.COSE_HEADER_PARAM_KCWT:
 	            	CBORObject cwt = CBORObject.DecodeFromBytes(peerAuthCredRetrievedBytes);
 	                if (cwt.getType() == CBORType.Array) {
 	                    // Retrieve the public key from the CWT
@@ -3802,7 +3802,7 @@ public class PlugtestClientGroupOSCORE {
         OneKey gmPublicKeyRetrieved = null;
         byte[] kdcCredBytes = joinResponse.get(CBORObject.FromObject(GroupcommParameters.KDC_CRED)).GetByteString();
         switch (credFmt) {
-            case Constants.COSE_HEADER_PARAM_CCS:
+            case Constants.COSE_HEADER_PARAM_KCCS:
                 CBORObject ccs = CBORObject.DecodeFromBytes(kdcCredBytes);
                 if (ccs.getType() == CBORType.Map) {
                     // Retrieve the public key from the CCS
@@ -3812,7 +3812,7 @@ public class PlugtestClientGroupOSCORE {
                     Assert.fail("Invalid format of Group Manager authentication credential");
                 }
                 break;
-            case Constants.COSE_HEADER_PARAM_CWT:
+            case Constants.COSE_HEADER_PARAM_KCWT:
                 CBORObject cwt = CBORObject.DecodeFromBytes(kdcCredBytes);
                 if (cwt.getType() == CBORType.Array) {
                     // Retrieve the public key from the CWT
