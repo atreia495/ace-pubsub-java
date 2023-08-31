@@ -122,6 +122,7 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
     	// Process the request for retrieving the Group Configuration
     	
     	String subject = null;
+    	String errorString = null;
     	Request request = exchange.advanced().getCurrentRequest();
         
         try {
@@ -136,11 +137,42 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
         	return;
         }
     	
+        // Check that at least one scope entry in the access token allows
+        // the "Read" admin permission for this group-configuration resource
+        boolean permitted = false;
+        CBORObject[] adminScopeEntries = Util.getGroupOSCOREAdminPermissionsFromToken(subject, this.getName());
+        if (adminScopeEntries == null) {
+            errorString = new String("Operation not permitted");
+            System.err.println(errorString);
+            exchange.respond(CoAP.ResponseCode.FORBIDDEN, errorString);
+            return;
+        }
+        for (int i = 0; i < adminScopeEntries.length; i++) {
+            try {
+                short permissions = (short) adminScopeEntries[i].get(1).AsInt32();
+                permitted = Util.checkGroupOSCOREAdminPermission(permissions, GroupcommParameters.GROUP_OSCORE_ADMIN_READ);
+		        if (permitted) {
+		        	permitted = permitted & Util.matchingGroupOscoreName(this.getName(), adminScopeEntries[i].get(0));
+		        }
+            } catch (AceException e) {
+                System.err.println("Error while verifying the admin permissions: " + e.getMessage());
+            }
+            if (permitted) {
+                break;
+            }
+        }
+        if (!permitted) {
+            errorString = new String("Operation not permitted");
+            System.err.println(errorString);
+            exchange.respond(CoAP.ResponseCode.FORBIDDEN, errorString);
+            return;
+        }        
+        
     	// Respond to the request for retrieving the Group Configuration
         
     	CBORObject myResponse = CBORObject.NewMap();
     	for (CBORObject elemKey : this.groupConfiguration.getKeys()) {
-    		myResponse.Add(this.groupConfiguration.get(elemKey));
+    		myResponse.Add(elemKey, this.groupConfiguration.get(elemKey));
     	}
     	
     	// Fill in the response
@@ -162,6 +194,7 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
     	// Process the request for retrieving part of a Group Configuration by filters
     	
     	String subject = null;
+    	String errorString = null;
     	Request request = exchange.advanced().getCurrentRequest();
         
         try {
@@ -176,11 +209,50 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
         	return;
         }
         
+        // Check that at least one scope entry in the access token allows
+        // the "Read" admin permission for this group-configuration resource
+        boolean permitted = false;
+        CBORObject[] adminScopeEntries = Util.getGroupOSCOREAdminPermissionsFromToken(subject, this.getName());
+        if (adminScopeEntries == null) {
+	        errorString = new String("Operation not permitted");
+	        System.err.println(errorString);
+	        exchange.respond(CoAP.ResponseCode.FORBIDDEN, errorString);
+	        return;
+        }
+        for (int i = 0; i < adminScopeEntries.length; i++) {
+        	try {
+        		short permissions = (short) adminScopeEntries[i].get(1).AsInt32();
+            	permitted = Util.checkGroupOSCOREAdminPermission(permissions, GroupcommParameters.GROUP_OSCORE_ADMIN_READ);
+	            if (permitted) {
+	                 permitted = permitted & Util.matchingGroupOscoreName(this.getName(), adminScopeEntries[i].get(0));
+	            }
+	        } catch (AceException e) {
+	        	System.err.println("Error while verifying the admin permissions: " + e.getMessage());
+	        }
+	        if (permitted) {
+	        	break;
+	        }
+        }
+		if (!permitted) {
+			errorString = new String("Operation not permitted");
+			System.err.println(errorString);
+			exchange.respond(CoAP.ResponseCode.FORBIDDEN, errorString);
+			return;
+		}
+        
     	byte[] requestPayload = exchange.getRequestPayload();
     	
-    	if(requestPayload == null) {
+    	if(requestPayload == null || (requestPayload.length == 0)) {
     		exchange.respond(CoAP.ResponseCode.BAD_REQUEST,
     						 "A payload must be present");
+    		return;
+    	}
+
+    	if(exchange.getRequestOptions().hasContentFormat() == false ||
+    	   exchange.getRequestOptions().getContentFormat() != Constants.APPLICATION_ACE_GROUPCOMM_CBOR) {
+        	errorString = new String("The CoAP option Content-Format must be present, with value application/ace-groupcomm+cbor");
+    		System.err.println(errorString);
+    		exchange.respond(CoAP.ResponseCode.BAD_REQUEST, errorString);
     		return;
     	}
     	
@@ -206,7 +278,7 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
 							 "Invalid payload format");
     		return;
     	}
-    	
+
     	// The 'conf_filter' element of the CBOR Map must be a CBOR array
     	if (requestCBOR.get(GroupcommParameters.CONF_FILTER).getType() != CBORType.Array) {
 			exchange.respond(CoAP.ResponseCode.BAD_REQUEST,
@@ -214,6 +286,15 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
     		return;
     	}
     	
+    	// Check that the payload does not contain unexpected parameters
+    	for (CBORObject elem : requestCBOR.getKeys()) {
+    		if (!elem.equals(GroupcommParameters.CONF_FILTER)) {
+    			exchange.respond(CoAP.ResponseCode.BAD_REQUEST,
+						 "Invalid payload format");
+    	    	System.err.println("XXX4");
+    			return;
+    		}
+    	}
     	
     	// Respond to the request for retrieving part of a Group Configuration by filters
         
@@ -221,10 +302,11 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
     	
     	// Fill in the response
 
-    	for (int i = 0; i < requestCBOR.size(); i++) {
-    		CBORObject elemKey = requestCBOR.get(i);
+    	CBORObject confFilter = requestCBOR.get(GroupcommParameters.CONF_FILTER);
+    	for (int i = 0; i < confFilter.size(); i++) {
+    		CBORObject elemKey = confFilter.get(i);
     		if (this.groupConfiguration.ContainsKey(elemKey)) {
-    				myResponse.Add(elemKey, this.groupConfiguration.get(elemKey));
+    			myResponse.Add(elemKey, this.groupConfiguration.get(elemKey));
     		}
     	}
     	
@@ -246,6 +328,7 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
     	// Process the request for overwriting a Group Configuration
     	
     	String subject = null;
+    	String errorString = null;
     	Request request = exchange.advanced().getCurrentRequest();
         
         try {
@@ -260,11 +343,50 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
         	return;
         }
         
+        // Check that at least one scope entry in the access token allows
+        // the "Read" admin permission for this group-configuration resource
+        boolean permitted = false;
+        CBORObject[] adminScopeEntries = Util.getGroupOSCOREAdminPermissionsFromToken(subject, this.getName());
+        if (adminScopeEntries == null) {
+	        errorString = new String("Operation not permitted");
+	        System.err.println(errorString);
+	        exchange.respond(CoAP.ResponseCode.FORBIDDEN, errorString);
+	        return;
+        }
+        for (int i = 0; i < adminScopeEntries.length; i++) {
+        	try {
+        		short permissions = (short) adminScopeEntries[i].get(1).AsInt32();
+            	permitted = Util.checkGroupOSCOREAdminPermission(permissions, GroupcommParameters.GROUP_OSCORE_ADMIN_WRITE);
+	            if (permitted) {
+	                 permitted = permitted & Util.matchingGroupOscoreName(this.getName(), adminScopeEntries[i].get(0));
+	            }
+	        } catch (AceException e) {
+	        	System.err.println("Error while verifying the admin permissions: " + e.getMessage());
+	        }
+	        if (permitted) {
+	        	break;
+	        }
+        }
+		if (!permitted) {
+			errorString = new String("Operation not permitted");
+			System.err.println(errorString);
+			exchange.respond(CoAP.ResponseCode.FORBIDDEN, errorString);
+			return;
+		}
+        
     	byte[] requestPayload = exchange.getRequestPayload();
     	
-    	if(requestPayload == null) {
+    	if(requestPayload == null || (requestPayload.length == 0)) {
     		exchange.respond(CoAP.ResponseCode.BAD_REQUEST,
     						 "A payload must be present");
+    		return;
+    	}
+
+    	if(exchange.getRequestOptions().hasContentFormat() == false ||
+    	   exchange.getRequestOptions().getContentFormat() != Constants.APPLICATION_ACE_GROUPCOMM_CBOR) {
+        	errorString = new String("The CoAP option Content-Format must be present, with value application/ace-groupcomm+cbor");
+    		System.err.println(errorString);
+    		exchange.respond(CoAP.ResponseCode.BAD_REQUEST, errorString);
     		return;
     	}
     	
@@ -297,6 +419,7 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
     	// Process the request for selectively updating a Group Configuration
     	
     	String subject = null;
+    	String errorString = null;
     	Request request = exchange.advanced().getCurrentRequest();
         
         try {
@@ -311,11 +434,50 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
         	return;
         }
         
+        // Check that at least one scope entry in the access token allows
+        // the "Read" admin permission for this group-configuration resource
+        boolean permitted = false;
+        CBORObject[] adminScopeEntries = Util.getGroupOSCOREAdminPermissionsFromToken(subject, this.getName());
+        if (adminScopeEntries == null) {
+	        errorString = new String("Operation not permitted");
+	        System.err.println(errorString);
+	        exchange.respond(CoAP.ResponseCode.FORBIDDEN, errorString);
+	        return;
+        }
+        for (int i = 0; i < adminScopeEntries.length; i++) {
+        	try {
+        		short permissions = (short) adminScopeEntries[i].get(1).AsInt32();
+            	permitted = Util.checkGroupOSCOREAdminPermission(permissions, GroupcommParameters.GROUP_OSCORE_ADMIN_WRITE);
+	            if (permitted) {
+	                 permitted = permitted & Util.matchingGroupOscoreName(this.getName(), adminScopeEntries[i].get(0));
+	            }
+	        } catch (AceException e) {
+	        	System.err.println("Error while verifying the admin permissions: " + e.getMessage());
+	        }
+	        if (permitted) {
+	        	break;
+	        }
+        }
+		if (!permitted) {
+			errorString = new String("Operation not permitted");
+			System.err.println(errorString);
+			exchange.respond(CoAP.ResponseCode.FORBIDDEN, errorString);
+			return;
+		}
+        
     	byte[] requestPayload = exchange.getRequestPayload();
     	
-    	if(requestPayload == null) {
+    	if(requestPayload == null || (requestPayload.length == 0)) {
     		exchange.respond(CoAP.ResponseCode.BAD_REQUEST,
     						 "A payload must be present");
+    		return;
+    	}
+
+    	if(exchange.getRequestOptions().hasContentFormat() == false ||
+    	   exchange.getRequestOptions().getContentFormat() != Constants.APPLICATION_ACE_GROUPCOMM_CBOR) {
+        	errorString = new String("The CoAP option Content-Format must be present, with value application/ace-groupcomm+cbor");
+    		System.err.println(errorString);
+    		exchange.respond(CoAP.ResponseCode.BAD_REQUEST, errorString);
     		return;
     	}
     	
@@ -348,6 +510,7 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
     	// Process the request for selectively updating a Group Configuration
     	
     	String subject = null;
+    	String errorString = null;
     	Request request = exchange.advanced().getCurrentRequest();
         
         try {
@@ -362,11 +525,50 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
         	return;
         }
         
+        // Check that at least one scope entry in the access token allows
+        // the "Read" admin permission for this group-configuration resource
+        boolean permitted = false;
+        CBORObject[] adminScopeEntries = Util.getGroupOSCOREAdminPermissionsFromToken(subject, this.getName());
+        if (adminScopeEntries == null) {
+	        errorString = new String("Operation not permitted");
+	        System.err.println(errorString);
+	        exchange.respond(CoAP.ResponseCode.FORBIDDEN, errorString);
+	        return;
+        }
+        for (int i = 0; i < adminScopeEntries.length; i++) {
+        	try {
+        		short permissions = (short) adminScopeEntries[i].get(1).AsInt32();
+            	permitted = Util.checkGroupOSCOREAdminPermission(permissions, GroupcommParameters.GROUP_OSCORE_ADMIN_WRITE);
+	            if (permitted) {
+	                 permitted = permitted & Util.matchingGroupOscoreName(this.getName(), adminScopeEntries[i].get(0));
+	            }
+	        } catch (AceException e) {
+	        	System.err.println("Error while verifying the admin permissions: " + e.getMessage());
+	        }
+	        if (permitted) {
+	        	break;
+	        }
+        }
+		if (!permitted) {
+			errorString = new String("Operation not permitted");
+			System.err.println(errorString);
+			exchange.respond(CoAP.ResponseCode.FORBIDDEN, errorString);
+			return;
+		}
+        
     	byte[] requestPayload = exchange.getRequestPayload();
     	
-    	if(requestPayload == null) {
+    	if(requestPayload == null || (requestPayload.length == 0)) {
     		exchange.respond(CoAP.ResponseCode.BAD_REQUEST,
     						 "A payload must be present");
+    		return;
+    	}
+
+    	if(exchange.getRequestOptions().hasContentFormat() == false ||
+    	   exchange.getRequestOptions().getContentFormat() != Constants.APPLICATION_ACE_GROUPCOMM_CBOR) {
+        	errorString = new String("The CoAP option Content-Format must be present, with value application/ace-groupcomm+cbor");
+    		System.err.println(errorString);
+    		exchange.respond(CoAP.ResponseCode.BAD_REQUEST, errorString);
     		return;
     	}
     	
@@ -399,6 +601,7 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
     	// Process the request for deleting a Group Configuration
     	
     	String subject = null;
+    	String errorString = null;
     	Request request = exchange.advanced().getCurrentRequest();
         
         try {
@@ -413,6 +616,37 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
         	return;
         }
     	
+        // Check that at least one scope entry in the access token allows
+        // the "Read" admin permission for this group-configuration resource
+        boolean permitted = false;
+        CBORObject[] adminScopeEntries = Util.getGroupOSCOREAdminPermissionsFromToken(subject, this.getName());
+        if (adminScopeEntries == null) {
+	        errorString = new String("Operation not permitted");
+	        System.err.println(errorString);
+	        exchange.respond(CoAP.ResponseCode.FORBIDDEN, errorString);
+	        return;
+        }
+        for (int i = 0; i < adminScopeEntries.length; i++) {
+        	try {
+        		short permissions = (short) adminScopeEntries[i].get(1).AsInt32();
+            	permitted = Util.checkGroupOSCOREAdminPermission(permissions, GroupcommParameters.GROUP_OSCORE_ADMIN_DELETE);
+	            if (permitted) {
+	                 permitted = permitted & Util.matchingGroupOscoreName(this.getName(), adminScopeEntries[i].get(0));
+	            }
+	        } catch (AceException e) {
+	        	System.err.println("Error while verifying the admin permissions: " + e.getMessage());
+	        }
+	        if (permitted) {
+	        	break;
+	        }
+        }
+		if (!permitted) {
+			errorString = new String("Operation not permitted");
+			System.err.println(errorString);
+			exchange.respond(CoAP.ResponseCode.FORBIDDEN, errorString);
+			return;
+		}
+        
     	// Respond to the request for deleting a Group Configuration
         
     	Response coapResponse = new Response(CoAP.ResponseCode.DELETED);

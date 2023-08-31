@@ -110,7 +110,7 @@ public class OscoreIntrospection implements IntrospectionHandler {
         LOGGER.info("Sending introspection request on " + tokenReference);
         Map<Short, CBORObject> params = new HashMap<>();
         params.put(Constants.TOKEN, CBORObject.FromObject(CBORObject.FromObject(tokenReference).EncodeToBytes()));
-        params.put(Constants.TOKEN_TYPE_HINT, CBORObject.FromObject("pop")); 
+        params.put(Constants.TOKEN_TYPE_HINT, CBORObject.FromObject(Constants.POP)); 
         CoapResponse response;
         Request r = new Request(Code.POST);
         r.setPayload(Constants.getCBOR(params).EncodeToBytes());

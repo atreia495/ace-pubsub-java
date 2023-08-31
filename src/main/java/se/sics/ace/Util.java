@@ -940,4 +940,27 @@ public class Util {
         return Integer.parseInt(version);
     }
     
+    public static void prettyPrintCborMap(final CBORObject obj) {
+
+    	if (obj.getType() != CBORType.Map) {
+    		System.err.println("Trying to print a CBOR map, while it is not");
+    		return;
+    	}
+    	
+    	int counter = 0;
+    	System.out.println("{");
+    	for (CBORObject elemKey : obj.getKeys()) {
+    		System.out.print("  " + elemKey + ": " + obj.get(elemKey));
+    		counter++;
+    		if (counter != obj.size()) {
+    			System.out.println(",");
+    		}
+    		else {
+    			System.out.println("");
+    		}
+    	}
+    	System.out.println("}\n");
+    	
+    }
+    
 }

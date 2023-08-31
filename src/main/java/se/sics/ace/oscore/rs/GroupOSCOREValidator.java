@@ -448,7 +448,7 @@ public class GroupOSCOREValidator implements AudienceValidator, ScopeValidator {
 	        			}
 	        		}
 	        		
-		      	  	Map<String, Set<Short>> resources = this.myScopes.get(resourceId);
+		      	  	Map<String, Set<Short>> resources = this.myScopes.get(groupCollectionResourcePath);
 	  		      	  	
 		      	  	if (resources != null && resources.containsKey(resourceId)) {
 		      	  		if (resources.get(resourceId).contains(actionId)) {
@@ -595,12 +595,12 @@ public class GroupOSCOREValidator implements AudienceValidator, ScopeValidator {
 	        			}
 	        		}
 	        		
-		      	  	Map<String, Set<Short>> resources = this.myScopes.get(resourceId);
-	  		      	  	
+		      	  	Map<String, Set<Short>> resources = this.myScopes.get(groupCollectionResourcePath);
+	  		      	
 		      	  	if (resources != null && resources.containsKey(resourceId)) {
 		      	  			return true;
 		      	  	}
-		      	  	
+
 	        	} // end of handling an admin scope entry
 	        	
         	} // end of checking all the scope entries in the scope claim of the access token

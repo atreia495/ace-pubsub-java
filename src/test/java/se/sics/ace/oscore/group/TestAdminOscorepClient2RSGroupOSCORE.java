@@ -276,7 +276,7 @@ public class TestAdminOscorepClient2RSGroupOSCORE {
     	cborArrayScope.Add(cborArrayEntry);
     	
     	cborArrayEntry = CBORObject.NewArray();
-        groupNamePattern = new String("gp500");
+        groupNamePattern = new String("gp1");
         cborArrayEntry.Add(groupNamePattern);
     	cborArrayEntry.Add(myPermissions);
     	cborArrayScope.Add(cborArrayEntry);
@@ -389,9 +389,75 @@ public class TestAdminOscorepClient2RSGroupOSCORE {
         if (adminRes.getOptions().hasContentFormat()) {
         	System.out.println("Response Content-Format: " + adminRes.getOptions().getContentFormat());
         }
-        System.out.println("Response payload:\n" + responsePayloadCbor.toString() + "\n");
+        System.out.println("Response payload:");
+        Util.prettyPrintCborMap(responsePayloadCbor);
         Assert.assertEquals(3, responsePayloadCbor.size());
 
+        // ============================================
+        
+        // Send a GET request to /admin/gp1
+
+        System.out.println();
+        c = OSCOREProfileRequests.getClient(
+        		new InetSocketAddress("coap://localhost:" + PORT + "/" + groupCollectionResourcePath + "/" + "gp1", PORT),
+        							  ctxDB);
+        
+        adminReq = new Request(CoAP.Code.GET);
+        adminReq.getOptions().setOscore(new byte[0]);
+        
+        adminRes = c.advanced(adminReq);
+        Assert.assertNotNull(adminRes);
+        Assert.assertNotNull(adminRes.getPayload());
+        
+        responsePayloadCbor = CBORObject.DecodeFromBytes(adminRes.getPayload());
+        Assert.assertNotNull(responsePayloadCbor);
+        
+        Assert.assertEquals(CBORType.Map, responsePayloadCbor.getType());
+        System.out.println("Response code: " + adminRes.advanced().getCode());
+        if (adminRes.getOptions().hasContentFormat()) {
+        	System.out.println("Response Content-Format: " + adminRes.getOptions().getContentFormat());
+        }
+        System.out.println("Response payload:");
+        Util.prettyPrintCborMap(responsePayloadCbor);
+        Assert.assertEquals(22, responsePayloadCbor.size());
+        
+        // ============================================
+        
+        // Send a FETCH request to /admin/gp1
+
+        System.out.println();
+        c = OSCOREProfileRequests.getClient(
+        		new InetSocketAddress("coap://localhost:" + PORT + "/" + groupCollectionResourcePath + "/" + "gp1", PORT),
+        							  ctxDB);
+        
+        adminReq = new Request(CoAP.Code.FETCH);
+        adminReq.getOptions().setOscore(new byte[0]);
+        adminReq.getOptions().setContentFormat(Constants.APPLICATION_ACE_GROUPCOMM_CBOR);
+        requestPayloadCbor = CBORObject.NewMap();
+        CBORObject confFilter = CBORObject.NewArray();
+        confFilter.Add(GroupcommParameters.GROUP_NAME);
+        confFilter.Add(GroupcommParameters.HKDF);
+        confFilter.Add(GroupcommParameters.PAIRWISE_MODE);
+        confFilter.Add(GroupcommParameters.DET_HASH_ALG);
+        requestPayloadCbor.Add(GroupcommParameters.CONF_FILTER, confFilter);
+        adminReq.setPayload(requestPayloadCbor.EncodeToBytes());
+        
+        adminRes = c.advanced(adminReq);
+        Assert.assertNotNull(adminRes);
+        Assert.assertNotNull(adminRes.getPayload());
+        
+        responsePayloadCbor = CBORObject.DecodeFromBytes(adminRes.getPayload());
+        Assert.assertNotNull(responsePayloadCbor);
+        
+        Assert.assertEquals(CBORType.Map, responsePayloadCbor.getType());
+        System.out.println("Response code: " + adminRes.advanced().getCode());
+        if (adminRes.getOptions().hasContentFormat()) {
+        	System.out.println("Response Content-Format: " + adminRes.getOptions().getContentFormat());
+        }
+        System.out.println("Response payload:");
+        Util.prettyPrintCborMap(responsePayloadCbor);
+        Assert.assertEquals(3, responsePayloadCbor.size());
+        
     }
     
     /**

@@ -82,6 +82,8 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
 	private Map<String, GroupInfo> existingGroupInfo = new HashMap<>();
 	
     private final static String rootGroupMembershipResourcePath = "ace-group";
+    
+    private final static String groupCollectionResourcePath = "admin";
 	
 	private Map<String, Map<String, Set<Short>>> myScopes;
 	
@@ -367,7 +369,7 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
         	return;
         }
         
-    	// Check that at least one scope entry in the access token allows the "List" admin permission
+    	// Check that at least one scope entry in the access token allows the "Create" admin permission
         boolean permitted = false;
     	CBORObject[] adminScopeEntries = Util.getGroupOSCOREAdminPermissionsFromToken(subject, null);
     	if (adminScopeEntries == null) {
@@ -445,9 +447,9 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
     	// This Group Manager does not support RSA an signature algorithm
     	if (requestCBOR.getKeys().contains(GroupcommParameters.SIGN_ALG)) {
     		CBORObject signAlg = requestCBOR.get(GroupcommParameters.SIGN_ALG);
-    		if (signAlg.equals(AlgorithmID.RSA_PSS_256) ||
-    			signAlg.equals(AlgorithmID.RSA_PSS_384) ||
-    			signAlg.equals(AlgorithmID.RSA_PSS_512)) {
+    		if (signAlg.equals(AlgorithmID.RSA_PSS_256.AsCBOR()) ||
+    			signAlg.equals(AlgorithmID.RSA_PSS_384.AsCBOR()) ||
+    			signAlg.equals(AlgorithmID.RSA_PSS_512.AsCBOR())) {
     			
     		}
     		CBORObject myResponse = CBORObject.NewMap();
@@ -469,7 +471,7 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
     	}
 
     	CBORObject ret = createNewGroupConfiguration(request, adminScopeEntries);
-    	
+    	    	
     	// Respond to the request for creating a new Group Configuration
         
     	ResponseCode responseCode = CoAP.ResponseCode.valueOf(ret.get(0).AsInt32());
@@ -556,23 +558,49 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
     	String joiningUri = baseUri + rootGroupMembershipResourcePath + "/" + groupName;
     	groupConfiguration.Add(GroupcommParameters.JOINING_URI, joiningUri);
     	
-    	// DEBUG
-    	// System.err.println("\n\n" + groupConfiguration.toString());
-    	
     	// Create the internal GroupInfo data structure first
     	// TODO
     	
+    	GroupOSCOREGroupConfigurationResource newGroupConfigurationResource = null;
+    	
     	synchronized(groupConfigurationResources) {
-            GroupOSCOREGroupConfigurationResource newGroupConfigurationResource =
-            	new GroupOSCOREGroupConfigurationResource(groupName, groupConfiguration,
-														  this.existingGroupInfo,
-														  this.myScopes, this.valid);
+            newGroupConfigurationResource =  new GroupOSCOREGroupConfigurationResource(groupName, groupConfiguration,
+														  							   this.existingGroupInfo, this.myScopes,
+														  							   this.valid);
             	groupConfigurationResources.put(groupName, newGroupConfigurationResource);
             	
     	}
     	
     	// Make the group-configuration resource actually accessible
     	// TODO
+    	
+    	Map<String, Set<Short>> myResource = new HashMap<>();
+    	Set<Short> actions = new HashSet<>();
+    	actions.add(Constants.GET);
+    	actions.add(Constants.FETCH);
+    	actions.add(Constants.PUT);
+    	actions.add(Constants.PATCH);
+    	actions.add(Constants.iPATCH);
+    	actions.add(Constants.DELETE);
+    	this.myScopes.get(groupCollectionResourcePath).put(groupCollectionResourcePath + "/" + groupName, actions);
+    	
+    	try {
+			valid.setGroupAdminResources(Collections.singleton(groupCollectionResourcePath + "/" + groupName));
+		} catch (AceException e) {
+			groupConfigurationResources.remove(groupName); // rollback
+			myScopes.remove(groupCollectionResourcePath + "/" + groupName); // rollback
+			
+			String errorString = new String ("Error while initializing the group-configuration resource");			
+    		ret.Add(CoAP.ResponseCode.INTERNAL_SERVER_ERROR.value);
+    		ret.Add(null);
+    		CBORObject payloadCBOR = CBORObject.FromObject(errorString);
+    		ret.Add(payloadCBOR);
+    		System.err.println(errorString + "\n" + e.getMessage());
+    		return ret;
+		}
+
+    	this.add(newGroupConfigurationResource);
+    	
     	
     	// Create the group-membership resource and make it actually accessible
     	// TODO
@@ -609,11 +637,33 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
     	synchronized (groupConfigurationResources) {
     		
         	if (!groupConfigurationResources.containsKey(proposedGroupName)) {
-        		// The proposed name is available. Reserve it, by adding a dummy entry
-        		// in the collection of group-configuration resources
-        		newName = new String(proposedGroupName);
-        		groupConfigurationResources.put(newName, null);
-        		return newName;
+        		// The proposed name is available.
+        		
+        		// Check if there is at least one scope entry such that the name matches the name pattern
+        		// and the set of permissions includes the "Create" admin permission
+        		boolean permitted = false;
+        		
+        		for (int i = 0; i < adminScopeEntries.length; i++) {
+        		    try {
+        		        short permissions = (short) adminScopeEntries[i].get(1).AsInt32();
+        		        permitted = Util.checkGroupOSCOREAdminPermission(permissions, GroupcommParameters.GROUP_OSCORE_ADMIN_CREATE);
+        		        if (permitted) {
+        		        	permitted = permitted & Util.matchingGroupOscoreName(proposedGroupName, adminScopeEntries[i].get(0));
+        		        }
+        		    } catch (AceException e) {
+        		        System.err.println("Error while verifying the admin permissions: " + e.getMessage());
+        		    }
+        		    if (permitted) {
+        		        break;
+        		    }
+        		}
+        		if (permitted) {
+	        		// Reserve the proposed name, by adding a dummy entry
+	        		// in the collection of group-configuration resources
+	        		newName = new String(proposedGroupName);
+	        		groupConfigurationResources.put(newName, null);
+	        		return newName;
+        		}
         	}
         	// The proposed name is not available. Try to find a new one.
         	

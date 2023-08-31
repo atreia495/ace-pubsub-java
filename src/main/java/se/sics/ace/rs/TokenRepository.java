@@ -1196,9 +1196,9 @@ public class TokenRepository implements AutoCloseable {
                  throw new AceException("Token: " + cti + " has no scope");
                  
              }
-             
+
              if (this.scopeValidator.scopeMatchResource(scope, resource)) {
-            	 
+
                  if (this.scopeValidator.scopeMatch(scope, resource, action)) {
                 	 
                      //Check if we should introspect this token
