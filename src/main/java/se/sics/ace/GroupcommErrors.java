@@ -64,7 +64,7 @@ public class GroupcommErrors {
 	
 	public static final CBORObject GROUP_ACTIVE = CBORObject.FromObject(10);
 	
-	public static final CBORObject UNAVAILABLE_GROUP_NAMES = CBORObject.FromObject(11);
+	public static final CBORObject GROUP_NAME_NOT_DETERMINED = CBORObject.FromObject(11);
 	
 	public static final CBORObject UNSUPPORTED_GROUP_CONF = CBORObject.FromObject(12);
 

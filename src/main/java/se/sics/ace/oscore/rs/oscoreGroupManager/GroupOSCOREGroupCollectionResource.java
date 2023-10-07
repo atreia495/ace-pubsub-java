@@ -540,7 +540,7 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
     		ret.Add(CoAP.ResponseCode.INTERNAL_SERVER_ERROR.value);
     		ret.Add(Constants.APPLICATION_ACE_GROUPCOMM_CBOR);
     		CBORObject payloadCBOR = CBORObject.NewMap();
-    		payloadCBOR.Add(GroupcommParameters.ERROR, GroupcommErrors.UNAVAILABLE_GROUP_NAMES);
+    		payloadCBOR.Add(GroupcommParameters.ERROR, GroupcommErrors.GROUP_NAME_NOT_DETERMINED);
     		ret.Add(payloadCBOR);
     		return ret;
     	}
