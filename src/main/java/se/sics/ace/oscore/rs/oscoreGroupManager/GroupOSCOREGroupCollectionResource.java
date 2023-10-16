@@ -118,6 +118,7 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
         // Force the presence of an already existing group configuration for early testing
         GroupOSCOREGroupConfigurationResource testConf = new GroupOSCOREGroupConfigurationResource(
         													"gp500", CBORObject.NewMap(),
+        													this.groupConfigurationResources,
         													this.existingGroupInfo,
         													this.myScopes, this.valid);
         testConf.getConfigurationParameters().Add(GroupcommParameters.GROUP_NAME, CBORObject.FromObject("gp500"));
@@ -565,6 +566,7 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
     	
     	synchronized(groupConfigurationResources) {
             newGroupConfigurationResource =  new GroupOSCOREGroupConfigurationResource(groupName, groupConfiguration,
+            																		   this.groupConfigurationResources,
 														  							   this.existingGroupInfo, this.myScopes,
 														  							   this.valid);
             	groupConfigurationResources.put(groupName, newGroupConfigurationResource);

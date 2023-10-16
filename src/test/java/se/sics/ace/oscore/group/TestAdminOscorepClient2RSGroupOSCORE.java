@@ -45,7 +45,9 @@ import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.coap.CoAP.Code;
+import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.CoAP.Type;
+import org.eclipse.californium.elements.util.Bytes;
 import org.eclipse.californium.oscore.OSCoreCtx;
 import org.eclipse.californium.oscore.OSCoreCtxDB;
 import org.eclipse.californium.oscore.OSException;
@@ -330,12 +332,12 @@ public class TestAdminOscorepClient2RSGroupOSCORE {
         
         adminRes = c.advanced(adminReq);
         
+        Assert.assertEquals(ResponseCode.CONTENT, adminRes.getCode());
         System.out.println("Response code: " + adminRes.advanced().getCode());
         if (adminRes.getOptions().hasContentFormat()) {
         	System.out.println("Response Content-Format: " + adminRes.getOptions().getContentFormat());
         }
         System.out.println("Response payload:\n" + new String(adminRes.getPayload()));
-        // Assert.assertEquals(0, adminRes.getPayloadSize());
         
         // ============================================
         
@@ -355,6 +357,7 @@ public class TestAdminOscorepClient2RSGroupOSCORE {
         
         adminRes = c.advanced(adminReq);
         
+        Assert.assertEquals(ResponseCode.CONTENT, adminRes.getCode());
         System.out.println("Response code: " + adminRes.advanced().getCode());
         if (adminRes.getOptions().hasContentFormat()) {
         	System.out.println("Response Content-Format: " + adminRes.getOptions().getContentFormat());
@@ -378,7 +381,9 @@ public class TestAdminOscorepClient2RSGroupOSCORE {
         adminReq.setPayload(requestPayloadCbor.EncodeToBytes());
         
         adminRes = c.advanced(adminReq);
+        
         Assert.assertNotNull(adminRes);
+        Assert.assertEquals(ResponseCode.CREATED, adminRes.getCode());
         Assert.assertNotNull(adminRes.getPayload());
         
         responsePayloadCbor = CBORObject.DecodeFromBytes(adminRes.getPayload());
@@ -406,7 +411,9 @@ public class TestAdminOscorepClient2RSGroupOSCORE {
         adminReq.getOptions().setOscore(new byte[0]);
         
         adminRes = c.advanced(adminReq);
+        
         Assert.assertNotNull(adminRes);
+        Assert.assertEquals(ResponseCode.CONTENT, adminRes.getCode());
         Assert.assertNotNull(adminRes.getPayload());
         
         responsePayloadCbor = CBORObject.DecodeFromBytes(adminRes.getPayload());
@@ -443,7 +450,9 @@ public class TestAdminOscorepClient2RSGroupOSCORE {
         adminReq.setPayload(requestPayloadCbor.EncodeToBytes());
         
         adminRes = c.advanced(adminReq);
+        
         Assert.assertNotNull(adminRes);
+        Assert.assertEquals(ResponseCode.CONTENT, adminRes.getCode());
         Assert.assertNotNull(adminRes.getPayload());
         
         responsePayloadCbor = CBORObject.DecodeFromBytes(adminRes.getPayload());
@@ -457,6 +466,63 @@ public class TestAdminOscorepClient2RSGroupOSCORE {
         System.out.println("Response payload:");
         Util.prettyPrintCborMap(responsePayloadCbor);
         Assert.assertEquals(3, responsePayloadCbor.size());
+        
+        // ============================================
+        
+        // Send a DELETE request to /admin/gp1
+
+        System.out.println();
+        c = OSCOREProfileRequests.getClient(
+        		new InetSocketAddress("coap://localhost:" + PORT + "/" + groupCollectionResourcePath + "/" + "gp1", PORT),
+        							  ctxDB);
+        
+        adminReq = new Request(CoAP.Code.DELETE);
+        adminReq.getOptions().setOscore(new byte[0]);
+        
+        adminRes = c.advanced(adminReq);
+        
+        Assert.assertNotNull(adminRes);
+        Assert.assertEquals(ResponseCode.DELETED, adminRes.getCode());
+        Assert.assertNotNull(adminRes.getPayload());
+        Assert.assertArrayEquals(Bytes.EMPTY, adminRes.getPayload());
+        
+        // ============================================
+        
+        // Send a GET request to /admin
+        
+        System.out.println();
+        c = OSCOREProfileRequests.getClient(
+        		new InetSocketAddress("coap://localhost:" + PORT + "/" + groupCollectionResourcePath, PORT),
+        		ctxDB);
+        
+        adminReq = new Request(CoAP.Code.GET);
+        adminReq.getOptions().setOscore(new byte[0]);
+        
+        adminRes = c.advanced(adminReq);
+        
+        Assert.assertEquals(ResponseCode.CONTENT, adminRes.getCode());
+        System.out.println("Response code: " + adminRes.advanced().getCode());
+        if (adminRes.getOptions().hasContentFormat()) {
+        	System.out.println("Response Content-Format: " + adminRes.getOptions().getContentFormat());
+        }
+        System.out.println("Response payload:\n" + new String(adminRes.getPayload()));
+        
+        // ============================================
+        
+        // Send a GET request to /admin/gp1
+
+        System.out.println();
+        c = OSCOREProfileRequests.getClient(
+        		new InetSocketAddress("coap://localhost:" + PORT + "/" + groupCollectionResourcePath + "/" + "gp1", PORT),
+        							  ctxDB);
+        
+        adminReq = new Request(CoAP.Code.GET);
+        adminReq.getOptions().setOscore(new byte[0]);
+        
+        adminRes = c.advanced(adminReq);
+        Assert.assertNotNull(adminRes);
+        Assert.assertEquals(ResponseCode.NOT_FOUND, adminRes.getCode());
+        Assert.assertArrayEquals(Bytes.EMPTY, adminRes.getPayload());
         
     }
     

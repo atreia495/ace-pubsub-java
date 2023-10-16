@@ -77,10 +77,12 @@ import se.sics.ace.rs.TokenRepository;
  * Definition of the Group OSCORE group-collection resource
  */
 public class GroupOSCOREGroupConfigurationResource extends CoapResource {
-	
-	private final String groupAdminResourcePath = "admin";
+
+	private final static String rootGroupMembershipResourcePath = "ace-group";
 	
 	private CBORObject groupConfiguration;
+	
+	private Map<String, GroupOSCOREGroupConfigurationResource> groupConfigurationResources;
 	
 	private Map<String, GroupInfo> existingGroupInfo;
 		
@@ -98,6 +100,7 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
      */
     public GroupOSCOREGroupConfigurationResource(String resId,
     											 CBORObject groupConfiguration,
+    											 Map<String, GroupOSCOREGroupConfigurationResource> groupConfigurationResources,
 			  									 Map<String, GroupInfo> existingGroupInfo,
     										     Map<String, Map<String, Set<Short>>> myScopes,
     										     GroupOSCOREValidator valid) {
@@ -109,6 +112,7 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
         getAttributes().setTitle("Group OSCORE Group Configuration Resource " + resId);
      
         this.groupConfiguration = groupConfiguration;
+        this.groupConfigurationResources = groupConfigurationResources;
         this.existingGroupInfo = existingGroupInfo;
         this.myScopes = myScopes;
         this.valid = valid;
@@ -344,7 +348,7 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
         }
         
         // Check that at least one scope entry in the access token allows
-        // the "Read" admin permission for this group-configuration resource
+        // the "Write" admin permission for this group-configuration resource
         boolean permitted = false;
         CBORObject[] adminScopeEntries = Util.getGroupOSCOREAdminPermissionsFromToken(subject, this.getName());
         if (adminScopeEntries == null) {
@@ -435,7 +439,7 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
         }
         
         // Check that at least one scope entry in the access token allows
-        // the "Read" admin permission for this group-configuration resource
+        // the "Write" admin permission for this group-configuration resource
         boolean permitted = false;
         CBORObject[] adminScopeEntries = Util.getGroupOSCOREAdminPermissionsFromToken(subject, this.getName());
         if (adminScopeEntries == null) {
@@ -526,7 +530,7 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
         }
         
         // Check that at least one scope entry in the access token allows
-        // the "Read" admin permission for this group-configuration resource
+        // the "Write" admin permission for this group-configuration resource
         boolean permitted = false;
         CBORObject[] adminScopeEntries = Util.getGroupOSCOREAdminPermissionsFromToken(subject, this.getName());
         if (adminScopeEntries == null) {
@@ -617,7 +621,7 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
         }
     	
         // Check that at least one scope entry in the access token allows
-        // the "Read" admin permission for this group-configuration resource
+        // the "Delete" admin permission for this group-configuration resource
         boolean permitted = false;
         CBORObject[] adminScopeEntries = Util.getGroupOSCOREAdminPermissionsFromToken(subject, this.getName());
         if (adminScopeEntries == null) {
@@ -647,6 +651,22 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
 			return;
 		}
         
+		// Delete the entry associated with this group configuration
+		// from the set stored at the group-collection resource
+		synchronized(groupConfigurationResources) {
+			this.groupConfigurationResources.remove(this.getName());
+		}
+		
+		// Delete the corresponding group-membership resource
+		synchronized(existingGroupInfo) {
+			existingGroupInfo.remove(this.getName());
+			
+			CoapResource res = (CoapResource) this.getParent().getParent().getChild(rootGroupMembershipResourcePath).getChild(this.getName());
+			if (res != null) {
+				res.delete();
+			}
+		}
+		
     	// Respond to the request for deleting a Group Configuration
         
     	Response coapResponse = new Response(CoAP.ResponseCode.DELETED);
