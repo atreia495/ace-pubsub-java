@@ -512,6 +512,25 @@ public class GroupOSCOREGroupMembershipResource extends CoapResource {
     		return;
     	}
     	
+		// Retrieve the nonce from the Client
+		CBORObject cnonce = joinRequest.get(CBORObject.FromObject(GroupcommParameters.CNONCE));
+    	
+		// A client nonce must be included for proof-of-possession for joining OSCORE groups
+    	if (cnonce == null) {
+    		byte[] errorResponsePayload = errorResponseMap.EncodeToBytes();
+    		exchange.respond(CoAP.ResponseCode.BAD_REQUEST, errorResponsePayload,
+    						 Constants.APPLICATION_ACE_GROUPCOMM_CBOR);
+    		return;
+    	}
+
+    	// The client nonce must be wrapped in a binary string for joining OSCORE groups
+    	if (!cnonce.getType().equals(CBORType.ByteString)) {
+    		byte[] errorResponsePayload = errorResponseMap.EncodeToBytes();
+    		exchange.respond(CoAP.ResponseCode.BAD_REQUEST, errorResponsePayload,
+    						 Constants.APPLICATION_ACE_GROUPCOMM_CBOR);
+    		return;
+        }
+    	
     	// Retrieve 'get_creds'
     	// If present, this parameter must be a CBOR array or the CBOR simple value Null
     	CBORObject getCreds = joinRequest.get(CBORObject.FromObject((GroupcommParameters.GET_CREDS)));
@@ -724,25 +743,6 @@ public class GroupOSCOREGroupMembershipResource extends CoapResource {
         		}
     				
     		}
-    		
-    		// Retrieve the proof-of-possession nonce and evidence from the Client
-    		CBORObject cnonce = joinRequest.get(CBORObject.FromObject(GroupcommParameters.CNONCE));
-        	
-    		// A client nonce must be included for proof-of-possession for joining OSCORE groups
-        	if (cnonce == null) {
-        		byte[] errorResponsePayload = errorResponseMap.EncodeToBytes();
-        		exchange.respond(CoAP.ResponseCode.BAD_REQUEST, errorResponsePayload,
-        						 Constants.APPLICATION_ACE_GROUPCOMM_CBOR);
-        		return;
-        	}
-
-        	// The client nonce must be wrapped in a binary string for joining OSCORE groups
-        	if (!cnonce.getType().equals(CBORType.ByteString)) {
-        		byte[] errorResponsePayload = errorResponseMap.EncodeToBytes();
-        		exchange.respond(CoAP.ResponseCode.BAD_REQUEST, errorResponsePayload,
-        						 Constants.APPLICATION_ACE_GROUPCOMM_CBOR);
-        		return;
-            }
         	        		
     		// Check the proof-of-possession evidence over
         	// (scope | rsnonce | cnonce), using the Client's public key
@@ -1067,6 +1067,9 @@ public class GroupOSCOREGroupMembershipResource extends CoapResource {
     	coapJoinResponse.getOptions().setContentFormat(Constants.APPLICATION_ACE_GROUPCOMM_CBOR);
     	coapJoinResponse.getOptions().setLocationPath(uriNodeResource);
 
+    	// Store cnonce for this joining node
+    	TokenRepository.getInstance().setCnonce(subject, Base64.getEncoder().encodeToString(cnonce.GetByteString()));
+    	
     	exchange.respond(coapJoinResponse);
     	
     }

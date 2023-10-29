@@ -33,6 +33,7 @@ package se.sics.ace.oscore.rs.oscoreGroupManager;
 
 import java.security.PrivateKey;
 import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,6 +55,7 @@ import se.sics.ace.GroupcommParameters;
 import se.sics.ace.Util;
 import se.sics.ace.coap.CoapReq;
 import se.sics.ace.oscore.GroupInfo;
+import se.sics.ace.rs.TokenRepository;
 
 /**
  * Definition of the Group OSCORE group-membership sub-resource /kdc-cred
@@ -201,6 +203,21 @@ public class GroupOSCORESubResourceKdcCred extends CoapResource {
 		if (targetedGroup.getGmKeyPair().get(KeyKeys.KeyType).AsInt32() == KeyKeys.KeyType_OKP.AsInt32()) {
 			signKeyCurve = targetedGroup.getGmKeyPair().get(KeyKeys.OKP_Curve).AsInt32();
 		}
+		
+		
+		String cNonceString = TokenRepository.getInstance().getCnonce(subject);
+		if(cNonceString == null) {
+		    // Return an error response
+			System.err.println("Error when retrieving the nonce to use as N_C");
+			exchange.respond(CoAP.ResponseCode.INTERNAL_SERVER_ERROR,
+							 "Error when retrieving the nonce to use as N_C");
+		    return;
+		}
+		byte[] cnonce = Base64.getDecoder().decode(cNonceString);
+		
+		// TODO: Per the forthcoming draft-ietf-ace-key-groupcomm-oscore-17, build a
+		// PoP input composed of (N_C | kdcNonce), each wrapped in a CBOR byte string
+		
 		
     	byte[] gmSignature = Util.computeSignature(signKeyCurve, gmPrivKey, kdcNonce);
 

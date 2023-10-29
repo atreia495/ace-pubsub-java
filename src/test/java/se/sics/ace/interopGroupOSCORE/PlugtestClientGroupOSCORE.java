@@ -1688,6 +1688,9 @@ public class PlugtestClientGroupOSCORE {
 	    CBORObject gmPopEvidence = joinResponse.get(CBORObject.FromObject(GroupcommParameters.KDC_CRED_VERIFY));
 	    byte[] rawGmPopEvidence = gmPopEvidence.GetByteString();
         
+	    // TODO: Per the forthcoming draft-ietf-ace-key-groupcomm-oscore-17, build a
+    	// PoP input composed of (N_C | kdcNonce), each wrapped in a CBOR byte string
+	    
         // Invalid Client's PoP signature
         if (!Util.verifySignature(signKeyCurve, gmPublicKey, gmNonce, rawGmPopEvidence)) {
         	Assert.fail("Invalid GM's PoP evidence");
@@ -2403,6 +2406,9 @@ public class PlugtestClientGroupOSCORE {
 	    CBORObject gmPopEvidence = joinResponse.get(CBORObject.FromObject(GroupcommParameters.KDC_CRED_VERIFY));
 	    byte[] rawGmPopEvidence = gmPopEvidence.GetByteString();
         
+	    // TODO: Per the forthcoming draft-ietf-ace-key-groupcomm-oscore-17, build a
+    	// PoP input composed of (N_C | kdcNonce), each wrapped in a CBOR byte string
+	    
         // Invalid Client's PoP signature
         if (!Util.verifySignature(signKeyCurve, gmPublicKey, gmNonce, rawGmPopEvidence)) {
         	Assert.fail("Invalid GM's PoP evidence");
@@ -3116,6 +3122,9 @@ public class PlugtestClientGroupOSCORE {
 	    CBORObject gmPopEvidence = joinResponse.get(CBORObject.FromObject(GroupcommParameters.KDC_CRED_VERIFY));
 	    byte[] rawGmPopEvidence = gmPopEvidence.GetByteString();
         
+	    // TODO: Per the forthcoming draft-ietf-ace-key-groupcomm-oscore-17, build a
+    	// PoP input composed of (N_C | kdcNonce), each wrapped in a CBOR byte string
+	    
         // Invalid Client's PoP signature
         if (!Util.verifySignature(signKeyCurve, gmPublicKey, gmNonce, rawGmPopEvidence)) {
         	Assert.fail("Invalid GM's PoP evidence");
@@ -3839,6 +3848,9 @@ public class PlugtestClientGroupOSCORE {
 	    CBORObject gmPopEvidence = joinResponse.get(CBORObject.FromObject(GroupcommParameters.KDC_CRED_VERIFY));
 	    byte[] rawGmPopEvidence = gmPopEvidence.GetByteString();
         
+	    // TODO: Per the forthcoming draft-ietf-ace-key-groupcomm-oscore-17, build a
+    	// PoP input composed of (N_C | kdcNonce), each wrapped in a CBOR byte string
+	    
         // Invalid Client's PoP signature
         if (!Util.verifySignature(signKeyCurve, gmPublicKey, gmNonce, rawGmPopEvidence)) {
         	Assert.fail("Invalid GM's PoP evidence");

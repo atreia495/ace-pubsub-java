@@ -1036,6 +1036,9 @@ public class TestOscorepClient2RSGroupOSCORE {
     	
     	PublicKey gmPublicKey = gmPublicKeyRetrieved.AsPublicKey();
         
+    	// TODO: Per the forthcoming draft-ietf-ace-key-groupcomm-oscore-17, build a
+    	// PoP input composed of (N_C | kdcNonce), each wrapped in a CBOR byte string
+    	
     	Assert.assertEquals(true, Util.verifySignature(signKeyCurve, gmPublicKey, gmNonce, rawGmPopEvidence));
 
     	
@@ -2067,6 +2070,9 @@ public class TestOscorepClient2RSGroupOSCORE {
     	
     	gmPublicKey = gmPublicKeyRetrieved.AsPublicKey();
     	
+    	// TODO: Per the forthcoming draft-ietf-ace-key-groupcomm-oscore-17, build a
+    	// PoP input composed of (N_C | kdcNonce), each wrapped in a CBOR byte string
+    	
     	Assert.assertEquals(true, Util.verifySignature(signKeyCurve, gmPublicKey, gmNonce, rawGmPopEvidence));
         
         
@@ -2697,6 +2703,9 @@ public class TestOscorepClient2RSGroupOSCORE {
         	rawGmPopEvidence = gmPopEvidence.GetByteString();
         	
         	gmPublicKey = gmPublicKeyRetrieved.AsPublicKey();
+        	
+        	// TODO: Per the forthcoming draft-ietf-ace-key-groupcomm-oscore-17, build a
+        	// PoP input composed of (N_C | kdcNonce), each wrapped in a CBOR byte string
         	
         	Assert.assertEquals(true, Util.verifySignature(signKeyCurve, gmPublicKey, gmNonce, rawGmPopEvidence));
         	
@@ -3453,6 +3462,9 @@ public class TestOscorepClient2RSGroupOSCORE {
 	
 	    PublicKey gmPublicKey = gmPublicKeyRetrieved.AsPublicKey();
 	
+	    // TODO: Per the forthcoming draft-ietf-ace-key-groupcomm-oscore-17, build a
+    	// PoP input composed of (N_C | kdcNonce), each wrapped in a CBOR byte string
+	    
 	    Assert.assertEquals(true, Util.verifySignature(signKeyCurve, gmPublicKey, gmNonce, rawGmPopEvidence));
         
         
@@ -4538,6 +4550,9 @@ public class TestOscorepClient2RSGroupOSCORE {
     	rawGmPopEvidence = gmPopEvidence.GetByteString();
     	
     	gmPublicKey = gmPublicKeyRetrieved.AsPublicKey();
+    	
+    	// TODO: Per the forthcoming draft-ietf-ace-key-groupcomm-oscore-17, build a
+    	// PoP input composed of (N_C | kdcNonce), each wrapped in a CBOR byte string
     	
     	Assert.assertEquals(true, Util.verifySignature(signKeyCurve, gmPublicKey, gmNonce, rawGmPopEvidence));
         

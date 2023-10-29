@@ -996,6 +996,9 @@ public class TestDtlspClientGroupOSCORE {
     	
     	PublicKey gmPublicKey = gmPublicKeyRetrieved.AsPublicKey();
         
+    	// TODO: Per the forthcoming draft-ietf-ace-key-groupcomm-oscore-17, build a
+    	// PoP input composed of (N_C | kdcNonce), each wrapped in a CBOR byte string
+    	
     	Assert.assertEquals(true, Util.verifySignature(signKeyCurve, gmPublicKey, gmNonce, rawGmPopEvidence));
         
         
@@ -1987,6 +1990,9 @@ public class TestDtlspClientGroupOSCORE {
     	
     	gmPublicKey = gmPublicKeyRetrieved.AsPublicKey();
     	
+    	// TODO: Per the forthcoming draft-ietf-ace-key-groupcomm-oscore-17, build a
+    	// PoP input composed of (N_C | kdcNonce), each wrapped in a CBOR byte string
+    	
     	Assert.assertEquals(true, Util.verifySignature(signKeyCurve, gmPublicKey, gmNonce, rawGmPopEvidence));
         
         
@@ -2759,6 +2765,9 @@ public class TestDtlspClientGroupOSCORE {
     	byte[] rawGmPopEvidence = gmPopEvidence.GetByteString();
     	
     	PublicKey gmPublicKey = gmPublicKeyRetrieved.AsPublicKey();
+    	
+    	// TODO: Per the forthcoming draft-ietf-ace-key-groupcomm-oscore-17, build a
+    	// PoP input composed of (N_C | kdcNonce), each wrapped in a CBOR byte string
         
     	Assert.assertEquals(true, Util.verifySignature(signKeyCurve, gmPublicKey, gmNonce, rawGmPopEvidence));
         
@@ -3802,6 +3811,9 @@ public class TestDtlspClientGroupOSCORE {
     	
     	gmPublicKey = gmPublicKeyRetrieved.AsPublicKey();
     	
+    	// TODO: Per the forthcoming draft-ietf-ace-key-groupcomm-oscore-17, build a
+    	// PoP input composed of (N_C | kdcNonce), each wrapped in a CBOR byte string
+    	
     	Assert.assertEquals(true, Util.verifySignature(signKeyCurve, gmPublicKey, gmNonce, rawGmPopEvidence));        
         
     	
@@ -4680,6 +4692,9 @@ public class TestDtlspClientGroupOSCORE {
     	
     	PublicKey gmPublicKey = gmPublicKeyRetrieved.AsPublicKey();
         
+    	// TODO: Per the forthcoming draft-ietf-ace-key-groupcomm-oscore-17, build a
+    	// PoP input composed of (N_C | kdcNonce), each wrapped in a CBOR byte string
+    	
     	Assert.assertEquals(true, Util.verifySignature(signKeyCurve, gmPublicKey, gmNonce, rawGmPopEvidence));
         
         
@@ -5675,6 +5690,9 @@ public class TestDtlspClientGroupOSCORE {
 		
 		gmPublicKey = gmPublicKeyRetrieved.AsPublicKey();
 		
+		// TODO: Per the forthcoming draft-ietf-ace-key-groupcomm-oscore-17, build a
+    	// PoP input composed of (N_C | kdcNonce), each wrapped in a CBOR byte string
+		
 		Assert.assertEquals(true, Util.verifySignature(signKeyCurve, gmPublicKey, gmNonce, rawGmPopEvidence));
         
 		
@@ -6452,6 +6470,9 @@ public class TestDtlspClientGroupOSCORE {
     	
     	PublicKey gmPublicKey = gmPublicKeyRetrieved.AsPublicKey();
         
+    	// TODO: Per the forthcoming draft-ietf-ace-key-groupcomm-oscore-17, build a
+    	// PoP input composed of (N_C | kdcNonce), each wrapped in a CBOR byte string
+    	
     	Assert.assertEquals(true, Util.verifySignature(signKeyCurve, gmPublicKey, gmNonce, rawGmPopEvidence));
         
         
@@ -7501,6 +7522,9 @@ public class TestDtlspClientGroupOSCORE {
 		
 		gmPublicKey = gmPublicKeyRetrieved.AsPublicKey();
 		
+		// TODO: Per the forthcoming draft-ietf-ace-key-groupcomm-oscore-17, build a
+    	// PoP input composed of (N_C | kdcNonce), each wrapped in a CBOR byte string
+		
 		Assert.assertEquals(true, Util.verifySignature(signKeyCurve, gmPublicKey, gmNonce, rawGmPopEvidence));
         
         
@@ -8510,6 +8534,9 @@ public class TestDtlspClientGroupOSCORE {
     	
     	PublicKey gmPublicKey = gmPublicKeyRetrieved.AsPublicKey();
         
+    	// TODO: Per the forthcoming draft-ietf-ace-key-groupcomm-oscore-17, build a
+    	// PoP input composed of (N_C | kdcNonce), each wrapped in a CBOR byte string
+    	
     	Assert.assertEquals(true, Util.verifySignature(signKeyCurve, gmPublicKey, gmNonce, rawGmPopEvidence));
         
         
@@ -9506,6 +9533,9 @@ public class TestDtlspClientGroupOSCORE {
 		
 		gmPublicKey = gmPublicKeyRetrieved.AsPublicKey();
 		
+		// TODO: Per the forthcoming draft-ietf-ace-key-groupcomm-oscore-17, build a
+    	// PoP input composed of (N_C | kdcNonce), each wrapped in a CBOR byte string
+		
 		Assert.assertEquals(true, Util.verifySignature(signKeyCurve, gmPublicKey, gmNonce, rawGmPopEvidence));
         
         
@@ -10105,6 +10135,9 @@ public class TestDtlspClientGroupOSCORE {
     	rawGmPopEvidence = gmPopEvidence.GetByteString();
     	
     	gmPublicKey = gmPublicKeyRetrieved.AsPublicKey();
+    	
+    	// TODO: Per the forthcoming draft-ietf-ace-key-groupcomm-oscore-17, build a
+    	// PoP input composed of (N_C | kdcNonce), each wrapped in a CBOR byte string
     	
     	Assert.assertEquals(true, Util.verifySignature(signKeyCurve, gmPublicKey, gmNonce, rawGmPopEvidence));
      
@@ -10849,6 +10882,9 @@ public class TestDtlspClientGroupOSCORE {
 
     	PublicKey gmPublicKey = gmPublicKeyRetrieved.AsPublicKey();
         
+    	// TODO: Per the forthcoming draft-ietf-ace-key-groupcomm-oscore-17, build a
+    	// PoP input composed of (N_C | kdcNonce), each wrapped in a CBOR byte string
+    	
     	Assert.assertEquals(true, Util.verifySignature(signKeyCurve, gmPublicKey, gmNonce, rawGmPopEvidence));
         
         
@@ -11903,6 +11939,9 @@ public class TestDtlspClientGroupOSCORE {
 		rawGmPopEvidence = gmPopEvidence.GetByteString();
 		
 		gmPublicKey = gmPublicKeyRetrieved.AsPublicKey();
+		
+		// TODO: Per the forthcoming draft-ietf-ace-key-groupcomm-oscore-17, build a
+    	// PoP input composed of (N_C | kdcNonce), each wrapped in a CBOR byte string
 		
 		Assert.assertEquals(true, Util.verifySignature(signKeyCurve, gmPublicKey, gmNonce, rawGmPopEvidence));
         
