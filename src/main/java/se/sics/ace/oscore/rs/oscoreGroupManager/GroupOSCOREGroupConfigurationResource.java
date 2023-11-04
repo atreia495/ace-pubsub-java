@@ -816,6 +816,7 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
      * Return the default value for the 'ecdh_params' parameter
      * 
      * @param signAlg  the value of the parameter sign_alg
+     * @param groupMode  true if the group uses the group mode, or false otherwise
      * @return  the default value, or null in case of invalid parameter
      */
     public static CBORObject getDefaultValueEcdhParams(CBORObject signAlg, boolean groupMode) {
@@ -864,15 +865,16 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
      * Create a preliminary group configuration
      * 
      * @param requestCBOR  the payload of the request from the administrator, as a CBOR map
-     * @param creation  true (false) if the request was a POST (PUT) request to the group-collection (group-configuration) resource 
+     * @param baseConfiguration  the current group configuration, if the request was a PUT request to the group-configuration resource;
+     *                           or null, if the request was a POST request to the group-collection resource 
      * @return  a CBOR array with up to four elements, in this order
      * 			- The CoAP response code for the response to the Administrator, as a CBOR integer
      * 			- The CoAP Content-Format to use in the response to the Administrator, as a CBOR integer. It can be null
      * 			- The payload for the response to the Administrator, as a CBOR map or a CBOR text string. It can be null
      * 			- Present only in case of success, the preliminary group configuration, as a CBOR map
      * 
-     */
-    static public CBORObject buildGroupConfiguration(final CBORObject requestCBOR, final boolean creation) {
+    */
+    static public CBORObject buildGroupConfiguration(final CBORObject requestCBOR, final CBORObject baseConfiguration) {
     	
     	CBORObject parameterName;
 		CBORObject parameterValue = null;
@@ -912,7 +914,7 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
     	parameterList.add(GroupcommParameters.APP_GROUPS.AsInt32());
     	parameterList.add(GroupcommParameters.JOINING_URI.AsInt32());
     	parameterList.add(GroupcommParameters.AS_URI.AsInt32());
-    	    	
+
     	for (Integer i : parameterList) {
     		parameterName = CBORObject.FromObject(i.intValue());
     		
@@ -977,6 +979,8 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
 				boolean inconsistentValue = ((forcedValue != null) && (parameterValue.equals(forcedValue) == false));
 				
 				if (omit || inconsistentValue) {
+					// The Administrator has specified a parameter that was not supposed to be specified at all,
+					// or a parameter with a value different than the value that must be taken by such a parameter					
 					errorString = new String ("Invalid use of the parameter with abbreviation' " + parameterName + "'");
 					responseCode = CoAP.ResponseCode.BAD_REQUEST.value;
 					contentFormat = Constants.APPLICATION_ACE_GROUPCOMM_CBOR;
@@ -986,11 +990,11 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
 					System.err.println(errorString);
 					break;
 				}
-				
-				// Check that the parameter value is meaningful
+
 				boolean isMeaningful = GroupcommParameters.isAdminParameterValueMeaningful(parameterName, parameterValue);
 				
 				if (isMeaningful == false) {
+					// The value of the parameter is not valid
 					errorString = new String ("Invalid use of the parameter with abbreviation' " + parameterName + "'");
 					responseCode = CoAP.ResponseCode.BAD_REQUEST.value;
 					responsePayload = CBORObject.FromObject(errorString);
@@ -1012,16 +1016,34 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
 					parameterValue = forcedValue;
 				}
 				else {
-					// Retrieve the default value
-					if (parameterName.equals(GroupcommParameters.SIGN_PARAMS)) {
-						parameterValue = getDefaultValueSignParams(groupConfiguration.get(GroupcommParameters.SIGN_ALG));
+					boolean useDefaultValue = true;
+
+					if (baseConfiguration != null) {
+						// This request was sent to overwrite the current group configuration
+						
+						// These parameters do not change in case of group configuration update.
+						// They must keep the same value that they have in the current group configuration.
+						if (parameterName.equals(GroupcommParameters.GROUP_MODE) ||
+							parameterName.equals(GroupcommParameters.PAIRWISE_MODE) ||
+							parameterName.equals(GroupcommParameters.GID_REUSE)) {
+							parameterValue = baseConfiguration.get(parameterName);
+						}
+						
+						useDefaultValue = false;
 					}
-					else if (parameterName.equals(GroupcommParameters.ECDH_PARAMS)) {
-						boolean groupMode = groupConfiguration.get(GroupcommParameters.GROUP_MODE).equals(CBORObject.True) ? true : false;
-						parameterValue = getDefaultValueEcdhParams(groupConfiguration.get(GroupcommParameters.SIGN_ALG), groupMode);
-					}
-					else {
-						parameterValue = getDefaultValue(parameterName);
+					
+					if (useDefaultValue == true) {
+						// Retrieve the default value for this parameter
+						if (parameterName.equals(GroupcommParameters.SIGN_PARAMS)) {
+							parameterValue = getDefaultValueSignParams(groupConfiguration.get(GroupcommParameters.SIGN_ALG));
+						}
+						else if (parameterName.equals(GroupcommParameters.ECDH_PARAMS)) {
+							boolean groupMode = groupConfiguration.get(GroupcommParameters.GROUP_MODE).equals(CBORObject.True) ? true : false;
+							parameterValue = getDefaultValueEcdhParams(groupConfiguration.get(GroupcommParameters.SIGN_ALG), groupMode);
+						}
+						else {
+							parameterValue = getDefaultValue(parameterName);
+						}
 					}
 					
 					if (parameterValue == null) {
@@ -1048,7 +1070,7 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
     	}
     	// Success
     	else {
-	    	responseCode = creation ? CoAP.ResponseCode.CREATED.value : CoAP.ResponseCode.CHANGED.value;
+	    	responseCode = (baseConfiguration == null) ? CoAP.ResponseCode.CREATED.value : CoAP.ResponseCode.CHANGED.value;
 	    	contentFormat = Constants.APPLICATION_ACE_GROUPCOMM_CBOR;
 	    	responsePayload = CBORObject.NewMap();
 	    	ret.Add(responseCode);

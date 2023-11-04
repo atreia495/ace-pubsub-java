@@ -534,7 +534,7 @@ public class Util {
      * Check if a permission set includes a specified admin permission, encoded using the AIF-OSCORE-GROUPCOMM data model
      * 
      * @param permissionSet  the set of admin permissions
-     * @param permission  the permission to remove from the current set of admin permissions
+     * @param permission  the permission whose presence has to be checked in the set of admin permissions
      * 
       * @return  true if the permission set includes the specified admin permission, false otherwise
       * @throws AceException  if the set of admin permissions is inconsistent with the AIF-OSCORE-GROUPCOMM data model

@@ -285,10 +285,10 @@ public class GroupcommParameters {
     
 	/**
      * Check whether the specified parameter is meaningful, i.e., it is of the expected CBOR type
-     * and it has the right value if it of CBOR type simple value.
+     * and it has the right value if it is of CBOR type simple value.
      * 
      * @param name  the CBOR abbreviation of the parameter to be checked
-     * @param name  the value of the parameter to be checked
+     * @param value  the value of the parameter to be checked
      * @return  true if the parameter is meaningful, or false if not meaningful or not recognized
      */
     public static boolean isAdminRequestParameterMeaningful(CBORObject name, CBORObject value) {

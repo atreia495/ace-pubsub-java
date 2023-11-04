@@ -81,16 +81,16 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
 	
 	private Map<String, GroupInfo> existingGroupInfo = new HashMap<>();
 	
-    private final static String rootGroupMembershipResourcePath = "ace-group";
-    
-    private final static String groupCollectionResourcePath = "admin";
-	
 	private Map<String, Map<String, Set<Short>>> myScopes;
 	
 	private GroupOSCOREValidator valid;
 	
 	private final String asUri = new String("coap://as.example.com/token");
 	
+    private final static String rootGroupMembershipResourcePath = "ace-group";
+    
+    private final static String groupCollectionResourcePath = "admin";
+		
 	/**
      * Constructor
      * @param resId  the resource identifier
@@ -433,7 +433,7 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
     	}
     	
     	// The payload of the request must not include the status parameters
-    	// 'rt', 'ace_groupcomm_profile', and 'joining_uri'
+    	// 'rt', 'ace_groupcomm_profile', and 'joining_uri', among others
     	if (requestCBOR.getKeys().contains(GroupcommParameters.RT) ||
     		requestCBOR.getKeys().contains(GroupcommParameters.ACE_GROUPCOMM_PROFILE) ||
     		requestCBOR.getKeys().contains(GroupcommParameters.JOINING_URI) ||
@@ -519,7 +519,7 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
     	CBORObject requestCBOR = CBORObject.DecodeFromBytes(request.getPayload());
 
     	// Build a preliminary group configuration, with the final name still to be determined
-    	CBORObject buildOutput = GroupOSCOREGroupConfigurationResource.buildGroupConfiguration(requestCBOR, true);
+    	CBORObject buildOutput = GroupOSCOREGroupConfigurationResource.buildGroupConfiguration(requestCBOR, null);
     	
     	// In case of failure, return the information to return an error response to the Administrator
     	if (buildOutput.size() == 3) {
