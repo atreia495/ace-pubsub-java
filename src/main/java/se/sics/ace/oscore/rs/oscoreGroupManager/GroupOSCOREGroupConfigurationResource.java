@@ -1027,9 +1027,8 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
 							parameterName.equals(GroupcommParameters.PAIRWISE_MODE) ||
 							parameterName.equals(GroupcommParameters.GID_REUSE)) {
 							parameterValue = baseConfiguration.get(parameterName);
+							useDefaultValue = false;
 						}
-						
-						useDefaultValue = false;
 					}
 					
 					if (useDefaultValue == true) {
