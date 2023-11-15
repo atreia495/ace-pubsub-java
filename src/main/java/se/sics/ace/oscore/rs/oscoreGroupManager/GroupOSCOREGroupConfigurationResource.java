@@ -699,6 +699,9 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
     	if (paramAbbreviation.equals(GroupcommParameters.CRED_FMT)) {
     		return CBORObject.FromObject(Constants.COSE_HEADER_PARAM_KCCS); // CWT Claims Set (CCS)
     	}
+    	if (paramAbbreviation.equals(GroupcommParameters.MAX_STALE_SETS)) {
+    		return CBORObject.FromObject(3);
+    	}
     	if (paramAbbreviation.equals(GroupcommParameters.GROUP_MODE)) {
 			return CBORObject.True;
     	}
@@ -707,7 +710,13 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
     	}
     	if (paramAbbreviation.equals(GroupcommParameters.SIGN_ALG)) {
     		return CBORObject.FromObject(AlgorithmID.EDDSA.AsCBOR().AsInt32Value()); // EdDSA
-    	}    	
+    	}
+    	if (paramAbbreviation.equals(GroupcommParameters.DET_REQ)) {
+			return CBORObject.False;
+    	}
+    	if (paramAbbreviation.equals(GroupcommParameters.DET_HASH_ALG)) {
+			return CBORObject.FromObject(-16); // SHA-256
+    	}
     	if (paramAbbreviation.equals(GroupcommParameters.PAIRWISE_MODE)) {
 			return CBORObject.True;
     	}
@@ -717,20 +726,11 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
     	if (paramAbbreviation.equals(GroupcommParameters.ECDH_ALG)) {
 			return CBORObject.FromObject(AlgorithmID.ECDH_SS_HKDF_256.AsCBOR().AsInt32Value()); // ECDH-SS + HKDF-256
     	}
-    	if (paramAbbreviation.equals(GroupcommParameters.DET_REQ)) {
-			return CBORObject.False;
-    	}
-    	if (paramAbbreviation.equals(GroupcommParameters.DET_HASH_ALG)) {
-			return CBORObject.FromObject(AlgorithmID.HMAC_SHA_256.AsCBOR().AsInt32Value());
-    	}
     	if (paramAbbreviation.equals(GroupcommParameters.ACTIVE)) {
     		return CBORObject.False;
     	}
     	if (paramAbbreviation.equals(GroupcommParameters.GROUP_TITLE)) {
     		return CBORObject.Null;
-    	}
-    	if (paramAbbreviation.equals(GroupcommParameters.MAX_STALE_SETS)) {
-    		return CBORObject.FromObject(3);
     	}
     	if (paramAbbreviation.equals(GroupcommParameters.GID_REUSE)) {
     		return CBORObject.False;
