@@ -516,6 +516,7 @@ public class GroupcommParameters {
     				value.equals(AlgorithmID.ECDSA_512.AsCBOR())) {
     				return true;
     			}
+    			// This Group Manager does not support RSA as signature algorithm
     		}
     		return false;
     	}
@@ -523,13 +524,13 @@ public class GroupcommParameters {
     	if (name.equals(SIGN_PARAMS)) {
     		if (value.size() != 2)
     			return false;
-    		if ((value.get(0).getType() != CBORType.Array) || (value.get(0).getType() != CBORType.Array))
+    		if ((value.get(0).getType() != CBORType.Array) || (value.get(1).getType() != CBORType.Array))
     			return false;
-    		if ((value.get(0).size() != 1) || (value.get(0).size() != 2))
+    		if ((value.get(0).size() != 1) || (value.get(1).size() != 2))
     			return false;
     		
 			CBORObject keyType = value.get(0).get(0);
-			if (value.get(1).get(0) != keyType)
+			if (value.get(1).get(0).equals(keyType) == false)
 				return false;
 			
 			CBORObject curve = value.get(1).get(1);
@@ -542,8 +543,8 @@ public class GroupcommParameters {
 				if (curve.equals(KeyKeys.EC2_P256) || curve.equals(KeyKeys.EC2_P384) || curve.equals(KeyKeys.EC2_P521)) {
 					return true;
 				}
-			// This Group Manager does not support RSA as signature algorithm
 			}
+			// This Group Manager does not support RSA as signature algorithm
 			
     		return false;
     	}
@@ -577,13 +578,13 @@ public class GroupcommParameters {
     	if (name.equals(ECDH_PARAMS)) {
     		if (value.size() != 2)
     			return false;
-    		if ((value.get(0).getType() != CBORType.Array) || (value.get(0).getType() != CBORType.Array))
+    		if ((value.get(0).getType() != CBORType.Array) || (value.get(1).getType() != CBORType.Array))
     			return false;
-    		if ((value.get(0).size() != 1) || (value.get(0).size() != 2))
+    		if ((value.get(0).size() != 1) || (value.get(1).size() != 2))
     			return false;
     		
 			CBORObject keyType = value.get(0).get(0);
-			if (value.get(1).get(0) != keyType)
+			if (value.get(1).get(0).equals(keyType) == false)
 				return false;
 			
 			CBORObject curve = value.get(1).get(1);
@@ -597,15 +598,15 @@ public class GroupcommParameters {
 					return true;
 				}
 			}
+			// This Group Manager does not support RSA as signature algorithm
 			
     		return false;
     	}
 
     	if (name.equals(DET_HASH_ALG)) {
     		if (value.getType().equals(CBORType.Integer)) {
-    			if (value.equals(AlgorithmID.HMAC_SHA_256.AsCBOR()) ||
-    				value.equals(AlgorithmID.HMAC_SHA_384.AsCBOR()) ||
-    				value.equals(AlgorithmID.HMAC_SHA_512.AsCBOR())) {
+    			int hashAlg = value.AsInt32(); 
+    			if (hashAlg == -16 || hashAlg == -43 || hashAlg ==  -44) { // SHA-256, SHA-384, SHA-512
     				return true;
     			}
     		}

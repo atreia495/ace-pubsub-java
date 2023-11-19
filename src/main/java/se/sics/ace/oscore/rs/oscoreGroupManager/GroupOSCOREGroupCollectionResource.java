@@ -479,11 +479,8 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
     	Response coapResponse = new Response(responseCode);
     	if (ret.get(1) != null) {
     		int contentFormat = ret.get(1).AsInt32();
-    		if (contentFormat != Constants.APPLICATION_ACE_GROUPCOMM_CBOR) {
-    			System.out.println("Forcing the CoAP Content-Format application/ace-groupcomm+cbor for the successsful response.");
-    		}
+        	coapResponse.getOptions().setContentFormat(contentFormat);
     	}
-    	coapResponse.getOptions().setContentFormat(Constants.APPLICATION_ACE_GROUPCOMM_CBOR);
     	byte[] responsePayload = null;
     	if (ret.get(2) == null) {
     		responsePayload = Bytes.EMPTY;
@@ -559,6 +556,9 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
     	String joiningUri = baseUri + rootGroupMembershipResourcePath + "/" + groupName;
     	groupConfiguration.Add(GroupcommParameters.JOINING_URI, joiningUri);
     	
+    	// Complete the group configuration with the URI of the associated Authorization Server
+    	groupConfiguration.Add(GroupcommParameters.AS_URI, this.asUri);
+    	
     	// Create the internal GroupInfo data structure first
     	// TODO
     	
@@ -569,14 +569,10 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
             																		   this.groupConfigurationResources,
 														  							   this.existingGroupInfo, this.myScopes,
 														  							   this.valid);
-            	groupConfigurationResources.put(groupName, newGroupConfigurationResource);
+            groupConfigurationResources.put(groupName, newGroupConfigurationResource);
             	
     	}
-    	
-    	// Make the group-configuration resource actually accessible
-    	// TODO
-    	
-    	Map<String, Set<Short>> myResource = new HashMap<>();
+
     	Set<Short> actions = new HashSet<>();
     	actions.add(Constants.GET);
     	actions.add(Constants.FETCH);
@@ -590,7 +586,7 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
 			valid.setGroupAdminResources(Collections.singleton(groupCollectionResourcePath + "/" + groupName));
 		} catch (AceException e) {
 			groupConfigurationResources.remove(groupName); // rollback
-			myScopes.remove(groupCollectionResourcePath + "/" + groupName); // rollback
+			myScopes.get(groupCollectionResourcePath).remove(groupCollectionResourcePath + "/" + groupName); // rollback
 			
 			String errorString = new String ("Error while initializing the group-configuration resource");			
     		ret.Add(CoAP.ResponseCode.INTERNAL_SERVER_ERROR.value);
@@ -648,9 +644,8 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
         		for (int i = 0; i < adminScopeEntries.length; i++) {
         		    try {
         		        short permissions = (short) adminScopeEntries[i].get(1).AsInt32();
-        		        permitted = Util.checkGroupOSCOREAdminPermission(permissions, GroupcommParameters.GROUP_OSCORE_ADMIN_CREATE);
-        		        if (permitted) {
-        		        	permitted = permitted & Util.matchingGroupOscoreName(proposedGroupName, adminScopeEntries[i].get(0));
+        		        if (Util.checkGroupOSCOREAdminPermission(permissions, GroupcommParameters.GROUP_OSCORE_ADMIN_CREATE)) {
+        		        	permitted = Util.matchingGroupOscoreName(proposedGroupName, adminScopeEntries[i].get(0));
         		        }
         		    } catch (AceException e) {
         		        System.err.println("Error while verifying the admin permissions: " + e.getMessage());

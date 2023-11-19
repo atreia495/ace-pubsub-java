@@ -255,8 +255,7 @@ public class TestAdminOscorepClient2RSGroupOSCORE {
         
         //Generate a token
         COSEparams coseP = new COSEparams(MessageTag.Encrypt0, AlgorithmID.AES_CCM_16_128_128, AlgorithmID.Direct);
-        CwtCryptoCtx ctx 
-            = CwtCryptoCtx.encrypt0(keyASRS, coseP.getAlg().AsCBOR());
+        CwtCryptoCtx ctx = CwtCryptoCtx.encrypt0(keyASRS, coseP.getAlg().AsCBOR());
         Map<Short, CBORObject> params = new HashMap<>(); 
         
         //Create the scope
@@ -324,8 +323,7 @@ public class TestAdminOscorepClient2RSGroupOSCORE {
         
         System.out.println();
         c = OSCOREProfileRequests.getClient(
-        		new InetSocketAddress("coap://localhost:" + PORT + "/" + groupCollectionResourcePath, PORT),
-        		ctxDB);
+        		new InetSocketAddress("coap://localhost:" + PORT + "/" + groupCollectionResourcePath, PORT), ctxDB);
         
         adminReq = new Request(CoAP.Code.GET);
         adminReq.getOptions().setOscore(new byte[0]);
@@ -345,8 +343,7 @@ public class TestAdminOscorepClient2RSGroupOSCORE {
         
         System.out.println();
         c = OSCOREProfileRequests.getClient(
-        		new InetSocketAddress("coap://localhost:" + PORT + "/" + groupCollectionResourcePath, PORT),
-        		ctxDB);
+        		new InetSocketAddress("coap://localhost:" + PORT + "/" + groupCollectionResourcePath, PORT), ctxDB);
         
         adminReq = new Request(CoAP.Code.FETCH);
         adminReq.getOptions().setOscore(new byte[0]);
@@ -370,8 +367,7 @@ public class TestAdminOscorepClient2RSGroupOSCORE {
 
         System.out.println();
         c = OSCOREProfileRequests.getClient(
-        		new InetSocketAddress("coap://localhost:" + PORT + "/" + groupCollectionResourcePath, PORT),
-        		ctxDB);
+        		new InetSocketAddress("coap://localhost:" + PORT + "/" + groupCollectionResourcePath, PORT), ctxDB);
         
         adminReq = new Request(CoAP.Code.POST);
         adminReq.getOptions().setOscore(new byte[0]);
@@ -404,8 +400,7 @@ public class TestAdminOscorepClient2RSGroupOSCORE {
 
         System.out.println();
         c = OSCOREProfileRequests.getClient(
-        		new InetSocketAddress("coap://localhost:" + PORT + "/" + groupCollectionResourcePath + "/" + "gp1", PORT),
-        							  ctxDB);
+        		new InetSocketAddress("coap://localhost:" + PORT + "/" + groupCollectionResourcePath + "/" + "gp1", PORT), ctxDB);
         
         adminReq = new Request(CoAP.Code.GET);
         adminReq.getOptions().setOscore(new byte[0]);
@@ -426,7 +421,7 @@ public class TestAdminOscorepClient2RSGroupOSCORE {
         }
         System.out.println("Response payload:");
         Util.prettyPrintCborMap(responsePayloadCbor);
-        Assert.assertEquals(22, responsePayloadCbor.size());
+        Assert.assertEquals(23, responsePayloadCbor.size());
         
         // ============================================
         
@@ -434,8 +429,7 @@ public class TestAdminOscorepClient2RSGroupOSCORE {
 
         System.out.println();
         c = OSCOREProfileRequests.getClient(
-        		new InetSocketAddress("coap://localhost:" + PORT + "/" + groupCollectionResourcePath + "/" + "gp1", PORT),
-        							  ctxDB);
+        		new InetSocketAddress("coap://localhost:" + PORT + "/" + groupCollectionResourcePath + "/" + "gp1", PORT), ctxDB);
         
         adminReq = new Request(CoAP.Code.FETCH);
         adminReq.getOptions().setOscore(new byte[0]);
@@ -469,12 +463,31 @@ public class TestAdminOscorepClient2RSGroupOSCORE {
         
         // ============================================
         
+        // Send a GET request to /admin
+        
+        System.out.println();
+        c = OSCOREProfileRequests.getClient(
+        		new InetSocketAddress("coap://localhost:" + PORT + "/" + groupCollectionResourcePath, PORT), ctxDB);
+        
+        adminReq = new Request(CoAP.Code.GET);
+        adminReq.getOptions().setOscore(new byte[0]);
+        
+        adminRes = c.advanced(adminReq);
+        
+        Assert.assertEquals(ResponseCode.CONTENT, adminRes.getCode());
+        System.out.println("Response code: " + adminRes.advanced().getCode());
+        if (adminRes.getOptions().hasContentFormat()) {
+        	System.out.println("Response Content-Format: " + adminRes.getOptions().getContentFormat());
+        }
+        System.out.println("Response payload:\n" + new String(adminRes.getPayload()));
+        
+        // ============================================
+        
         // Send a DELETE request to /admin/gp1
 
         System.out.println();
         c = OSCOREProfileRequests.getClient(
-        		new InetSocketAddress("coap://localhost:" + PORT + "/" + groupCollectionResourcePath + "/" + "gp1", PORT),
-        							  ctxDB);
+        		new InetSocketAddress("coap://localhost:" + PORT + "/" + groupCollectionResourcePath + "/" + "gp1", PORT), ctxDB);
         
         adminReq = new Request(CoAP.Code.DELETE);
         adminReq.getOptions().setOscore(new byte[0]);
@@ -492,8 +505,7 @@ public class TestAdminOscorepClient2RSGroupOSCORE {
         
         System.out.println();
         c = OSCOREProfileRequests.getClient(
-        		new InetSocketAddress("coap://localhost:" + PORT + "/" + groupCollectionResourcePath, PORT),
-        		ctxDB);
+        		new InetSocketAddress("coap://localhost:" + PORT + "/" + groupCollectionResourcePath, PORT), ctxDB);
         
         adminReq = new Request(CoAP.Code.GET);
         adminReq.getOptions().setOscore(new byte[0]);
@@ -513,8 +525,7 @@ public class TestAdminOscorepClient2RSGroupOSCORE {
 
         System.out.println();
         c = OSCOREProfileRequests.getClient(
-        		new InetSocketAddress("coap://localhost:" + PORT + "/" + groupCollectionResourcePath + "/" + "gp1", PORT),
-        							  ctxDB);
+        		new InetSocketAddress("coap://localhost:" + PORT + "/" + groupCollectionResourcePath + "/" + "gp1", PORT), ctxDB);
         
         adminReq = new Request(CoAP.Code.GET);
         adminReq.getOptions().setOscore(new byte[0]);
