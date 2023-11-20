@@ -31,36 +31,23 @@
  *******************************************************************************/
 package se.sics.ace.oscore.rs.oscoreGroupManager;
 
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.CoAP;
-import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.server.resources.CoapExchange;
-import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.californium.elements.util.Bytes;
 
 import com.upokecenter.cbor.CBORObject;
 import com.upokecenter.cbor.CBORType;
 
 import COSE.AlgorithmID;
-import COSE.CoseException;
 import COSE.KeyKeys;
-import COSE.OneKey;
 
 import se.sics.ace.AceException;
 import se.sics.ace.Constants;
@@ -70,10 +57,6 @@ import se.sics.ace.GroupcommPolicies;
 import se.sics.ace.Util;
 import se.sics.ace.coap.CoapReq;
 import se.sics.ace.oscore.GroupInfo;
-import se.sics.ace.oscore.GroupOSCOREInputMaterialObjectParameters;
-import se.sics.ace.oscore.OSCOREInputMaterialObjectParameters;
-import se.sics.ace.oscore.rs.GroupOSCOREValidator;
-import se.sics.ace.rs.TokenRepository;
 
 /**
  * Definition of the Group OSCORE group-collection resource
@@ -89,10 +72,6 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
 	private Map<String, GroupOSCOREGroupConfigurationResource> groupConfigurationResources;
 	
 	private Map<String, GroupInfo> existingGroupInfo;
-		
-	private Map<String, Map<String, Set<Short>>> myScopes;
-	
-	private GroupOSCOREValidator valid;
 	
 	/**
      * Constructor
@@ -105,9 +84,7 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
     public GroupOSCOREGroupConfigurationResource(String resId,
     											 CBORObject groupConfiguration,
     											 Map<String, GroupOSCOREGroupConfigurationResource> groupConfigurationResources,
-			  									 Map<String, GroupInfo> existingGroupInfo,
-    										     Map<String, Map<String, Set<Short>>> myScopes,
-    										     GroupOSCOREValidator valid) {
+			  									 Map<String, GroupInfo> existingGroupInfo) {
         
         // set resource identifier
         super(resId);
@@ -118,8 +95,6 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
         this.groupConfiguration = groupConfiguration;
         this.groupConfigurationResources = groupConfigurationResources;
         this.existingGroupInfo = existingGroupInfo;
-        this.myScopes = myScopes;
-        this.valid = valid;
 
     }
 
@@ -507,21 +482,6 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
     	coapResponse.setPayload(responsePayload);
 
     	exchange.respond(coapResponse);
-    	
-    	
-    	/*
-    	CBORObject myResponse = CBORObject.NewMap();
-    	
-    	// Fill in the response
-
-    	byte[] responsePayload = myResponse.EncodeToBytes();
-    	
-    	Response coapResponse = new Response(CoAP.ResponseCode.CONTENT);
-    	coapResponse.setPayload(responsePayload);
-    	coapResponse.getOptions().setContentFormat(Constants.APPLICATION_ACE_GROUPCOMM_CBOR);
-
-    	exchange.respond(coapResponse);
-    	*/
     	
     }
     

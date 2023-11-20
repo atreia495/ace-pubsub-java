@@ -31,11 +31,6 @@
  *******************************************************************************/
 package se.sics.ace.oscore.rs.oscoreGroupManager;
 
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.SecureRandom;
-import java.util.Arrays;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -49,16 +44,12 @@ import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.server.resources.CoapExchange;
-import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.californium.elements.util.Bytes;
 
 import com.upokecenter.cbor.CBORObject;
 import com.upokecenter.cbor.CBORType;
 
 import COSE.AlgorithmID;
-import COSE.CoseException;
-import COSE.KeyKeys;
-import COSE.OneKey;
 
 import se.sics.ace.AceException;
 import se.sics.ace.Constants;
@@ -67,10 +58,7 @@ import se.sics.ace.GroupcommParameters;
 import se.sics.ace.Util;
 import se.sics.ace.coap.CoapReq;
 import se.sics.ace.oscore.GroupInfo;
-import se.sics.ace.oscore.GroupOSCOREInputMaterialObjectParameters;
-import se.sics.ace.oscore.OSCOREInputMaterialObjectParameters;
 import se.sics.ace.oscore.rs.GroupOSCOREValidator;
-import se.sics.ace.rs.TokenRepository;
 
 /**
  * Definition of the Group OSCORE group-collection resource
@@ -119,8 +107,7 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
         GroupOSCOREGroupConfigurationResource testConf = new GroupOSCOREGroupConfigurationResource(
         													"gp500", CBORObject.NewMap(),
         													this.groupConfigurationResources,
-        													this.existingGroupInfo,
-        													this.myScopes, this.valid);
+        													this.existingGroupInfo);
         testConf.getConfigurationParameters().Add(GroupcommParameters.GROUP_NAME, CBORObject.FromObject("gp500"));
         this.groupConfigurationResources.put("gp500", testConf);
         // ============
@@ -570,8 +557,7 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
     	synchronized(groupConfigurationResources) {
             newGroupConfigurationResource =  new GroupOSCOREGroupConfigurationResource(groupName, groupConfiguration,
             																		   this.groupConfigurationResources,
-														  							   this.existingGroupInfo, this.myScopes,
-														  							   this.valid);
+														  							   this.existingGroupInfo);
             groupConfigurationResources.put(groupName, newGroupConfigurationResource);
             	
     	}
@@ -586,7 +572,7 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
     	this.myScopes.get(groupCollectionResourcePath).put(groupCollectionResourcePath + "/" + groupName, actions);
     	
     	try {
-			valid.setGroupAdminResources(Collections.singleton(groupCollectionResourcePath + "/" + groupName));
+			this.valid.setGroupAdminResources(Collections.singleton(groupCollectionResourcePath + "/" + groupName));
 		} catch (AceException e) {
 			groupConfigurationResources.remove(groupName); // rollback
 			myScopes.get(groupCollectionResourcePath).remove(groupCollectionResourcePath + "/" + groupName); // rollback
