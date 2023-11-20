@@ -398,7 +398,6 @@ public class TestAdminOscorepClient2RSGroupOSCORE {
         
         // Send a GET request to /admin/gp1
 
-        System.out.println();
         c = OSCOREProfileRequests.getClient(
         		new InetSocketAddress("coap://localhost:" + PORT + "/" + groupCollectionResourcePath + "/" + "gp1", PORT), ctxDB);
         
@@ -427,7 +426,6 @@ public class TestAdminOscorepClient2RSGroupOSCORE {
         
         // Send a FETCH request to /admin/gp1
 
-        System.out.println();
         c = OSCOREProfileRequests.getClient(
         		new InetSocketAddress("coap://localhost:" + PORT + "/" + groupCollectionResourcePath + "/" + "gp1", PORT), ctxDB);
         
@@ -465,7 +463,6 @@ public class TestAdminOscorepClient2RSGroupOSCORE {
         
         // Send a GET request to /admin
         
-        System.out.println();
         c = OSCOREProfileRequests.getClient(
         		new InetSocketAddress("coap://localhost:" + PORT + "/" + groupCollectionResourcePath, PORT), ctxDB);
         
@@ -483,9 +480,70 @@ public class TestAdminOscorepClient2RSGroupOSCORE {
         
         // ============================================
         
-        // Send a DELETE request to /admin/gp1
+        // Send a PUT request to /admin/gp1
 
         System.out.println();
+        c = OSCOREProfileRequests.getClient(
+        		new InetSocketAddress("coap://localhost:" + PORT + "/" + groupCollectionResourcePath + "/" + "gp1", PORT), ctxDB);
+        
+        adminReq = new Request(CoAP.Code.PUT);
+        adminReq.getOptions().setOscore(new byte[0]);
+        adminReq.getOptions().setContentFormat(Constants.APPLICATION_ACE_GROUPCOMM_CBOR);
+        requestPayloadCbor = CBORObject.NewMap();
+        requestPayloadCbor.Add(GroupcommParameters.GROUP_TITLE, CBORObject.FromObject("My first group"));
+        adminReq.setPayload(requestPayloadCbor.EncodeToBytes());
+        
+        adminRes = c.advanced(adminReq);
+        
+        Assert.assertNotNull(adminRes);
+        Assert.assertEquals(ResponseCode.CHANGED, adminRes.getCode());
+        Assert.assertNotNull(adminRes.getPayload());
+        
+        responsePayloadCbor = CBORObject.DecodeFromBytes(adminRes.getPayload());
+        Assert.assertNotNull(responsePayloadCbor);
+        
+        Assert.assertEquals(CBORType.Map, responsePayloadCbor.getType());
+        System.out.println("Response code: " + adminRes.advanced().getCode());
+        if (adminRes.getOptions().hasContentFormat()) {
+        	System.out.println("Response Content-Format: " + adminRes.getOptions().getContentFormat());
+        }
+        System.out.println("Response payload:");
+        Util.prettyPrintCborMap(responsePayloadCbor);
+        Assert.assertEquals(3, responsePayloadCbor.size());
+        
+        // ============================================
+        
+        // Send a GET request to /admin/gp1
+
+        c = OSCOREProfileRequests.getClient(
+        		new InetSocketAddress("coap://localhost:" + PORT + "/" + groupCollectionResourcePath + "/" + "gp1", PORT), ctxDB);
+        
+        adminReq = new Request(CoAP.Code.GET);
+        adminReq.getOptions().setOscore(new byte[0]);
+        
+        adminRes = c.advanced(adminReq);
+        
+        Assert.assertNotNull(adminRes);
+        Assert.assertEquals(ResponseCode.CONTENT, adminRes.getCode());
+        Assert.assertNotNull(adminRes.getPayload());
+        
+        responsePayloadCbor = CBORObject.DecodeFromBytes(adminRes.getPayload());
+        Assert.assertNotNull(responsePayloadCbor);
+        
+        Assert.assertEquals(CBORType.Map, responsePayloadCbor.getType());
+        System.out.println("Response code: " + adminRes.advanced().getCode());
+        if (adminRes.getOptions().hasContentFormat()) {
+        	System.out.println("Response Content-Format: " + adminRes.getOptions().getContentFormat());
+        }
+        System.out.println("Response payload:");
+        Util.prettyPrintCborMap(responsePayloadCbor);
+        Assert.assertEquals(23, responsePayloadCbor.size());
+        Assert.assertEquals("My first group", responsePayloadCbor.get(GroupcommParameters.GROUP_TITLE).AsString());
+        
+        // ============================================
+        
+        // Send a DELETE request to /admin/gp1
+
         c = OSCOREProfileRequests.getClient(
         		new InetSocketAddress("coap://localhost:" + PORT + "/" + groupCollectionResourcePath + "/" + "gp1", PORT), ctxDB);
         
@@ -535,6 +593,26 @@ public class TestAdminOscorepClient2RSGroupOSCORE {
         Assert.assertEquals(ResponseCode.NOT_FOUND, adminRes.getCode());
         Assert.assertArrayEquals(Bytes.EMPTY, adminRes.getPayload());
         
+        // ============================================
+        
+        // Send a PUT request to /admin/gp1
+
+        System.out.println();
+        c = OSCOREProfileRequests.getClient(
+        		new InetSocketAddress("coap://localhost:" + PORT + "/" + groupCollectionResourcePath + "/" + "gp1", PORT), ctxDB);
+        
+        adminReq = new Request(CoAP.Code.PUT);
+        adminReq.getOptions().setOscore(new byte[0]);
+        adminReq.getOptions().setContentFormat(Constants.APPLICATION_ACE_GROUPCOMM_CBOR);
+        requestPayloadCbor = CBORObject.NewMap();
+        requestPayloadCbor.Add(GroupcommParameters.GROUP_TITLE, CBORObject.FromObject("My first group"));
+        adminReq.setPayload(requestPayloadCbor.EncodeToBytes());
+        
+        adminRes = c.advanced(adminReq);
+        
+        Assert.assertNotNull(adminRes);
+        Assert.assertEquals(ResponseCode.NOT_FOUND, adminRes.getCode());
+
     }
     
     /**

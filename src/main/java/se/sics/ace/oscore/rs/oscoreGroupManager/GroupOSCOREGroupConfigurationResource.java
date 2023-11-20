@@ -49,8 +49,10 @@ import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
+import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
+import org.eclipse.californium.elements.util.Bytes;
 
 import com.upokecenter.cbor.CBORObject;
 import com.upokecenter.cbor.CBORType;
@@ -79,6 +81,8 @@ import se.sics.ace.rs.TokenRepository;
 public class GroupOSCOREGroupConfigurationResource extends CoapResource {
 
 	private final static String rootGroupMembershipResourcePath = "ace-group";
+	
+	private final static String groupCollectionResourcePath = "admin";
 	
 	private CBORObject groupConfiguration;
 	
@@ -121,12 +125,14 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
 
     @Override
     public synchronized void handleGET(CoapExchange exchange) {
-    	System.out.println("GET request reached the GM");
+
+    	System.out.println("GET request reached the GM at /" + groupCollectionResourcePath + "/" + this.getName());
         
     	// Process the request for retrieving the Group Configuration
     	
     	String subject = null;
     	String errorString = null;
+    	
     	Request request = exchange.advanced().getCurrentRequest();
         
         try {
@@ -136,8 +142,9 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
 		}
         if (subject == null) {
         	// At this point, this should not really happen, due to the earlier check at the Token Repository
-        	exchange.respond(CoAP.ResponseCode.UNAUTHORIZED,
-        					 "Unauthenticated client tried to get access");
+        	errorString = new String("Unauthenticated client tried to get access");
+        	System.err.println(errorString);
+        	exchange.respond(CoAP.ResponseCode.UNAUTHORIZED, errorString);
         	return;
         }
     	
@@ -154,9 +161,8 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
         for (int i = 0; i < adminScopeEntries.length; i++) {
             try {
                 short permissions = (short) adminScopeEntries[i].get(1).AsInt32();
-                permitted = Util.checkGroupOSCOREAdminPermission(permissions, GroupcommParameters.GROUP_OSCORE_ADMIN_READ);
-		        if (permitted) {
-		        	permitted = permitted & Util.matchingGroupOscoreName(this.getName(), adminScopeEntries[i].get(0));
+		        if (Util.checkGroupOSCOREAdminPermission(permissions, GroupcommParameters.GROUP_OSCORE_ADMIN_READ)) {
+		        	permitted = Util.matchingGroupOscoreName(this.getName(), adminScopeEntries[i].get(0));
 		        }
             } catch (AceException e) {
                 System.err.println("Error while verifying the admin permissions: " + e.getMessage());
@@ -193,12 +199,14 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
     
     @Override
     public synchronized void handleFETCH(CoapExchange exchange) {
-    	System.out.println("FETCH request reached the GM");
+
+    	System.out.println("FETCH request reached the GM at /" + groupCollectionResourcePath + "/" + this.getName());
         
     	// Process the request for retrieving part of a Group Configuration by filters
     	
     	String subject = null;
     	String errorString = null;
+    	
     	Request request = exchange.advanced().getCurrentRequest();
         
         try {
@@ -208,8 +216,9 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
 		}
         if (subject == null) {
         	// At this point, this should not really happen, due to the earlier check at the Token Repository
-        	exchange.respond(CoAP.ResponseCode.UNAUTHORIZED,
-        					 "Unauthenticated client tried to get access");
+        	errorString = new String("Unauthenticated client tried to get access");
+        	System.err.println(errorString);
+        	exchange.respond(CoAP.ResponseCode.UNAUTHORIZED, errorString);
         	return;
         }
         
@@ -226,9 +235,8 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
         for (int i = 0; i < adminScopeEntries.length; i++) {
         	try {
         		short permissions = (short) adminScopeEntries[i].get(1).AsInt32();
-            	permitted = Util.checkGroupOSCOREAdminPermission(permissions, GroupcommParameters.GROUP_OSCORE_ADMIN_READ);
-	            if (permitted) {
-	                 permitted = permitted & Util.matchingGroupOscoreName(this.getName(), adminScopeEntries[i].get(0));
+	            if (Util.checkGroupOSCOREAdminPermission(permissions, GroupcommParameters.GROUP_OSCORE_ADMIN_READ)) {
+	                 permitted = Util.matchingGroupOscoreName(this.getName(), adminScopeEntries[i].get(0));
 	            }
 	        } catch (AceException e) {
 	        	System.err.println("Error while verifying the admin permissions: " + e.getMessage());
@@ -327,12 +335,13 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
     @Override
     public synchronized void handlePUT(CoapExchange exchange) {
         
-    	System.out.println("PUT request reached the GM");
+    	System.out.println("PUT request reached the GM at /" + groupCollectionResourcePath + "/" + this.getName());
     	
     	// Process the request for overwriting a Group Configuration
     	
     	String subject = null;
     	String errorString = null;
+    	
     	Request request = exchange.advanced().getCurrentRequest();
         
         try {
@@ -342,8 +351,9 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
 		}
         if (subject == null) {
         	// At this point, this should not really happen, due to the earlier check at the Token Repository
-        	exchange.respond(CoAP.ResponseCode.UNAUTHORIZED,
-        					 "Unauthenticated client tried to get access");
+        	errorString = new String("Unauthenticated client tried to get access");
+        	System.err.println(errorString);
+        	exchange.respond(CoAP.ResponseCode.UNAUTHORIZED, errorString);
         	return;
         }
         
@@ -360,9 +370,8 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
         for (int i = 0; i < adminScopeEntries.length; i++) {
         	try {
         		short permissions = (short) adminScopeEntries[i].get(1).AsInt32();
-            	permitted = Util.checkGroupOSCOREAdminPermission(permissions, GroupcommParameters.GROUP_OSCORE_ADMIN_WRITE);
-	            if (permitted) {
-	                 permitted = permitted & Util.matchingGroupOscoreName(this.getName(), adminScopeEntries[i].get(0));
+	            if (Util.checkGroupOSCOREAdminPermission(permissions, GroupcommParameters.GROUP_OSCORE_ADMIN_WRITE)) {
+	                 permitted = Util.matchingGroupOscoreName(this.getName(), adminScopeEntries[i].get(0));
 	            }
 	        } catch (AceException e) {
 	        	System.err.println("Error while verifying the admin permissions: " + e.getMessage());
@@ -396,11 +405,111 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
     	
     	CBORObject requestCBOR = CBORObject.DecodeFromBytes(requestPayload);
     	
-    	// TODO
+    	// The payload of the request must be a CBOR Map
+    	if (!requestCBOR.getType().equals(CBORType.Map)) {
+        	errorString = new String("Invalid payload format");
+    		System.err.println(errorString);
+			exchange.respond(CoAP.ResponseCode.BAD_REQUEST, errorString);
+    		return;
+    	}
     	
+    	// The payload of the request must not include:
+    	// - The configuration parameters 'group_mode' and 'pairwise_mode'
+    	// - The status parameters 'rt', 'ace_groupcomm_profile', 'joining_uri', 'group_name', and 'gid_reuse'
+    	// - The parameters 'conf_filter' and 'app_groups_diff', as not pertaining to this request
+    	if (requestCBOR.getKeys().contains(GroupcommParameters.GROUP_MODE) ||
+    		requestCBOR.getKeys().contains(GroupcommParameters.PAIRWISE_MODE) ||
+    		requestCBOR.getKeys().contains(GroupcommParameters.RT) ||
+    		requestCBOR.getKeys().contains(GroupcommParameters.ACE_GROUPCOMM_PROFILE) ||
+    		requestCBOR.getKeys().contains(GroupcommParameters.JOINING_URI) ||
+    		requestCBOR.getKeys().contains(GroupcommParameters.GROUP_NAME) ||
+    		requestCBOR.getKeys().contains(GroupcommParameters.GID_REUSE) ||
+    		requestCBOR.getKeys().contains(GroupcommParameters.CONF_FILTER) ||
+    		requestCBOR.getKeys().contains(GroupcommParameters.APP_GROUPS_DIFF)) {
+    		errorString = new String("Invalid set of parameters in the request");
+    		System.err.println(errorString);
+    		exchange.respond(CoAP.ResponseCode.BAD_REQUEST, errorString);
+    		return;
+    	}
+    	
+    	// This Group Manager does not support RSA an signature algorithm
+    	if (requestCBOR.getKeys().contains(GroupcommParameters.SIGN_ALG)) {
+    		CBORObject signAlg = requestCBOR.get(GroupcommParameters.SIGN_ALG);
+    		if (signAlg.equals(AlgorithmID.RSA_PSS_256.AsCBOR()) ||
+    			signAlg.equals(AlgorithmID.RSA_PSS_384.AsCBOR()) ||
+    			signAlg.equals(AlgorithmID.RSA_PSS_512.AsCBOR())) {
+    			
+    		}
+    		CBORObject myResponse = CBORObject.NewMap();
+    		errorString = new String("RSA is not supported as signature algorithm");
+    		myResponse.Add(GroupcommParameters.ERROR, GroupcommErrors.UNSUPPORTED_GROUP_CONF);
+    		myResponse.Add(GroupcommParameters.ERROR_DESCRIPTION, errorString);
+    		System.err.println(errorString);
+    		exchange.respond(CoAP.ResponseCode.SERVICE_UNAVAILABLE, myResponse.EncodeToBytes(), Constants.APPLICATION_ACE_GROUPCOMM_CBOR);
+    		return;
+    	}
+    	
+    	for (CBORObject key : requestCBOR.getKeys()) {
+    		if (!GroupcommParameters.isAdminRequestParameterMeaningful(key, requestCBOR.get(key))) {
+    			errorString = new String("Malformed or unrecognized paramemeter with CBOR abbreviation: " + key.AsInt32());
+    			System.err.println(errorString);
+    			exchange.respond(CoAP.ResponseCode.BAD_REQUEST, errorString);
+    			return;
+    		}
+    	}
+    	
+    	// Build a the updated version of the group configuration, starting from the current version
+    	
+    	CBORObject buildOutput = null;
+    	
+    	synchronized (this.groupConfiguration) {
+    		buildOutput = buildGroupConfiguration(requestCBOR, this.groupConfiguration);
+    				
+			// In case of success, update the group configuration
+			if (buildOutput.size() == 4) {
+				
+				// For the three parameters 'group_name', 'joining_uri', and 'as_uri', the updated
+				// configuration always inherits the same value from the current configuration
+				buildOutput.get(3).Add(GroupcommParameters.GROUP_NAME, groupConfiguration.get(GroupcommParameters.GROUP_NAME));
+				buildOutput.get(3).Add(GroupcommParameters.JOINING_URI, groupConfiguration.get(GroupcommParameters.JOINING_URI));
+				buildOutput.get(3).Add(GroupcommParameters.AS_URI, groupConfiguration.get(GroupcommParameters.AS_URI));
+				
+				this.groupConfiguration = buildOutput.get(3);
+			}
+    	}
     	
     	// Respond to the request for overwriting a Group Configuration
-        
+		
+    	ResponseCode responseCode = CoAP.ResponseCode.valueOf(buildOutput.get(0).AsInt32());
+    	Response coapResponse = new Response(responseCode);
+    	if (buildOutput.get(1) != null) {
+    		int contentFormat = buildOutput.get(1).AsInt32();
+        	coapResponse.getOptions().setContentFormat(contentFormat);
+    	}
+    	byte[] responsePayload = null;
+    	if (buildOutput.get(2) == null) {
+    		responsePayload = Bytes.EMPTY;
+    	}
+    	else if (buildOutput.get(2).getType() == CBORType.Map) {
+    	   	// Prepare the information to return to the Administrator
+    	   	CBORObject finalPayloadCBOR = CBORObject.NewMap();
+        	
+        	finalPayloadCBOR = buildOutput.get(2);    	
+        	finalPayloadCBOR.Add(GroupcommParameters.GROUP_NAME, this.groupConfiguration.get(GroupcommParameters.GROUP_NAME));
+        	finalPayloadCBOR.Add(GroupcommParameters.JOINING_URI, this.groupConfiguration.get(GroupcommParameters.JOINING_URI));
+        	finalPayloadCBOR.Add(GroupcommParameters.AS_URI, this.groupConfiguration.get(GroupcommParameters.AS_URI));
+    		
+    		responsePayload = buildOutput.get(2).EncodeToBytes();
+    	}
+    	else if (buildOutput.get(2).getType() == CBORType.TextString) {
+    		responsePayload = buildOutput.get(2).AsString().getBytes(Constants.charset);
+    	}
+    	coapResponse.setPayload(responsePayload);
+
+    	exchange.respond(coapResponse);
+    	
+    	
+    	/*
     	CBORObject myResponse = CBORObject.NewMap();
     	
     	// Fill in the response
@@ -412,18 +521,20 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
     	coapResponse.getOptions().setContentFormat(Constants.APPLICATION_ACE_GROUPCOMM_CBOR);
 
     	exchange.respond(coapResponse);
+    	*/
     	
     }
     
     @Override
     public synchronized void handlePATCH(CoapExchange exchange) {
         
-    	System.out.println("PATCH request reached the GM");
+    	System.out.println("PATCH request reached the GM at /" + groupCollectionResourcePath + "/" + this.getName());
     	
     	// Process the request for selectively updating a Group Configuration
     	
     	String subject = null;
     	String errorString = null;
+    	
     	Request request = exchange.advanced().getCurrentRequest();
         
         try {
@@ -433,8 +544,9 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
 		}
         if (subject == null) {
         	// At this point, this should not really happen, due to the earlier check at the Token Repository
-        	exchange.respond(CoAP.ResponseCode.UNAUTHORIZED,
-        					 "Unauthenticated client tried to get access");
+        	errorString = new String("Unauthenticated client tried to get access");
+        	System.err.println(errorString);
+        	exchange.respond(CoAP.ResponseCode.UNAUTHORIZED, errorString);
         	return;
         }
         
@@ -451,9 +563,8 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
         for (int i = 0; i < adminScopeEntries.length; i++) {
         	try {
         		short permissions = (short) adminScopeEntries[i].get(1).AsInt32();
-            	permitted = Util.checkGroupOSCOREAdminPermission(permissions, GroupcommParameters.GROUP_OSCORE_ADMIN_WRITE);
-	            if (permitted) {
-	                 permitted = permitted & Util.matchingGroupOscoreName(this.getName(), adminScopeEntries[i].get(0));
+	            if (Util.checkGroupOSCOREAdminPermission(permissions, GroupcommParameters.GROUP_OSCORE_ADMIN_WRITE)) {
+	                 permitted = Util.matchingGroupOscoreName(this.getName(), adminScopeEntries[i].get(0));
 	            }
 	        } catch (AceException e) {
 	        	System.err.println("Error while verifying the admin permissions: " + e.getMessage());
@@ -509,12 +620,13 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
     @Override
     public synchronized void handleIPATCH(CoapExchange exchange) {
         
-    	System.out.println("iPATCH request reached the GM");
+    	System.out.println("iPATCH request reached the GM at /" + groupCollectionResourcePath + "/" + this.getName());
     	
     	// Process the request for selectively updating a Group Configuration
     	
     	String subject = null;
     	String errorString = null;
+    	
     	Request request = exchange.advanced().getCurrentRequest();
         
         try {
@@ -524,8 +636,9 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
 		}
         if (subject == null) {
         	// At this point, this should not really happen, due to the earlier check at the Token Repository
-        	exchange.respond(CoAP.ResponseCode.UNAUTHORIZED,
-        					 "Unauthenticated client tried to get access");
+        	errorString = new String("Unauthenticated client tried to get access");
+        	System.err.println(errorString);
+        	exchange.respond(CoAP.ResponseCode.UNAUTHORIZED, errorString);
         	return;
         }
         
@@ -542,9 +655,8 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
         for (int i = 0; i < adminScopeEntries.length; i++) {
         	try {
         		short permissions = (short) adminScopeEntries[i].get(1).AsInt32();
-            	permitted = Util.checkGroupOSCOREAdminPermission(permissions, GroupcommParameters.GROUP_OSCORE_ADMIN_WRITE);
-	            if (permitted) {
-	                 permitted = permitted & Util.matchingGroupOscoreName(this.getName(), adminScopeEntries[i].get(0));
+	            if (Util.checkGroupOSCOREAdminPermission(permissions, GroupcommParameters.GROUP_OSCORE_ADMIN_WRITE)) {
+	                 permitted = Util.matchingGroupOscoreName(this.getName(), adminScopeEntries[i].get(0));
 	            }
 	        } catch (AceException e) {
 	        	System.err.println("Error while verifying the admin permissions: " + e.getMessage());
@@ -600,12 +712,13 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
     @Override
     public synchronized void handleDELETE(CoapExchange exchange) {
         
-    	System.out.println("DELETE request reached the GM");
+    	System.out.println("DELETE request reached the GM at /" + groupCollectionResourcePath + "/" + this.getName());
     	
     	// Process the request for deleting a Group Configuration
     	
     	String subject = null;
     	String errorString = null;
+    	
     	Request request = exchange.advanced().getCurrentRequest();
         
         try {
@@ -615,8 +728,9 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
 		}
         if (subject == null) {
         	// At this point, this should not really happen, due to the earlier check at the Token Repository
-        	exchange.respond(CoAP.ResponseCode.UNAUTHORIZED,
-        					 "Unauthenticated client tried to get access");
+        	errorString = new String("Unauthenticated client tried to get access");
+        	System.err.println(errorString);
+        	exchange.respond(CoAP.ResponseCode.UNAUTHORIZED, errorString);
         	return;
         }
     	
@@ -633,9 +747,8 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
         for (int i = 0; i < adminScopeEntries.length; i++) {
         	try {
         		short permissions = (short) adminScopeEntries[i].get(1).AsInt32();
-            	permitted = Util.checkGroupOSCOREAdminPermission(permissions, GroupcommParameters.GROUP_OSCORE_ADMIN_DELETE);
-	            if (permitted) {
-	                 permitted = permitted & Util.matchingGroupOscoreName(this.getName(), adminScopeEntries[i].get(0));
+	            if (Util.checkGroupOSCOREAdminPermission(permissions, GroupcommParameters.GROUP_OSCORE_ADMIN_DELETE)) {
+	                 permitted = Util.matchingGroupOscoreName(this.getName(), adminScopeEntries[i].get(0));
 	            }
 	        } catch (AceException e) {
 	        	System.err.println("Error while verifying the admin permissions: " + e.getMessage());
@@ -878,7 +991,7 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
     	
     	CBORObject parameterName;
 		CBORObject parameterValue = null;
-    	CBORObject groupConfiguration = CBORObject.NewMap();
+    	CBORObject newGroupConfiguration = CBORObject.NewMap();
     	CBORObject ret = CBORObject.NewArray();
     	int responseCode = -1;
     	int contentFormat = -1;
@@ -926,25 +1039,25 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
     		if (parameterName.equals(GroupcommParameters.GP_ENC_ALG) ||
     			parameterName.equals(GroupcommParameters.SIGN_ALG)   ||
     			parameterName.equals(GroupcommParameters.SIGN_PARAMS)) {
-    			if (groupConfiguration.get(GroupcommParameters.GROUP_MODE).equals(CBORObject.False)) {
+    			if (newGroupConfiguration.get(GroupcommParameters.GROUP_MODE).equals(CBORObject.False)) {
     				forcedValue = CBORObject.Null;
     			}
     		}
     		else if (parameterName.equals(GroupcommParameters.ALG) ||
     				 parameterName.equals(GroupcommParameters.ECDH_ALG)   ||
     				 parameterName.equals(GroupcommParameters.ECDH_PARAMS)) {
-        		if (groupConfiguration.get(GroupcommParameters.PAIRWISE_MODE).equals(CBORObject.False)) {
+        		if (newGroupConfiguration.get(GroupcommParameters.PAIRWISE_MODE).equals(CBORObject.False)) {
         			forcedValue = CBORObject.Null;
         		}
         	}
     		else if (parameterName.equals(GroupcommParameters.DET_REQ)) {
-        		if (groupConfiguration.get(GroupcommParameters.GROUP_MODE).equals(CBORObject.False)) {
+        		if (newGroupConfiguration.get(GroupcommParameters.GROUP_MODE).equals(CBORObject.False)) {
         			omit = true;
         		}
         	}
     		else if (parameterName.equals(GroupcommParameters.DET_HASH_ALG)) {
-        		if ((groupConfiguration.ContainsKey(GroupcommParameters.DET_REQ) == false) ||
-        			(groupConfiguration.get(GroupcommParameters.DET_REQ).equals(CBORObject.False))) {
+        		if ((newGroupConfiguration.ContainsKey(GroupcommParameters.DET_REQ) == false) ||
+        			(newGroupConfiguration.get(GroupcommParameters.DET_REQ).equals(CBORObject.False))) {
         			omit = true;
         		}
         	}
@@ -1034,11 +1147,11 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
 					if (useDefaultValue == true) {
 						// Retrieve the default value for this parameter
 						if (parameterName.equals(GroupcommParameters.SIGN_PARAMS)) {
-							parameterValue = getDefaultValueSignParams(groupConfiguration.get(GroupcommParameters.SIGN_ALG));
+							parameterValue = getDefaultValueSignParams(newGroupConfiguration.get(GroupcommParameters.SIGN_ALG));
 						}
 						else if (parameterName.equals(GroupcommParameters.ECDH_PARAMS)) {
-							boolean groupMode = groupConfiguration.get(GroupcommParameters.GROUP_MODE).equals(CBORObject.True) ? true : false;
-							parameterValue = getDefaultValueEcdhParams(groupConfiguration.get(GroupcommParameters.SIGN_ALG), groupMode);
+							boolean groupMode = newGroupConfiguration.get(GroupcommParameters.GROUP_MODE).equals(CBORObject.True) ? true : false;
+							parameterValue = getDefaultValueEcdhParams(newGroupConfiguration.get(GroupcommParameters.SIGN_ALG), groupMode);
 						}
 						else {
 							parameterValue = getDefaultValue(parameterName);
@@ -1057,7 +1170,7 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
 			}
 
 			// No error has occurred; include the parameter in the group configuration
-			groupConfiguration.Add(parameterName, parameterValue);
+			newGroupConfiguration.Add(parameterName, parameterValue);
 				
     	}
     	
@@ -1075,7 +1188,7 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
 	    	ret.Add(responseCode);
 			ret.Add(contentFormat);
 			ret.Add(responsePayload);
-			ret.Add(groupConfiguration);
+			ret.Add(newGroupConfiguration);
     	}
     	
     	return ret;

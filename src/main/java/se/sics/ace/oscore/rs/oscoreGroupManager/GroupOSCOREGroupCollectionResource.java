@@ -129,7 +129,8 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
 
     @Override
     public synchronized void handleGET(CoapExchange exchange) {
-    	System.out.println("GET request reached the GM");
+    	
+    	System.out.println("GET request reached the GM at /" + groupCollectionResourcePath);
         
     	// Process the request for retrieving the full list of Group Configurations
     	
@@ -209,7 +210,8 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
     
     @Override
     public synchronized void handleFETCH(CoapExchange exchange) {
-    	System.out.println("FETCH request reached the GM");
+
+    	System.out.println("FETCH request reached the GM at /" + groupCollectionResourcePath);
         
     	// Process the request for retrieving a list of Group Configurations by filters
     	
@@ -348,7 +350,7 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
     @Override
     public synchronized void handlePOST(CoapExchange exchange) {
         
-    	System.out.println("POST request reached the GM");
+    	System.out.println("POST request reached the GM at /" + groupCollectionResourcePath);
     	
     	// Process the request for creating a new Group Configuration
     	
@@ -432,8 +434,9 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
     		return;
     	}
     	
-    	// The payload of the request must not include the status parameters
-    	// 'rt', 'ace_groupcomm_profile', and 'joining_uri', among others
+    	// The payload of the request must not include:
+    	// - The status parameters 'rt', 'ace_groupcomm_profile', and 'joining_uri'
+    	// - The parameters 'conf_filter' and 'app_groups_diff', as not pertaining to this request
     	if (requestCBOR.getKeys().contains(GroupcommParameters.RT) ||
     		requestCBOR.getKeys().contains(GroupcommParameters.ACE_GROUPCOMM_PROFILE) ||
     		requestCBOR.getKeys().contains(GroupcommParameters.JOINING_URI) ||
