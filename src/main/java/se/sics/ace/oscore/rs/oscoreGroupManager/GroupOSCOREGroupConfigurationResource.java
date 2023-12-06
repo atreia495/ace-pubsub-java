@@ -453,6 +453,10 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
 			}
     	}
     	
+    	// TODO
+    	// Update the group information in the corresponding group-membership resource 
+    	
+    	
     	// Respond to the request for overwriting a Group Configuration
 		
     	ResponseCode responseCode = CoAP.ResponseCode.valueOf(buildOutput.get(0).AsInt32());

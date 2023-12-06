@@ -44,6 +44,7 @@ import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.server.resources.CoapExchange;
+import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.californium.elements.util.Bytes;
 
 import com.upokecenter.cbor.CBORObject;
@@ -659,6 +660,108 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
     	
     	return newName;
     	
+    }
+    
+    /**
+      * Create a new group-membership resource, following the creation of the corresponding group-configuration resource
+      * 
+      * @param groupName  the name of the new OSCORE group
+      * 
+      * @return  true if the creation succeeds, false otherwise
+     */
+    private boolean createNewGroupMembershipResource(final String groupName) {
+    	
+    	// Include a new scope associated with the new group-membership resource
+    	
+    	Map<String, Set<Short>> newScopeDescription = new HashMap<>();
+    	Set<Short> actions = new HashSet<>();
+    	actions.add(Constants.FETCH);
+    	newScopeDescription.put(rootGroupMembershipResourcePath, actions);
+    	actions = new HashSet<>();
+    	actions.add(Constants.GET);
+    	actions.add(Constants.POST);
+    	newScopeDescription.put(rootGroupMembershipResourcePath + "/" + groupName, actions);
+    	actions = new HashSet<>();
+    	actions.add(Constants.GET);
+    	actions.add(Constants.FETCH);
+    	newScopeDescription.put(rootGroupMembershipResourcePath + "/" + groupName + "/creds", actions);
+    	actions = new HashSet<>();
+    	actions.add(Constants.GET);
+    	newScopeDescription.put(rootGroupMembershipResourcePath + "/" + groupName + "/kdc-cred", actions);
+    	newScopeDescription.put(rootGroupMembershipResourcePath + "/" + groupName + "/verif-data", actions);
+    	newScopeDescription.put(rootGroupMembershipResourcePath + "/" + groupName + "/num", actions);
+    	newScopeDescription.put(rootGroupMembershipResourcePath + "/" + groupName + "/active", actions);
+    	newScopeDescription.put(rootGroupMembershipResourcePath + "/" + groupName + "/policies", actions);
+    	actions = new HashSet<>();
+    	actions.add(Constants.FETCH);
+    	newScopeDescription.put(rootGroupMembershipResourcePath + "/" + groupName + "/stale-sids", actions);
+    	myScopes.put(rootGroupMembershipResourcePath + "/" + groupName, newScopeDescription);
+    	
+    	
+    	// Mark the new group-membership resource and its sub-resources as such for the access Validator
+    	
+    	try {
+	    	valid.setGroupMembershipResources(Collections.singleton(rootGroupMembershipResourcePath + "/" + groupName));
+	    	valid.setGroupMembershipResources(Collections.singleton(rootGroupMembershipResourcePath + "/" + groupName + "/creds"));
+	    	valid.setGroupMembershipResources(Collections.singleton(rootGroupMembershipResourcePath + "/" + groupName + "/kdc-cred"));
+	    	valid.setGroupMembershipResources(Collections.singleton(rootGroupMembershipResourcePath + "/" + groupName + "/verif-data"));
+	    	valid.setGroupMembershipResources(Collections.singleton(rootGroupMembershipResourcePath + "/" + groupName + "/num"));
+	    	valid.setGroupMembershipResources(Collections.singleton(rootGroupMembershipResourcePath + "/" + groupName + "/active"));
+	    	valid.setGroupMembershipResources(Collections.singleton(rootGroupMembershipResourcePath + "/" + groupName + "/policies"));
+	    	valid.setGroupMembershipResources(Collections.singleton(rootGroupMembershipResourcePath + "/" + groupName + "/stale-sids"));
+    	}
+    	catch (AceException e) {
+    		System.err.println("Error while verifying the admin permissions: " + e.getMessage());
+    		return false;
+    	}
+    	
+    	
+    	/*
+    	 * Create the actual associated group-membership resource and its sub-resources
+    	*/
+    	// Group-membership resource - The name of the OSCORE group is used as resource name
+    	Resource groupMembershipResource = new GroupOSCOREGroupMembershipResource(groupName,
+    	                                                                          this.existingGroupInfo,
+    	                                                                          rootGroupMembershipResourcePath,
+    	                                                                          this.myScopes,
+    	                                                                          this.valid);
+    	// Add the /creds sub-resource
+    	Resource credsSubResource = new GroupOSCORESubResourceCreds("creds", existingGroupInfo);
+    	groupMembershipResource.add(credsSubResource);
+
+    	// Add the /kdc-cred sub-resource
+    	Resource kdcCredSubResource = new GroupOSCORESubResourceKdcCred("kdc-cred", existingGroupInfo);
+    	groupMembershipResource.add(kdcCredSubResource);
+
+    	// Add the /verif-data sub-resource
+    	Resource verifDataSubResource = new GroupOSCORESubResourceVerifData("verif-data", existingGroupInfo);
+    	groupMembershipResource.add(verifDataSubResource);
+
+    	// Add the /num sub-resource
+    	Resource numSubResource = new GroupOSCORESubResourceNum("num", existingGroupInfo);
+    	groupMembershipResource.add(numSubResource);
+
+    	// Add the /active sub-resource
+    	Resource activeSubResource = new GroupOSCORESubResourceActive("active", existingGroupInfo);
+    	groupMembershipResource.add(activeSubResource);
+
+    	// Add the /policies sub-resource
+    	Resource policiesSubResource = new GroupOSCORESubResourcePolicies("policies", existingGroupInfo);
+    	groupMembershipResource.add(policiesSubResource);
+
+    	// Add the /stale-sids sub-resource
+    	Resource staleSidsSubResource = new GroupOSCORESubResourceStaleSids("stale-sids", existingGroupInfo);
+    	groupMembershipResource.add(staleSidsSubResource);
+
+    	// Add the /nodes sub-resource, as root to actually accessible per-node sub-resources
+    	Resource nodesSubResource = new GroupOSCORESubResourceNodes("nodes");
+    	groupMembershipResource.add(nodesSubResource);
+    	
+    	
+    	
+    	
+    	
+    	return true;
     }
 
 }
