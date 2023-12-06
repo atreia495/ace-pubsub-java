@@ -51,6 +51,7 @@ import org.eclipse.californium.core.coap.CoAP.Code;
 import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Request;
+import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.network.CoapEndpoint.Builder;
@@ -98,6 +99,10 @@ import se.sics.ace.rs.TokenRepository;
  */
 public class TestDtlspAuthzInfoGroupOSCORE {
 
+	static {
+	    CoapConfig.register();
+	}
+	
     private static byte[] key128a = {'c', 'b', 'c', 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
     private static byte[] key128 = {'a', 'b', 'c', 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
     private static CwtCryptoCtx ctx;
@@ -129,6 +134,7 @@ public class TestDtlspAuthzInfoGroupOSCORE {
 	
 	private final static String groupCollectionResourcePath = "admin";
     
+	
     /**
      * Set up the necessary objects.
      * 

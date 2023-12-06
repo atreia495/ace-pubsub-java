@@ -53,6 +53,7 @@ import org.apache.log4j.BasicConfigurator;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
+import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.CoapEndpoint.Builder;
 import org.eclipse.californium.core.server.resources.CoapExchange;
@@ -100,6 +101,11 @@ import se.sics.ace.rs.AuthzInfo;
  */
 public class TestRSdtlsProfile {
 
+	static {
+	    CoapConfig.register();
+	    DtlsConfig.register();
+	}
+	
 	// Uncomment to set ECDSA with curve P-256 as signature algorithm
 	private static int signKeyCurve = KeyKeys.EC2_P256.AsInt32();
 

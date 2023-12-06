@@ -12040,7 +12040,8 @@ public class TestDtlspClientGroupOSCORE {
             System.out.println(ex.getMessage());
             if (ex.getMessage().equals(
                     "org.eclipse.californium.scandium.dtls.DtlsHandshakeTimeoutException: "
-                    + "Handshake flight 5 failed! Stopped by timeout after 4 retransmissions!")) {
+                    + "Handshake flight 5 failed! Stopped by timeout after 4 retransmissions! "
+                    + "Wrong PSK identity or secret?")) {
                 //Everything ok
                 return;
             }

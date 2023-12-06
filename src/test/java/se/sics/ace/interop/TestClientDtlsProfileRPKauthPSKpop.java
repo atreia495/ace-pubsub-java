@@ -44,6 +44,7 @@ import java.util.logging.Logger;
 import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapResponse;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
+import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.CoapEndpoint.Builder;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
@@ -81,6 +82,11 @@ import se.sics.ace.cwt.CwtCryptoCtx;
  */
 public class TestClientDtlsProfileRPKauthPSKpop {
     
+	static {
+	    CoapConfig.register();
+	    DtlsConfig.register();
+	}
+	
 	// Uncomment to set ECDSA with curve P-256 as signature algorithm
 	private static int signKeyCurve = KeyKeys.EC2_P256.AsInt32();
 

@@ -53,6 +53,7 @@ import org.apache.log4j.BasicConfigurator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapServer;
+import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.CoapEndpoint.Builder;
 import org.eclipse.californium.core.server.resources.CoapExchange;
@@ -116,6 +117,11 @@ import se.sics.ace.rs.AsRequestCreationHints;
  */
 public class PlugtestRSGroupOSCORE {
 
+	static {
+	    CoapConfig.register();
+	    DtlsConfig.register();
+	}
+	
 	// For old tests - PSK to encrypt the token (used for both audiences rs1 and rs2)
     private static byte[] key128_token = {(byte)0xa1, (byte)0xa2, (byte)0xa3, 0x04, 
             									0x05, 0x06, 0x07, 0x08, 0x09, 0x0a,

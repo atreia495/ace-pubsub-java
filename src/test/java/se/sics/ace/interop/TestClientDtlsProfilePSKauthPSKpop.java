@@ -40,6 +40,7 @@ import java.util.logging.Logger;
 import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapResponse;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
+import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.CoapEndpoint.Builder;
 import org.eclipse.californium.elements.config.Configuration;
@@ -72,6 +73,11 @@ import se.sics.ace.cwt.CwtCryptoCtx;
  */
 public class TestClientDtlsProfilePSKauthPSKpop {
     
+	static {
+	    CoapConfig.register();
+	    DtlsConfig.register();
+	}
+	
 	/* START LIST OF KEYS */
 	
 	// PSK authentication key for the client (clientA on the AS)

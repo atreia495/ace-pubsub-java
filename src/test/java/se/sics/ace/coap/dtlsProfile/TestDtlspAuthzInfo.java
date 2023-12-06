@@ -48,6 +48,7 @@ import org.eclipse.californium.core.coap.CoAP.Code;
 import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.Request;
+import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.network.Exchange.Origin;
@@ -90,6 +91,10 @@ import se.sics.ace.rs.TokenRepository;
  */
 public class TestDtlspAuthzInfo {
 
+    static {
+        CoapConfig.register();
+    }
+	
     private static byte[] key128a = {'c', 'b', 'c', 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
     private static byte[] key128 = {'a', 'b', 'c', 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
     private static CwtCryptoCtx ctx;
@@ -97,6 +102,7 @@ public class TestDtlspAuthzInfo {
     private static CoapAuthzInfo dai;
     private static CBORObject payload;
     private static CBORObject payload2;
+    
     
     /**
      * Set up the necessary objects.

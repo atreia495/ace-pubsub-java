@@ -52,6 +52,7 @@ import org.eclipse.californium.core.coap.CoAP.Code;
 import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
+import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.oscore.OSCoreCtxDB;
 import org.junit.Assert;
 
@@ -85,6 +86,10 @@ import se.sics.ace.oscore.OSCOREInputMaterialObjectParameters;
  */
 public class PlugtestClientOSCOREGroupOSCORE {
     
+	static {
+	    CoapConfig.register();
+	}
+	
 	/* START LIST OF KEYS */
     
 	// For old tests - PSK to encrypt the token

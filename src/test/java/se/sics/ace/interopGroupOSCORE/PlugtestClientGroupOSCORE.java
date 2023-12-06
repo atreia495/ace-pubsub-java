@@ -49,6 +49,7 @@ import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapResponse;
+import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.CoapEndpoint.Builder;
 import org.eclipse.californium.elements.auth.RawPublicKeyIdentity;
@@ -97,6 +98,11 @@ import se.sics.ace.oscore.OSCOREInputMaterialObjectParameters;
  */
 public class PlugtestClientGroupOSCORE {
     
+	static {
+	    CoapConfig.register();
+	    DtlsConfig.register();
+	}
+	
 	/* START LIST OF KEYS */
 	
 	// For old tests

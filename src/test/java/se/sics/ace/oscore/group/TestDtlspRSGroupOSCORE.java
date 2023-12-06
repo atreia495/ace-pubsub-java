@@ -117,6 +117,10 @@ import se.sics.ace.rs.AsRequestCreationHints;
  *
  */
 public class TestDtlspRSGroupOSCORE {
+	
+	static {
+	    DtlsConfig.register();
+	}
 
     private final static String rootGroupMembershipResourcePath = "ace-group";
     

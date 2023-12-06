@@ -94,6 +94,9 @@ import se.sics.ace.rs.AuthzInfo;
  */
 public class DtlspRSTestServer {
 
+	static {
+	    DtlsConfig.register();
+	}
 
     /**
      * Definition of the Hello-World Resource

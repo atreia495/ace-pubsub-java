@@ -77,6 +77,10 @@ import se.sics.ace.as.Token;
  */
 public class DtlsAS extends CoapServer implements AutoCloseable {
     
+	static {
+		DtlsConfig.register();
+	}
+	
     /**
      * The logger
      */
@@ -96,6 +100,7 @@ public class DtlsAS extends CoapServer implements AutoCloseable {
     private CoapDtlsEndpoint token;
 
     private CoapDtlsEndpoint introspect;
+
 
     /**
      * Constructor.
