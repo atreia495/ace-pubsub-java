@@ -489,6 +489,7 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
     	
     }
     
+    // TODO - This is just a stub
     @Override
     public synchronized void handlePATCH(CoapExchange exchange) {
         
@@ -581,6 +582,7 @@ public class GroupOSCOREGroupConfigurationResource extends CoapResource {
     	
     }
     
+    // TODO - This is just a stub
     @Override
     public synchronized void handleIPATCH(CoapExchange exchange) {
         

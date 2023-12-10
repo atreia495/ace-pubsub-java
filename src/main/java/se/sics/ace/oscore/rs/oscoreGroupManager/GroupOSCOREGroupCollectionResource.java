@@ -31,6 +31,8 @@
  *******************************************************************************/
 package se.sics.ace.oscore.rs.oscoreGroupManager;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,7 +53,9 @@ import com.upokecenter.cbor.CBORObject;
 import com.upokecenter.cbor.CBORType;
 
 import COSE.AlgorithmID;
-
+import COSE.CoseException;
+import COSE.OneKey;
+import net.i2p.crypto.eddsa.Utils;
 import se.sics.ace.AceException;
 import se.sics.ace.Constants;
 import se.sics.ace.GroupcommErrors;
@@ -68,12 +72,38 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
 	
 	private Map<String, GroupOSCOREGroupConfigurationResource> groupConfigurationResources = new HashMap<>();
 	
+	Resource groupOSCORERootGroupMembership;
+	
+	private int groupIdPrefixSize;
+	
+	private Set<CBORObject> usedGroupIdPrefixes = new HashSet<>();
+	
+	private String prefixMonitorNames;
+	
+	private String nodeNameSeparator;
+	
+	private int maxStaleIdsSets;
+	
 	private Map<String, GroupInfo> existingGroupInfo = new HashMap<>();
 	
 	private Map<String, Map<String, Set<Short>>> myScopes;
 	
 	private GroupOSCOREValidator valid;
-	
+
+    // The map key is the cryptographic curve; the map key is the hex string of the key pair
+    private Map<CBORObject, String> gmSigningKeyPairs;
+    
+    // For the outer map, the map key is the type of authentication credential
+    // For the inner map, the map key is the cryptographic curve, while the map value is the hex string of the authentication credential
+    private Map<Integer,  Map<CBORObject, String>> gmSigningPublicAuthCred;
+    
+    // The map key is the cryptographic curve; the map key is the hex string of the key pair
+    private Map<CBORObject, String> gmKeyAgreementKeyPairs;
+    
+    // For the outer map, the map key is the type of authentication credential
+    // For the inner map, the map key is the cryptographic curve, while the map value is the hex string of the authentication credential
+    private Map<Integer,  Map<CBORObject, String>> gmKeyAgreementPublicAuthCred;
+    
 	private final String asUri = new String("coap://as.example.com/token");
 	
     private final static String rootGroupMembershipResourcePath = "ace-group";
@@ -83,12 +113,32 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
 	/**
      * Constructor
      * @param resId  the resource identifier
+     * @param groupOSCORERootGroupMembership  the root group-membership resource
+     * @param groupIdPrefixSize  the size in bytes of the Group ID prefixes
+     * @param usedGroupIdPrefixes  the set of currently used Group ID prefixes
+     * @param prefixMonitorNames  initial part of the node name for monitors
+     * @param nodeNameSeparator  for non-monitor members, separator between the two components of the node name
+     * @param maxStaleIdsSets  the maximum number of sets of stale Sender IDs for the group 
      * @param existingGroupInfo  the set of information of the existing OSCORE groups
+     * @param gmSigningKeyPairs  the signing key pairs of the Group Manager
+     * @param gmSigningPublicAuthCred  the signing public authentication credentials of the Group Manager
+     * @param gmKeyAgreementKeyPairs  the key agreement key pairs of the Group Manager
+     * @param gmKeyAgreementPublicAuthCred  the key agreement public authentication credentials of the Group Manager
      * @param myScopes  the scopes of this OSCORE Group Manager
      * @param valid  the access validator of this OSCORE Group Manager
      */
     public GroupOSCOREGroupCollectionResource(String resId,
+    										  Resource groupOSCORERootGroupMembership,
+    										  final int groupIdPrefixSize,
+    										  Set<CBORObject> usedGroupIdPrefixes,
+    										  String prefixMonitorNames,
+    										  String nodeNameSeparator,
+    										  int maxStaleIdsSets,
     										  Map<String, GroupInfo> existingGroupInfo,
+    										  Map<CBORObject, String> gmSigningKeyPairs,
+    										  Map<Integer,  Map<CBORObject, String>> gmSigningPublicAuthCred,
+    										  Map<CBORObject, String> gmKeyAgreementKeyPairs,
+    										  Map<Integer,  Map<CBORObject, String>> gmKeyAgreementPublicAuthCred,
     										  Map<String, Map<String, Set<Short>>> myScopes,
     										  GroupOSCOREValidator valid) {
         
@@ -98,7 +148,23 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
         // set display name
         getAttributes().setTitle("Group OSCORE Group Collection Resource " + resId);
      
+        this.groupOSCORERootGroupMembership = groupOSCORERootGroupMembership;
+        
+        this.groupIdPrefixSize = groupIdPrefixSize;
+        this.usedGroupIdPrefixes = usedGroupIdPrefixes;
+        
+        this.prefixMonitorNames = prefixMonitorNames;
+        this.nodeNameSeparator = nodeNameSeparator;
+        this.maxStaleIdsSets = maxStaleIdsSets;
+        
+        
         this.existingGroupInfo = existingGroupInfo;
+        
+        this.gmSigningKeyPairs = gmSigningKeyPairs;
+        this.gmSigningPublicAuthCred = gmSigningPublicAuthCred;
+        this.gmKeyAgreementKeyPairs = gmKeyAgreementKeyPairs;
+        this.gmKeyAgreementPublicAuthCred = gmKeyAgreementPublicAuthCred;
+        
         this.myScopes = myScopes;
         this.valid = valid;
         
@@ -550,16 +616,13 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
     	// Complete the group configuration with the URI of the associated Authorization Server
     	groupConfiguration.Add(GroupcommParameters.AS_URI, this.asUri);
     	
-    	// Create the internal GroupInfo data structure first
-    	// TODO
-    	
-    	GroupOSCOREGroupConfigurationResource newGroupConfigurationResource = null;
+    	GroupOSCOREGroupConfigurationResource groupConfigurationResource = null;
     	
     	synchronized(groupConfigurationResources) {
-            newGroupConfigurationResource =  new GroupOSCOREGroupConfigurationResource(groupName, groupConfiguration,
-            																		   this.groupConfigurationResources,
-														  							   this.existingGroupInfo);
-            groupConfigurationResources.put(groupName, newGroupConfigurationResource);
+            groupConfigurationResource =  new GroupOSCOREGroupConfigurationResource(groupName, groupConfiguration,
+            																		this.groupConfigurationResources,
+														  							this.existingGroupInfo);
+            groupConfigurationResources.put(groupName, groupConfigurationResource);
             	
     	}
 
@@ -587,11 +650,13 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
     		return ret;
 		}
 
-    	this.add(newGroupConfigurationResource);
+    	this.add(groupConfigurationResource);
     	
     	
     	// Create the group-membership resource and make it actually accessible
-    	// TODO
+    	
+    	createGroupMembershipResource(groupConfigurationResource.getConfigurationParameters());
+    	
     	
     	// Finalize the payload for the response to the Administrator
     	
@@ -665,37 +730,39 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
     /**
       * Create a new group-membership resource, following the creation of the corresponding group-configuration resource
       * 
-      * @param groupName  the name of the new OSCORE group
+      * @param groupConfiguration  the group configuration
       * 
       * @return  true if the creation succeeds, false otherwise
      */
-    private boolean createNewGroupMembershipResource(final String groupName) {
+    private boolean createGroupMembershipResource(final CBORObject groupConfiguration) {
     	
-    	// Include a new scope associated with the new group-membership resource
+    	String groupName = groupConfiguration.get(GroupcommParameters.GROUP_NAME).AsString();
     	
-    	Map<String, Set<Short>> newScopeDescription = new HashMap<>();
+    	// Include a new scope associated with the new group-membership resource and its sub-resources
+    	
+    	Map<String, Set<Short>> scopeDescription = new HashMap<>();
     	Set<Short> actions = new HashSet<>();
     	actions.add(Constants.FETCH);
-    	newScopeDescription.put(rootGroupMembershipResourcePath, actions);
+    	scopeDescription.put(rootGroupMembershipResourcePath, actions);
     	actions = new HashSet<>();
     	actions.add(Constants.GET);
     	actions.add(Constants.POST);
-    	newScopeDescription.put(rootGroupMembershipResourcePath + "/" + groupName, actions);
+    	scopeDescription.put(rootGroupMembershipResourcePath + "/" + groupName, actions);
     	actions = new HashSet<>();
     	actions.add(Constants.GET);
     	actions.add(Constants.FETCH);
-    	newScopeDescription.put(rootGroupMembershipResourcePath + "/" + groupName + "/creds", actions);
+    	scopeDescription.put(rootGroupMembershipResourcePath + "/" + groupName + "/creds", actions);
     	actions = new HashSet<>();
     	actions.add(Constants.GET);
-    	newScopeDescription.put(rootGroupMembershipResourcePath + "/" + groupName + "/kdc-cred", actions);
-    	newScopeDescription.put(rootGroupMembershipResourcePath + "/" + groupName + "/verif-data", actions);
-    	newScopeDescription.put(rootGroupMembershipResourcePath + "/" + groupName + "/num", actions);
-    	newScopeDescription.put(rootGroupMembershipResourcePath + "/" + groupName + "/active", actions);
-    	newScopeDescription.put(rootGroupMembershipResourcePath + "/" + groupName + "/policies", actions);
+    	scopeDescription.put(rootGroupMembershipResourcePath + "/" + groupName + "/kdc-cred", actions);
+    	scopeDescription.put(rootGroupMembershipResourcePath + "/" + groupName + "/verif-data", actions);
+    	scopeDescription.put(rootGroupMembershipResourcePath + "/" + groupName + "/num", actions);
+    	scopeDescription.put(rootGroupMembershipResourcePath + "/" + groupName + "/active", actions);
+    	scopeDescription.put(rootGroupMembershipResourcePath + "/" + groupName + "/policies", actions);
     	actions = new HashSet<>();
     	actions.add(Constants.FETCH);
-    	newScopeDescription.put(rootGroupMembershipResourcePath + "/" + groupName + "/stale-sids", actions);
-    	myScopes.put(rootGroupMembershipResourcePath + "/" + groupName, newScopeDescription);
+    	scopeDescription.put(rootGroupMembershipResourcePath + "/" + groupName + "/stale-sids", actions);
+    	myScopes.put(rootGroupMembershipResourcePath + "/" + groupName, scopeDescription);
     	
     	
     	// Mark the new group-membership resource and its sub-resources as such for the access Validator
@@ -716,9 +783,8 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
     	}
     	
     	
-    	/*
-    	 * Create the actual associated group-membership resource and its sub-resources
-    	*/
+    	// Create the actual associated group-membership resource and its sub-resources
+
     	// Group-membership resource - The name of the OSCORE group is used as resource name
     	Resource groupMembershipResource = new GroupOSCOREGroupMembershipResource(groupName,
     	                                                                          this.existingGroupInfo,
@@ -758,10 +824,268 @@ public class GroupOSCOREGroupCollectionResource extends CoapResource {
     	groupMembershipResource.add(nodesSubResource);
     	
     	
+    	// Create the GroupInfo object according to the group configuration
+    	
+    	final byte[] masterSecret = new byte[16];
+    	try {
+			SecureRandom.getInstanceStrong().nextBytes(masterSecret);
+		} catch (NoSuchAlgorithmException e) {
+			System.err.println("Error when generating the OSCORE Master Secret for the OSCORE group with name \"" + groupName + "\"");
+			e.printStackTrace();
+			return false;
+		}
+    	
+    	final byte[] masterSalt = new byte[8];
+    	try {
+			SecureRandom.getInstanceStrong().nextBytes(masterSalt);
+		} catch (NoSuchAlgorithmException e) {
+			System.err.println("Error when generating the OSCORE Master Salt for the OSCORE group with name \"" + groupName + "\"");
+			e.printStackTrace();
+			return false;
+		}
+    	
+    	final AlgorithmID hkdf;
+    	try {
+			hkdf = AlgorithmID.FromCBOR(groupConfiguration.get(GroupcommParameters.HKDF));
+		} catch (CoseException e) {
+			System.err.println("Error when setting the HKDF Algorithm for the OSCORE group with name \"" + groupName + "\"");
+			e.printStackTrace();
+			return false;
+		}
+    	
+    	final int credFmt = groupConfiguration.get(GroupcommParameters.CRED_FMT).AsInt32();
+    	
+    	final AlgorithmID gpEncAlg;
+    	try {
+			gpEncAlg = AlgorithmID.FromCBOR(groupConfiguration.get(GroupcommParameters.GP_ENC_ALG));
+		} catch (CoseException e) {
+			System.err.println("Error when setting the Group Encryption Algorithm for the OSCORE group with name \"" + groupName + "\"");
+			e.printStackTrace();
+			return false;
+		}
+    	
+    	final AlgorithmID signAlg;
+    	try {
+			signAlg = AlgorithmID.FromCBOR(groupConfiguration.get(GroupcommParameters.SIGN_ALG));
+		} catch (CoseException e) {
+			System.err.println("Error when setting the Signature Algorithm for the OSCORE group with name \"" + groupName + "\"");
+			e.printStackTrace();
+			return false;
+		}
+    	
+    	final CBORObject signParams = groupConfiguration.get(GroupcommParameters.SIGN_PARAMS);
+
+    	final AlgorithmID alg;
+    	try {
+			alg = AlgorithmID.FromCBOR(groupConfiguration.get(GroupcommParameters.ALG));
+		} catch (CoseException e) {
+			System.err.println("Error when setting the AEAD Algorithm for the OSCORE group with name \"" + groupName + "\"");
+			e.printStackTrace();
+			return false;
+		}
+    	
+    	final AlgorithmID ecdhAlg;
+    	try {
+			ecdhAlg = AlgorithmID.FromCBOR(groupConfiguration.get(GroupcommParameters.ECDH_ALG));
+		} catch (CoseException e) {
+			System.err.println("Error when setting the Pairwise Key Agreement Algorithm for the OSCORE group with name \"" + groupName + "\"");
+			e.printStackTrace();
+			return false;
+		}
+    	
+    	final CBORObject ecdhParams = groupConfiguration.get(GroupcommParameters.ECDH_PARAMS);
+    	
+    	    	
+    	// Generate the Group ID, according to the following rationale:
+    	//
+    	// - The Prefix uniquely identifies an OSCORE group throughout its rekeying occurrences.
+    	//   The Prefix size is the same for all the OSCORE groups and is up to 4 bytes.
+    	//
+    	// - The Epoch of an Group ID changes each time the group is rekeyed. Its size is up to 4 bytes.
+    	// - The initial value of Epoch is all zeroes.
+    	
+    	boolean available = false;
+    	byte[] groupIdPrefix = new byte[this.groupIdPrefixSize];
+    	byte[] groupIdEpoch = new byte[] { (byte) 0x00, (byte) 0x00 };
+    	
+    	synchronized (this.usedGroupIdPrefixes) {
+    		
+        	int sizeLimit = (int) Math.pow(2, this.groupIdPrefixSize);
+        	if (this.usedGroupIdPrefixes.size() == sizeLimit) {
+        		// Rollback
+    			groupConfigurationResources.remove(groupName);
+    			myScopes.get(groupCollectionResourcePath).remove(groupCollectionResourcePath + "/" + groupName);
+        		
+    			System.err.println("No available Group IDs for creating the OSCORE group with name \"" + groupName + "\"");
+    			return false;
+        	}
+        	        	
+        	CBORObject groupIdPrefixCbor = null;
+        	while(available == false) {
+            	try {
+        			SecureRandom.getInstanceStrong().nextBytes(groupIdPrefix);
+        		} catch (NoSuchAlgorithmException e) {
+        			System.err.println("Error when generating the OSCORE Group ID for the OSCORE group with name \"" + groupName + "\"");
+        			e.printStackTrace();
+        			return false;
+        		}
+            	groupIdPrefixCbor = CBORObject.FromObject(groupIdPrefix);
+            	available = (this.usedGroupIdPrefixes.contains(groupIdPrefixCbor) == false);
+        	}
+        	
+        	this.usedGroupIdPrefixes.add(groupIdPrefixCbor);
+        	
+    	}
+
+    	// Set the asymmetric key pair and public key of the Group Manager
+    	
+    	// Serialization of the COSE Key including both private and public part
+    	byte[] gmKeyPairBytes = null;
+    	
+    	CBORObject curve = null;
+    	boolean useGroupMode = groupConfiguration.get(GroupcommParameters.GROUP_MODE).AsBoolean();
+    	
+    	if (useGroupMode) {
+	    	CBORObject keyTypeCBOR = groupConfiguration.get(GroupcommParameters.SIGN_PARAMS).get(0).get(0);
+	    	if (keyTypeCBOR.equals(COSE.KeyKeys.KeyType_OKP) || keyTypeCBOR.equals(COSE.KeyKeys.KeyType_EC2)) {
+	    		curve = groupConfiguration.get(GroupcommParameters.SIGN_PARAMS).get(1).get(1);
+	    		
+	    		if (curve.AsInt32() == COSE.KeyKeys.EC2_P256.AsInt32()) {
+	    			gmKeyPairBytes = Utils.hexToBytes( gmSigningKeyPairs.get(COSE.KeyKeys.EC2_P256));
+	    		}
+	    		if (curve.AsInt32() == COSE.KeyKeys.OKP_Ed25519.AsInt32()) {
+	    			gmKeyPairBytes = Utils.hexToBytes( gmSigningKeyPairs.get(COSE.KeyKeys.OKP_Ed25519));
+	    		}
+	    	}
+    	}
+    	else {
+    		// This group uses only the pairwise mode, thus the authentication credential
+    		// of the Group Manager has to be specific for key agreement operations
+	    	CBORObject keyTypeCBOR = groupConfiguration.get(GroupcommParameters.ECDH_PARAMS).get(0).get(0);
+	    	if (keyTypeCBOR.equals(COSE.KeyKeys.KeyType_OKP) || keyTypeCBOR.equals(COSE.KeyKeys.KeyType_EC2)) {
+	    		curve = groupConfiguration.get(GroupcommParameters.ECDH_PARAMS).get(1).get(1);
+	    		
+	    		if (curve.AsInt32() == COSE.KeyKeys.EC2_P256.AsInt32()) {
+	    			gmKeyPairBytes = Utils.hexToBytes( gmKeyAgreementKeyPairs.get(COSE.KeyKeys.EC2_P256));
+	    		}
+	    		if (curve.AsInt32() == COSE.KeyKeys.OKP_X25519.AsInt32()) {
+	    			gmKeyPairBytes = Utils.hexToBytes( gmKeyAgreementKeyPairs.get(COSE.KeyKeys.OKP_X25519));
+	    		}
+	    	}
+    	}
+    	
+    	if (curve == null) {
+    		// This should never happen
+    		
+    		// Rollback
+			groupConfigurationResources.remove(groupName);
+			myScopes.get(groupCollectionResourcePath).remove(groupCollectionResourcePath + "/" + groupName);
+    		
+			System.err.println("Error when setting up the Group Manager's authentication credential" +
+							   "for the OSCORE group with name \"" + groupName + "\"");
+			return false;
+    	}
+    	
+
+    	OneKey gmKeyPair = null;
+    	try {
+			gmKeyPair = new OneKey(CBORObject.DecodeFromBytes(gmKeyPairBytes));
+		} catch (CoseException e) {
+    		// Rollback
+			groupConfigurationResources.remove(groupName);
+			myScopes.get(groupCollectionResourcePath).remove(groupCollectionResourcePath + "/" + groupName);
+    		
+			System.err.println("Error when setting up the Group Manager's authentication credential" +
+							   "for the OSCORE group with name \"" + groupName + "\"");
+			e.printStackTrace();
+			
+			return false;
+		}
     	
     	
+    	// Serialization of the authentication credential, according to the format used in the group
+    	byte[] gmAuthCred = null;
+    	
+    	
+    	// Build the authentication credential according to the format used in the group
+    	switch (credFmt) {
+	        case Constants.COSE_HEADER_PARAM_KCCS:
+	            // A CCS including the public key
+	        	if (curve.AsInt32() == COSE.KeyKeys.EC2_P256.AsInt32()) {
+	        		if (useGroupMode) {
+	        			gmAuthCred = Utils.hexToBytes(gmSigningPublicAuthCred.get(Constants.COSE_HEADER_PARAM_KCCS).get(COSE.KeyKeys.EC2_P256));
+		        		// gmAuthCred = Utils.hexToBytes("A2026008A101A50102032620012158202236658CA675BB62D7B24623DB0453A3B90533B7C3B221CC1C2C73C4E919D540225820770916BC4C97C3C46604F430B06170C7B3D6062633756628C31180FA3BB65A1B");
+	        		}
+	        		else {
+	        			gmAuthCred = Utils.hexToBytes(gmKeyAgreementPublicAuthCred.get(Constants.COSE_HEADER_PARAM_KCCS).get(COSE.KeyKeys.EC2_P256));
+	        		}		
+	        	}
+	        	if (curve.AsInt32() == COSE.KeyKeys.OKP_Ed25519.AsInt32()) {
+	        		gmAuthCred = Utils.hexToBytes(gmSigningPublicAuthCred.get(Constants.COSE_HEADER_PARAM_KCCS).get(COSE.KeyKeys.OKP_Ed25519));
+	        		// gmAuthCred = Utils.hexToBytes("A2026008A101A4010103272006215820C6EC665E817BD064340E7C24BB93A11E8EC0735CE48790F9C458F7FA340B8CA3");
+	        	}
+	        	if (curve.AsInt32() == COSE.KeyKeys.OKP_X25519.AsInt32()) {
+	        		gmAuthCred = Utils.hexToBytes(gmKeyAgreementPublicAuthCred.get(Constants.COSE_HEADER_PARAM_KCCS).get(COSE.KeyKeys.OKP_X25519));
+	        	}
+	            break;
+	        case Constants.COSE_HEADER_PARAM_KCWT:
+	            // A CWT including the public key
+	            // TODO
+	        	gmAuthCred = null;
+	            break;
+	        case Constants.COSE_HEADER_PARAM_X5CHAIN:
+	            // A certificate including the public key
+	            // TODO
+	        	gmAuthCred = null;
+	            break;
+    	}
+    	
+    	int mode = GroupcommParameters.GROUP_OSCORE_GROUP_PAIRWISE_MODE;
+    	boolean usePairwiseMode = groupConfiguration.get(GroupcommParameters.PAIRWISE_MODE).AsBoolean();
+    	if (useGroupMode == true && usePairwiseMode == true) {
+    		mode = GroupcommParameters.GROUP_OSCORE_GROUP_PAIRWISE_MODE;
+    	}
+    	else if (useGroupMode == true && usePairwiseMode == false) {
+    		mode = GroupcommParameters.GROUP_OSCORE_GROUP_MODE_ONLY;
+    	}
+    	else if (useGroupMode == false && usePairwiseMode == true) {
+    		mode = GroupcommParameters.GROUP_OSCORE_PAIRWISE_MODE_ONLY;
+    	}
+    	
+    	GroupInfo myGroupInfo = new GroupInfo(groupName,
+										      masterSecret,
+										      masterSalt,
+										      groupIdPrefixSize,
+										      groupIdPrefix,
+										      groupIdEpoch.length,
+										      Util.bytesToInt(groupIdEpoch),
+										      prefixMonitorNames,
+										      nodeNameSeparator,
+										      hkdf,
+										      credFmt,
+										      mode,
+										      gpEncAlg,
+										      signAlg,
+										      signParams,
+										      alg,
+										      ecdhAlg,
+										      ecdhParams,
+										      null,
+										      gmKeyPair,
+										      gmAuthCred,
+										      maxStaleIdsSets);
+    	
+    	boolean initialStatus = groupConfiguration.get(GroupcommParameters.ACTIVE).AsBoolean();
+    	myGroupInfo.setStatus(initialStatus);
+    	
+		// Store the information on this OSCORE group
+    	this.existingGroupInfo.put(groupName, myGroupInfo);
+    	
+    	// Finally make the group-membership resource accessible
+    	this.groupOSCORERootGroupMembership.add(groupMembershipResource);
     	
     	return true;
+    	
     }
 
 }

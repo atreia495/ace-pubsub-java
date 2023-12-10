@@ -103,10 +103,26 @@ public class TestAdminOscorepRSGroupOSCORE {
 	
 	private static Map<String, GroupInfo> existingGroupInfo = new HashMap<>();
 	
+	private static Set<CBORObject> usedGroupIdPrefixes = new HashSet<>();
+	
 	private static Map<String, Map<String, Set<Short>>> myScopes = new HashMap<>();
 	
 	private static GroupOSCOREValidator valid = null;
 
+    // The map key is the cryptographic curve; the map key is the hex string of the key pair
+    private static Map<CBORObject, String> gmSigningKeyPairs = new HashMap<CBORObject, String>();
+    
+    // For the outer map, the map key is the type of authentication credential
+    // For the inner map, the map key is the cryptographic curve, while the map value is the hex string of the authentication credential
+    private static Map<Integer,  Map<CBORObject, String>> gmSigningPublicAuthCred = new HashMap<Integer, Map<CBORObject, String>>();
+    
+    // The map key is the cryptographic curve; the map key is the hex string of the key pair
+    private static Map<CBORObject, String> gmKeyAgreementKeyPairs = new HashMap<CBORObject, String>();
+    
+    // For the outer map, the map key is the type of authentication credential
+    // For the inner map, the map key is the cryptographic curve, while the map value is the hex string of the authentication credential
+    private static Map<Integer,  Map<CBORObject, String>> gmKeyAgreementPublicAuthCred  = new HashMap<Integer, Map<CBORObject, String>>();
+	
     /**
      * Definition of the Hello-World Resource
      */
@@ -207,6 +223,8 @@ public class TestAdminOscorepRSGroupOSCORE {
     	final Provider EdDSA = new EdDSASecurityProvider();
     	Security.insertProviderAt(PROVIDER, 2);
     	Security.insertProviderAt(EdDSA, 1);
+    	
+    	setGroupManagerKeyPairs();
     	
     	final String groupName = "feedca570000";
  
@@ -395,7 +413,17 @@ public class TestAdminOscorepRSGroupOSCORE {
         
         // The group-collection resource
   	    Resource groupOSCOREGroupCollection = new GroupOSCOREGroupCollectionResource(groupCollectionResourcePath,
+  	    																			 groupOSCORERootGroupMembership,
+  	    																			 groupIdPrefixSize,
+  	    																			 usedGroupIdPrefixes,
+  	    																			 prefixMonitorNames,
+  	    																			 nodeNameSeparator,
+  	    																			 maxStaleIdsSets,
   	    																			 existingGroupInfo,
+  	    																			 gmSigningKeyPairs,
+  	    																			 gmSigningPublicAuthCred,
+  	    																			 gmKeyAgreementKeyPairs,
+  	    																			 gmKeyAgreementPublicAuthCred,
   	    																			 myScopes,
   	    																			 valid);
         
@@ -439,6 +467,53 @@ public class TestAdminOscorepRSGroupOSCORE {
         new File(TestConfig.testFilePath + "tokens.json").delete();
     }
 
+    private static void setGroupManagerKeyPairs() {
+    	
+    	gmSigningPublicAuthCred.put(Constants.COSE_HEADER_PARAM_KCCS, new HashMap<CBORObject, String>());
+    	gmKeyAgreementPublicAuthCred.put(Constants.COSE_HEADER_PARAM_KCCS, new HashMap<CBORObject, String>());
+    	
+    	// Set the key signing key pairs
+    	
+    	// Key pair for ECDSA with curve P-256
+    	String keySigningKeyPairP256 = "a60102032620012158202236658ca675bb62d7b24623db0453a3b90533b7c3b221cc1c2c73c4e919d540225820770916bc4c97c3c46604f430b06170c7b3d6062633756628c31180fa3bb65a1b2358204a7b844a4c97ef91ed232aa564c9d5d373f2099647f9e9bd3fe6417a0d0f91ad";
+    	gmSigningKeyPairs.put(COSE.KeyKeys.EC2_P256, keySigningKeyPairP256);
+    	
+    	// Authentication credential for ECDSA with curve P-256, as a CCS
+    	String keySigningAuthCredP256CCS = "a2026008a101a50102032620012158202236658ca675bb62d7b24623db0453a3b90533b7c3b221cc1c2c73c4e919d540225820770916bc4c97c3c46604f430b06170c7b3d6062633756628c31180fa3bb65a1b";    	
+    	gmSigningPublicAuthCred.get(Constants.COSE_HEADER_PARAM_KCCS).put(COSE.KeyKeys.EC2_P256, keySigningAuthCredP256CCS);
+
+    	
+    	// Key pair for EdDSA with curve Ed25519
+    	String keySigningKeyPairEd25519 = "a5010103272006215820c6ec665e817bd064340e7c24bb93a11e8ec0735ce48790f9c458f7fa340b8ca3235820d0a2ce11b2ba614b048903b72638ef4a3b0af56e1a60c6fb6706b0c1ad8a14fb";
+    	gmSigningKeyPairs.put(COSE.KeyKeys.OKP_Ed25519, keySigningKeyPairEd25519);
+    	
+    	// Authentication credential for EdDSA with curve Ed25519, as a CCS
+    	String keySigningAuthCredEd25519CCS = "a2026008a101a4010103272006215820c6ec665e817bd064340e7c24bb93a11e8ec0735ce48790f9c458f7fa340b8ca3";
+    	gmSigningPublicAuthCred.get(Constants.COSE_HEADER_PARAM_KCCS).put(COSE.KeyKeys.OKP_Ed25519, keySigningAuthCredEd25519CCS);
+    	
+    	
+    	// Set the key agreement key pairs
+    	
+    	// Key pair for ECDSA with curve P-256
+    	String keyAgreementKeyPairP256 = "a6010203262001215820b95e2727b98d6f6f98852e2b360c4e6872c3a8070192d4f810e051572657775522582060aca41e3b065853f836dac69617efd69bad45f29bb7f4335ef93961941f79c5235820b77698f83f3f5a6473eba56125fd0ed2501ac7028d1f906abfa0a6080ef7936a";
+    	gmKeyAgreementKeyPairs.put(COSE.KeyKeys.EC2_P256, keyAgreementKeyPairP256);
+    	
+    	// Authentication credential for ECDSA with curve P-256, as a CCS
+    	String keyAgreementAuthCredP256CCS = "a2026008a101a5010203262001215820b95e2727b98d6f6f98852e2b360c4e6872c3a8070192d4f810e051572657775522582060aca41e3b065853f836dac69617efd69bad45f29bb7f4335ef93961941f79c5";
+    	gmKeyAgreementPublicAuthCred.get(Constants.COSE_HEADER_PARAM_KCCS).put(COSE.KeyKeys.EC2_P256, keyAgreementAuthCredP256CCS);
+    	
+    	// Key pair with curve X25519
+    	// TODO - This is just a placeholder with a non valid private coordinate. Replace with a valid key pair using X25519
+    	String keyAgreementKeyPairX25519 = "a5010103381A2004215820c6ec665e817bd064340e7c24bb93a11e8ec0735ce48790f9c458f7fa340b8ca3235820d0a2ce11b2ba614b048903b72638ef4a3b0af56e1a60c6fb6706b0c1ad8a14fb";
+    	gmKeyAgreementKeyPairs.put(COSE.KeyKeys.OKP_X25519, keyAgreementKeyPairX25519);
+    	
+    	// Authentication credential with curve X25519, as a CCS
+    	// TODO - This is just a placeholder. Replace with an authentication credential corresponding to a valid key pair using X25519 (see above)
+    	String keyAgreementAuthCredX25519 = "a2026008a101a4010103381a2004215820c6ec665e817bd064340e7c24bb93a11e8ec0735ce48790f9c458f7fa340b8ca3";
+    	gmKeyAgreementPublicAuthCred.get(Constants.COSE_HEADER_PARAM_KCCS).put(COSE.KeyKeys.OKP_X25519, keyAgreementAuthCredX25519);
+    	
+    }
+    
     private static boolean OSCOREGroupCreation(String groupName, int signKeyCurve, int ecdhKeyCurve)
     			throws CoseException, Exception
     {
@@ -563,7 +638,10 @@ public class TestAdminOscorepRSGroupOSCORE {
     	final byte[] groupIdPrefix = new byte[] { (byte) 0xfe, (byte) 0xed, (byte) 0xca, (byte) 0x57 };
     	byte[] groupIdEpoch = new byte[] { (byte) 0xf0, (byte) 0x5c }; // Up to 4 bytes
     	
-    	
+    	CBORObject groupIdCbor = CBORObject.FromObject(groupIdPrefix);
+    	usedGroupIdPrefixes.add(groupIdCbor);
+    			
+    			
     	// Set the asymmetric key pair and public key of the Group Manager
     	
     	// Serialization of the COSE Key including both private and public part
@@ -586,35 +664,17 @@ public class TestAdminOscorepRSGroupOSCORE {
     	// Serialization of the authentication credential, according to the format used in the group
     	byte[] gmAuthCred = null;
     	
-    	/*
     	// Build the authentication credential according to the format used in the group
-    	// Note: most likely, the result will NOT follow the required deterministic
-    	//       encoding in byte lexicographic order, and it has to be adjusted offline
-    	switch (credFmt) {
-	        case Constants.COSE_HEADER_PARAM_KCCS:
-	            // A CCS including the public key
-	        	String subjectName = "";
-	            gmAuthCred = Util.oneKeyToCCS(gmKeyPair, subjectName);
-	            break;
-	        case Constants.COSE_HEADER_PARAM_KCWT:
-	            // A CWT including the public key
-	            // TODO
-	            break;
-	        case Constants.COSE_HEADER_PARAM_X5CHAIN:
-	            // A certificate including the public key
-	            // TODO
-	            break;
-    	}
-    	*/
-    	
     	switch (credFmt) {
 	        case Constants.COSE_HEADER_PARAM_KCCS:
 	            // A CCS including the public key
 	        	if (signKeyCurve == KeyKeys.EC2_P256.AsInt32()) {
-	        		gmAuthCred = Utils.hexToBytes("A2026008A101A50102032620012158202236658CA675BB62D7B24623DB0453A3B90533B7C3B221CC1C2C73C4E919D540225820770916BC4C97C3C46604F430B06170C7B3D6062633756628C31180FA3BB65A1B");
+	        		gmAuthCred = Utils.hexToBytes(gmSigningPublicAuthCred.get(Constants.COSE_HEADER_PARAM_KCCS).get(COSE.KeyKeys.EC2_P256));
+	        		// gmAuthCred = Utils.hexToBytes("A2026008A101A50102032620012158202236658CA675BB62D7B24623DB0453A3B90533B7C3B221CC1C2C73C4E919D540225820770916BC4C97C3C46604F430B06170C7B3D6062633756628C31180FA3BB65A1B");
 	        	}
 	        	if (signKeyCurve == KeyKeys.OKP_Ed25519.AsInt32()) {
-	        		gmAuthCred = Utils.hexToBytes("A2026008A101A4010103272006215820C6EC665E817BD064340E7C24BB93A11E8EC0735CE48790F9C458F7FA340B8CA3");
+	        		gmAuthCred = Utils.hexToBytes(gmSigningPublicAuthCred.get(Constants.COSE_HEADER_PARAM_KCCS).get(COSE.KeyKeys.OKP_Ed25519));
+	        		//gmAuthCred = Utils.hexToBytes("A2026008A101A4010103272006215820C6EC665E817BD064340E7C24BB93A11E8EC0735CE48790F9C458F7FA340B8CA3");
 	        	}
 	            break;
 	        case Constants.COSE_HEADER_PARAM_KCWT:
@@ -704,31 +764,7 @@ public class TestAdminOscorepRSGroupOSCORE {
     	// Serialization of the authentication credential, according to the format used in the group
     	byte[] authCred1 = null;
     	
-    	/*
     	// Build the authentication credential according to the format used in the group
-    	// Note: most likely, the result will NOT follow the required deterministic
-    	//       encoding in byte lexicographic order, and it has to be adjusted offline
-    	OneKey coseKeyPub1OneKey = null;
-    	coseKeyPub1OneKey = new OneKey(CBORObject.DecodeFromBytes(coseKeyPub1));
-    	switch (credFmt) {
-	        case Constants.COSE_HEADER_PARAM_KCCS:
-	            // A CCS including the public key
-	        	String subjectName = "";
-	        	authCred1 = Util.oneKeyToCCS(coseKeyPub1OneKey, subjectName);
-	            break;
-	        case Constants.COSE_HEADER_PARAM_KCWT:
-	            // A CWT including the public key
-	            // TODO
-	        	authCred1 = null;
-	            break;
-	        case Constants.COSE_HEADER_PARAM_X5CHAIN:
-	            // A certificate including the public key
-	            // TODO
-	        	authCred1 = null;
-	            break;
-    	}
-    	*/
-
     	switch (credFmt) {
 	        case Constants.COSE_HEADER_PARAM_KCCS:
 	            // A CCS including the public key
@@ -784,31 +820,7 @@ public class TestAdminOscorepRSGroupOSCORE {
     	// Serialization of the authentication credential, according to the format used in the group
     	byte[] authCred2 = null;
     	
-    	/*
-    	// Build the authentication credential according to the format used in the group
-    	// Note: most likely, the result will NOT follow the required deterministic
-    	//       encoding in byte lexicographic order, and it has to be adjusted offline
-    	OneKey coseKeyPub2OneKey = null;
-    	coseKeyPub2OneKey = new OneKey(CBORObject.DecodeFromBytes(coseKeyPub2));
-    	switch (credFmt) {
-        case Constants.COSE_HEADER_PARAM_KCCS:
-            // A CCS including the public key
-        	String subjectName = "";
-        	authCred2 = Util.oneKeyToCCS(coseKeyPub2OneKey, subjectName);
-            break;
-        case Constants.COSE_HEADER_PARAM_KCWT:
-            // A CWT including the public key
-            // TODO
-        	authCred2 = null;
-            break;
-        case Constants.COSE_HEADER_PARAM_X5CHAIN:
-            // A certificate including the public key
-            // TODO
-        	authCred2 = null;
-            break;
-    	}
-    	*/
-    	
+    	// Build the authentication credential according to the format used in the group    	
     	switch (credFmt) {
 	        case Constants.COSE_HEADER_PARAM_KCCS:
 	            // A CCS including the public key
