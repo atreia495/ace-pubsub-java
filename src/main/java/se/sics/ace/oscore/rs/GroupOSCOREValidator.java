@@ -117,12 +117,13 @@ public class GroupOSCOREValidator implements AudienceValidator, ScopeValidator {
 		this.myGroupAdminResources = new HashSet<>();
 		this.myScopes = new HashMap<>();
 		if (myAudiences != null) {
-		    this.myAudiences.addAll(myAudiences);
+		    this.myAudiences = myAudiences;
+		    
 		} else {
 		    this.myAudiences = Collections.emptySet();
 		}
 		if (myScopes != null) {
-		    this.myScopes.putAll(myScopes);
+			this.myScopes = myScopes;
 		} else {
 		    this.myScopes = Collections.emptyMap();
 		}
@@ -654,7 +655,7 @@ public class GroupOSCOREValidator implements AudienceValidator, ScopeValidator {
         }
         	
         else if (scope.getType().equals(CBORType.ByteString) && rsOSCOREGroupManager) {
-        	
+        	        	
         	byte[] rawScope = scope.GetByteString();
         	CBORObject cborScope = CBORObject.DecodeFromBytes(rawScope);
         	
@@ -684,7 +685,7 @@ public class GroupOSCOREValidator implements AudienceValidator, ScopeValidator {
 	        	
 	        	if ((tperm % 2) == 0) {
 	        		// This is a user scope entry
-	        	
+	        		
 		        	// Retrieve the group name of the OSCORE group
 		      	  	CBORObject scopeElement = scopeEntry.get(0);
 		      	  	if (scopeElement.getType().equals(CBORType.TextString)) {
