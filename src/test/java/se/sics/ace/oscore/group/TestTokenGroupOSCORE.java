@@ -232,10 +232,11 @@ public class TestTokenGroupOSCORE {
         profiles.clear();
         profiles.add("coap_dtls");
         scopes.clear();
-        scopes.add("feedca570000_requester");
-        scopes.add("feedca570000_responder");
-        scopes.add("feedca570000_monitor");
-        scopes.add("feedca570000_requester_responder");
+        String groupName = "feedca570000";
+        scopes.add(GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX + ":" + groupName.length() + ":" + groupName + "_requester");
+        scopes.add(GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX + ":" + groupName.length() + ":" + groupName + "_responder");
+        scopes.add(GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX + ":" + groupName.length() + ":" + groupName + "_monitor");
+        scopes.add(GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX + ":" + groupName.length() + ":" + groupName + "_requester_responder");
         auds.clear();
         auds.add("aud8");
         keyTypes.clear();
@@ -257,10 +258,10 @@ public class TestTokenGroupOSCORE {
         profiles.clear();
         profiles.add("coap_dtls");
         scopes.clear();
-        scopes.add("feedca570000_requester");
-        scopes.add("feedca570000_responder");
-        scopes.add("feedca570000_monitor");
-        scopes.add("feedca570000_requester_responder");
+        scopes.add(GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX + ":" + groupName.length() + ":" + groupName + "_requester");
+        scopes.add(GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX + ":" + groupName.length() + ":" + groupName + "_responder");
+        scopes.add(GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX + ":" + groupName.length() + ":" + groupName + "_monitor");
+        scopes.add(GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX + ":" + groupName.length() + ":" + groupName + "_requester_responder");
         auds.clear();
         auds.add("aud9");
         keyTypes.clear();
@@ -282,10 +283,10 @@ public class TestTokenGroupOSCORE {
         profiles.clear();
         profiles.add("coap_dtls");
         scopes.clear();
-        scopes.add("feedca570000_requester");
-        scopes.add("feedca570000_responder");
-        scopes.add("feedca570000_monitor");
-        scopes.add("feedca570000_requester_responder");
+        scopes.add(GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX + ":" + groupName.length() + ":" + groupName + "_requester");
+        scopes.add(GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX + ":" + groupName.length() + ":" + groupName + "_responder");
+        scopes.add(GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX + ":" + groupName.length() + ":" + groupName + "_monitor");
+        scopes.add(GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX + ":" + groupName.length() + ":" + groupName + "_requester_responder");
         auds.clear();
         auds.add("aud10");
         keyTypes.clear();
@@ -307,10 +308,10 @@ public class TestTokenGroupOSCORE {
         profiles.clear();
         profiles.add("coap_dtls");
         scopes.clear();
-        scopes.add("feedca570000_requester");
-        scopes.add("feedca570000_responder");
-        scopes.add("feedca570000_monitor");
-        scopes.add("feedca570000_requester_responder");
+        scopes.add(GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX + ":" + groupName.length() + ":" + groupName + "_requester");
+        scopes.add(GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX + ":" + groupName.length() + ":" + groupName + "_responder");
+        scopes.add(GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX + ":" + groupName.length() + ":" + groupName + "_monitor");
+        scopes.add(GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX + ":" + groupName.length() + ":" + groupName + "_requester_responder");       
         auds.clear();
         auds.add("aud11");
         keyTypes.clear();
@@ -443,20 +444,40 @@ public class TestTokenGroupOSCORE {
         // Specify access right also for client "clientF" as a joining node of an OSCORE group.
         // On this Group Manager, this client is allowed to be
         // requester, responder, requester+responder or monitor.
-        pdp.addAccess("clientF", "rs8", "feedca570000_requester_monitor_responder");
+        pdp.addAccess("clientF", "rs8",
+           GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX +
+           ":" + groupName.length() +
+           ":" + groupName + "_requester_monitor_responder");
+                
         // On this Group Manager, this client is allowed to be requester or monitor.
-        pdp.addAccess("clientF", "rs9", "feedca570000_requester_monitor");
+        pdp.addAccess("clientF", "rs9",
+           GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX +
+           ":" + groupName.length() +
+           ":" + groupName + "_requester_monitor");
         
         // On this Group Manager, this client is allowed to be
         // requester, responder, requester+responder or monitor.
-        pdp.addAccess("clientF", "rs10", "feedca570000_requester_monitor_responder");
+        pdp.addAccess("clientF", "rs10",
+           GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX +
+           ":" + groupName.length() +
+           ":" + groupName + "_requester_monitor_responder");
+        
         // On this Group Manager, this client is allowed to be requester or monitor.
-        pdp.addAccess("clientF", "rs11", "feedca570000_requester_monitor");
+        pdp.addAccess("clientF", "rs11",
+           GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX +
+           ":" + groupName.length() +
+           ":" + groupName + "_requester_monitor");
         
         // Specify access right also for client "clientG" as a joining node of an OSCORE group.
         // This client is allowed to be only requester.
-        pdp.addAccess("clientG", "rs8", "feedca570000_requester");
-        pdp.addAccess("clientG", "rs10", "feedca570000_requester");
+        pdp.addAccess("clientG", "rs8",
+           GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX +
+           ":" + groupName.length() +
+           ":" + groupName + "_requester");
+        pdp.addAccess("clientG", "rs10",
+           GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX +
+           ":" + groupName.length() +
+           ":" + groupName + "_requester");
         
         // Add the resource servers rs8, rs9, r10 and rs11 and their OSCORE Group Manager audience
         // to the table OSCOREGroupManagersTable in the PDP
@@ -828,8 +849,8 @@ public class TestTokenGroupOSCORE {
      */
     @Test
     public void testGroupOSCORESingleRoleREFToken() throws Exception { 
-        String gid = new String("feedca570000");
-        String gid2 = new String("feedca570001");
+        String groupName = new String("feedca570000");
+        String groupName2 = new String("feedca570001");
     	
     	// The scope is a CBOR Array encoded as a CBOR byte string
     	
@@ -840,7 +861,7 @@ public class TestTokenGroupOSCORE {
         CBORObject cborArrayScope = CBORObject.NewArray();
         
         CBORObject cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid);
+        cborArrayEntry.Add(groupName);
         
     	int myRoles = 0;
     	myRoles = Util.addGroupOSCORERole(myRoles, GroupcommParameters.GROUP_OSCORE_REQUESTER);
@@ -886,7 +907,7 @@ public class TestTokenGroupOSCORE {
         
         cborArrayScope = CBORObject.NewArray();
         cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid);
+        cborArrayEntry.Add(groupName);
         
     	myRoles = 0;
     	myRoles = Util.addGroupOSCORERole(myRoles, GroupcommParameters.GROUP_OSCORE_MONITOR);
@@ -919,7 +940,7 @@ public class TestTokenGroupOSCORE {
         cborArrayEntry = cborArrayScope.get(0);
         assert(cborArrayEntry.getType().equals(CBORType.Array) && cborArrayEntry.size() == 2);
         assert(cborArrayEntry.get(0).getType().equals(CBORType.TextString));
-        assert(cborArrayEntry.get(0).AsString().equals(gid));
+        assert(cborArrayEntry.get(0).AsString().equals(groupName));
         assert(cborArrayEntry.get(1).getType().equals(CBORType.Integer));
         
         expectedRoles = 0;
@@ -935,7 +956,7 @@ public class TestTokenGroupOSCORE {
         
         cborArrayScope = CBORObject.NewArray();
         cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid);
+        cborArrayEntry.Add(groupName);
         
     	myRoles = 0;
     	myRoles = Util.addGroupOSCORERole(myRoles, GroupcommParameters.GROUP_OSCORE_REQUESTER);
@@ -985,7 +1006,7 @@ public class TestTokenGroupOSCORE {
         
         cborArrayScope = CBORObject.NewArray();
         cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid2);
+        cborArrayEntry.Add(groupName2);
         
     	myRoles = 0;
     	myRoles = Util.addGroupOSCORERole(myRoles, GroupcommParameters.GROUP_OSCORE_REQUESTER);
@@ -1012,7 +1033,7 @@ public class TestTokenGroupOSCORE {
         
         cborArrayScope = CBORObject.NewArray();
         cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid);
+        cborArrayEntry.Add(groupName);
         
     	myRoles = 0;
     	myRoles = Util.addGroupOSCORERole(myRoles, GroupcommParameters.GROUP_OSCORE_RESPONDER);
@@ -1037,7 +1058,7 @@ public class TestTokenGroupOSCORE {
         
         cborArrayScope = CBORObject.NewArray();
         cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid);
+        cborArrayEntry.Add(groupName);
         
     	myRoles = 0;
     	myRoles = Util.addGroupOSCORERole(myRoles, (short)10);
@@ -1063,7 +1084,7 @@ public class TestTokenGroupOSCORE {
         
         cborArrayScope = CBORObject.NewArray();
         cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid);
+        cborArrayEntry.Add(groupName);
         
     	myRoles = 0;
     	myRoles = Util.addGroupOSCORERole(myRoles, GroupcommParameters.GROUP_OSCORE_MONITOR);
@@ -1093,8 +1114,8 @@ public class TestTokenGroupOSCORE {
      */
     @Test
     public void testGroupOSCORESingleRoleCWT() throws Exception { 
-        String gid = new String("feedca570000");
-        String gid2 = new String("feedca570001");
+        String groupName = new String("feedca570000");
+        String groupName2 = new String("feedca570001");
     	
     	// The scope is a CBOR Array encoded as a CBOR byte string
     	
@@ -1104,7 +1125,7 @@ public class TestTokenGroupOSCORE {
         
         CBORObject cborArrayScope = CBORObject.NewArray();
         CBORObject cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid);
+        cborArrayEntry.Add(groupName);
         
     	int myRoles = 0;
     	myRoles = Util.addGroupOSCORERole(myRoles, GroupcommParameters.GROUP_OSCORE_REQUESTER);
@@ -1151,7 +1172,7 @@ public class TestTokenGroupOSCORE {
         
         cborArrayScope = CBORObject.NewArray();
         cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid);
+        cborArrayEntry.Add(groupName);
         
     	myRoles = 0;
     	myRoles = Util.addGroupOSCORERole(myRoles, GroupcommParameters.GROUP_OSCORE_MONITOR);
@@ -1181,7 +1202,7 @@ public class TestTokenGroupOSCORE {
         cborArrayEntry = cborArrayScope.get(0);
         assert(cborArrayEntry.getType().equals(CBORType.Array) && cborArrayEntry.size() == 2);
         assert(cborArrayEntry.get(0).getType().equals(CBORType.TextString));
-        assert(cborArrayEntry.get(0).AsString().equals(gid));
+        assert(cborArrayEntry.get(0).AsString().equals(groupName));
         assert(cborArrayEntry.get(1).getType().equals(CBORType.Integer));
         
         expectedRoles = 0;
@@ -1197,7 +1218,7 @@ public class TestTokenGroupOSCORE {
         
         cborArrayScope = CBORObject.NewArray();
         cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid);
+        cborArrayEntry.Add(groupName);
         
     	myRoles = 0;
     	myRoles = Util.addGroupOSCORERole(myRoles, GroupcommParameters.GROUP_OSCORE_REQUESTER);
@@ -1227,7 +1248,7 @@ public class TestTokenGroupOSCORE {
         cborArrayEntry = cborArrayScope.get(0);
         assert(cborArrayEntry.getType().equals(CBORType.Array) && cborArrayEntry.size() == 2);
         assert(cborArrayEntry.get(0).getType().equals(CBORType.TextString));
-        assert(cborArrayEntry.get(0).AsString().equals(gid));
+        assert(cborArrayEntry.get(0).AsString().equals(groupName));
         assert(cborArrayEntry.get(1).getType().equals(CBORType.Integer));
         
         expectedRoles = 0;
@@ -1243,7 +1264,7 @@ public class TestTokenGroupOSCORE {
         
         cborArrayScope = CBORObject.NewArray();
         cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid2);
+        cborArrayEntry.Add(groupName2);
         
     	myRoles = 0;
     	myRoles = Util.addGroupOSCORERole(myRoles, GroupcommParameters.GROUP_OSCORE_REQUESTER);
@@ -1268,7 +1289,7 @@ public class TestTokenGroupOSCORE {
         
         cborArrayScope = CBORObject.NewArray();
         cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid);
+        cborArrayEntry.Add(groupName);
         
     	myRoles = 0;
     	myRoles = Util.addGroupOSCORERole(myRoles, GroupcommParameters.GROUP_OSCORE_RESPONDER);
@@ -1294,7 +1315,7 @@ public class TestTokenGroupOSCORE {
         
         cborArrayScope = CBORObject.NewArray();
         cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid);
+        cborArrayEntry.Add(groupName);
         
     	myRoles = 0;
     	myRoles = Util.addGroupOSCORERole(myRoles, (short)10);
@@ -1320,7 +1341,7 @@ public class TestTokenGroupOSCORE {
         
         cborArrayScope = CBORObject.NewArray();
         cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid);
+        cborArrayEntry.Add(groupName);
         
     	myRoles = 0;
     	myRoles = Util.addGroupOSCORERole(myRoles, GroupcommParameters.GROUP_OSCORE_MONITOR);
@@ -1350,8 +1371,8 @@ public class TestTokenGroupOSCORE {
      */
     @Test
     public void testGroupOSCOREMultipleRolesREFToken() throws Exception { 
-        String gid = new String("feedca570000");
-        String gid2 = new String("feedca570001");
+        String groupName = new String("feedca570000");
+        String groupName2 = new String("feedca570001");
     	
     	// The scope is a CBOR Array encoded as a CBOR byte string
     	
@@ -1361,7 +1382,7 @@ public class TestTokenGroupOSCORE {
         
         CBORObject cborArrayScope = CBORObject.NewArray();
         CBORObject cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid);
+        cborArrayEntry.Add(groupName);
     	
     	int myRoles = 0;
     	myRoles = Util.addGroupOSCORERole(myRoles, GroupcommParameters.GROUP_OSCORE_REQUESTER);
@@ -1394,7 +1415,7 @@ public class TestTokenGroupOSCORE {
         cborArrayEntry = cborArrayScope.get(0);
         assert(cborArrayEntry.getType().equals(CBORType.Array) && cborArrayEntry.size() == 2);
         assert(cborArrayEntry.get(0).getType().equals(CBORType.TextString));
-        assert(cborArrayEntry.get(0).AsString().equals(gid));
+        assert(cborArrayEntry.get(0).AsString().equals(groupName));
         
         assert(cborArrayEntry.get(1).getType().equals(CBORType.Integer));
         
@@ -1412,7 +1433,7 @@ public class TestTokenGroupOSCORE {
         
         cborArrayScope = CBORObject.NewArray();
         cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid2);
+        cborArrayEntry.Add(groupName2);
         
         myRoles = 0;
     	myRoles = Util.addGroupOSCORERole(myRoles, GroupcommParameters.GROUP_OSCORE_REQUESTER);
@@ -1438,7 +1459,7 @@ public class TestTokenGroupOSCORE {
         
         cborArrayScope = CBORObject.NewArray();
         cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid);
+        cborArrayEntry.Add(groupName);
         
         myRoles = 0;
     	myRoles = Util.addGroupOSCORERole(myRoles, GroupcommParameters.GROUP_OSCORE_REQUESTER);
@@ -1470,7 +1491,7 @@ public class TestTokenGroupOSCORE {
         cborArrayEntry = cborArrayScope.get(0);
         assert(cborArrayEntry.getType().equals(CBORType.Array) && cborArrayEntry.size() == 2);
         assert(cborArrayEntry.get(0).getType().equals(CBORType.TextString));
-        assert(cborArrayEntry.get(0).AsString().equals(gid));
+        assert(cborArrayEntry.get(0).AsString().equals(groupName));
         assert(cborArrayEntry.get(1).getType().equals(CBORType.Integer));
         
         expectedRoles = 0;
@@ -1486,7 +1507,7 @@ public class TestTokenGroupOSCORE {
         
         cborArrayScope = CBORObject.NewArray();
         cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid);
+        cborArrayEntry.Add(groupName);
         
         myRoles = 0;
     	myRoles = Util.addGroupOSCORERole(myRoles, GroupcommParameters.GROUP_OSCORE_REQUESTER);
@@ -1518,7 +1539,7 @@ public class TestTokenGroupOSCORE {
         cborArrayEntry = cborArrayScope.get(0);
         assert(cborArrayEntry.getType().equals(CBORType.Array) && cborArrayEntry.size() == 2);
         assert(cborArrayEntry.get(0).getType().equals(CBORType.TextString));
-        assert(cborArrayEntry.get(0).AsString().equals(gid));
+        assert(cborArrayEntry.get(0).AsString().equals(groupName));
         assert(cborArrayEntry.get(1).getType().equals(CBORType.Integer));
         
         expectedRoles = 0;
@@ -1534,7 +1555,7 @@ public class TestTokenGroupOSCORE {
         
         cborArrayScope = CBORObject.NewArray();
         cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid);
+        cborArrayEntry.Add(groupName);
         
         myRoles = 0;
     	myRoles = Util.addGroupOSCORERole(myRoles, GroupcommParameters.GROUP_OSCORE_REQUESTER);
@@ -1565,8 +1586,8 @@ public class TestTokenGroupOSCORE {
      */
     @Test
     public void testGroupOSCOREMultipleRolesCWT() throws Exception { 
-        String gid = new String("feedca570000");
-        String gid2 = new String("feedca570001");
+        String groupName = new String("feedca570000");
+        String groupName2 = new String("feedca570001");
     	
     	// The scope is a CBOR Array encoded as a CBOR byte string
     	
@@ -1576,7 +1597,7 @@ public class TestTokenGroupOSCORE {
         
         CBORObject cborArrayScope = CBORObject.NewArray();
         CBORObject cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid);
+        cborArrayEntry.Add(groupName);
         
     	int myRoles = 0;
     	myRoles = Util.addGroupOSCORERole(myRoles, GroupcommParameters.GROUP_OSCORE_REQUESTER);
@@ -1608,7 +1629,7 @@ public class TestTokenGroupOSCORE {
         cborArrayEntry = cborArrayScope.get(0);
         assert(cborArrayEntry.getType().equals(CBORType.Array) && cborArrayEntry.size() == 2);
         assert(cborArrayEntry.get(0).getType().equals(CBORType.TextString));
-        assert(cborArrayEntry.get(0).AsString().equals(gid));
+        assert(cborArrayEntry.get(0).AsString().equals(groupName));
         
         assert(cborArrayEntry.get(1).getType().equals(CBORType.Integer));
         
@@ -1626,7 +1647,7 @@ public class TestTokenGroupOSCORE {
         
         cborArrayScope = CBORObject.NewArray();
         cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid2);
+        cborArrayEntry.Add(groupName2);
         
         myRoles = 0;
     	myRoles = Util.addGroupOSCORERole(myRoles, GroupcommParameters.GROUP_OSCORE_REQUESTER);
@@ -1653,7 +1674,7 @@ public class TestTokenGroupOSCORE {
         
         cborArrayScope = CBORObject.NewArray();
         cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid);
+        cborArrayEntry.Add(groupName);
         
         myRoles = 0;
     	myRoles = Util.addGroupOSCORERole(myRoles, GroupcommParameters.GROUP_OSCORE_REQUESTER);
@@ -1686,7 +1707,7 @@ public class TestTokenGroupOSCORE {
         cborArrayEntry = cborArrayScope.get(0);
         assert(cborArrayEntry.getType().equals(CBORType.Array) && cborArrayEntry.size() == 2);
         assert(cborArrayEntry.get(0).getType().equals(CBORType.TextString));
-        assert(cborArrayEntry.get(0).AsString().equals(gid));
+        assert(cborArrayEntry.get(0).AsString().equals(groupName));
         assert(cborArrayEntry.get(1).getType().equals(CBORType.Integer));
         
         expectedRoles = 0;
@@ -1702,7 +1723,7 @@ public class TestTokenGroupOSCORE {
         
         cborArrayScope = CBORObject.NewArray();
         cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid);
+        cborArrayEntry.Add(groupName);
         
         myRoles = 0;
     	myRoles = Util.addGroupOSCORERole(myRoles, GroupcommParameters.GROUP_OSCORE_REQUESTER);
@@ -1735,7 +1756,7 @@ public class TestTokenGroupOSCORE {
         cborArrayEntry = cborArrayScope.get(0);
         assert(cborArrayEntry.getType().equals(CBORType.Array) && cborArrayEntry.size() == 2);
         assert(cborArrayEntry.get(0).getType().equals(CBORType.TextString));
-        assert(cborArrayEntry.get(0).AsString().equals(gid));
+        assert(cborArrayEntry.get(0).AsString().equals(groupName));
         assert(cborArrayEntry.get(1).getType().equals(CBORType.Integer));
         
         expectedRoles = 0;
@@ -1751,7 +1772,7 @@ public class TestTokenGroupOSCORE {
         
         cborArrayScope = CBORObject.NewArray();
         cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid);
+        cborArrayEntry.Add(groupName);
         
         myRoles = 0;
     	myRoles = Util.addGroupOSCORERole(myRoles, GroupcommParameters.GROUP_OSCORE_REQUESTER);

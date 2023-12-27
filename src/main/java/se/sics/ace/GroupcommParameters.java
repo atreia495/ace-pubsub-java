@@ -53,6 +53,21 @@ public class GroupcommParameters {
 	 * Group OSCORE abbreviations =================================
 	 */
 
+	/*
+	 * The prefixes used at the AS to internally represent scopes as text strings
+	 */
+	// This is relevant only for an admin scope entry,
+	// where Toid is the wildcard group name pattern
+	public static final String GROUP_OSCORE_AS_SCOPE_WILDCARD_PREFIX = "oscgm0";
+
+	// This is relevant for an admin or user scope entry,
+	// where Toid is a literal group name pattern (i.e., a specific group name)
+	public static final String GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX = "oscgm1";
+
+	// This is relevant only for an admin scope entry,
+	// where Toid is a complex group name pattern (e.g., a regular expression)
+	public static final String GROUP_OSCORE_AS_SCOPE_COPLEX_PREFIX = "oscgm2";
+	
     /**
      * The OSCORE group uses only the group mode
      */

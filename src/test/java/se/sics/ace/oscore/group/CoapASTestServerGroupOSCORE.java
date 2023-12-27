@@ -48,6 +48,7 @@ import COSE.OneKey;
 import se.sics.ace.COSEparams;
 import se.sics.ace.Constants;
 import se.sics.ace.DBHelper;
+import se.sics.ace.GroupcommParameters;
 import se.sics.ace.as.AccessTokenFactory;
 import se.sics.ace.coap.as.CoapDBConnector;
 import se.sics.ace.coap.as.DtlsAS;
@@ -129,10 +130,10 @@ public class CoapASTestServerGroupOSCORE
         profiles.clear();
         profiles.add("coap_dtls");
         scopes.clear();
-        scopes.add(groupName + "_requester");
-        scopes.add(groupName + "_responder");
-        scopes.add(groupName + "_monitor");
-        scopes.add(groupName + "_requester_responder");
+        scopes.add(GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX + ":" + groupName.length() + ":" + groupName + "_requester");
+        scopes.add(GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX + ":" + groupName.length() + ":" + groupName + "_responder");
+        scopes.add(GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX + ":" + groupName.length() + ":" + groupName + "_monitor");
+        scopes.add(GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX + ":" + groupName.length() + ":" + groupName + "_requester_responder");
         auds.clear();
         auds.add("aud2");
         keyTypes.clear();
@@ -155,10 +156,10 @@ public class CoapASTestServerGroupOSCORE
         profiles.clear();
         profiles.add("coap_dtls");
         scopes.clear();
-        scopes.add(groupName + "_requester");
-        scopes.add(groupName + "_responder");
-        scopes.add(groupName + "_monitor");
-        scopes.add(groupName + "_requester_responder");
+        scopes.add(GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX + ":" + groupName.length() + ":" + groupName + "_requester");
+        scopes.add(GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX + ":" + groupName.length() + ":" + groupName + "_responder");
+        scopes.add(GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX + ":" + groupName.length() + ":" + groupName + "_monitor");
+        scopes.add(GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX + ":" + groupName.length() + ":" + groupName + "_requester_responder");
         auds.clear();
         auds.add("aud3");
         keyTypes.clear();
@@ -181,10 +182,10 @@ public class CoapASTestServerGroupOSCORE
         profiles.clear();
         profiles.add("coap_dtls");
         scopes.clear();
-        scopes.add(groupName + "_requester");
-        scopes.add(groupName + "_responder");
-        scopes.add(groupName + "_monitor");
-        scopes.add(groupName + "_requester_responder");
+        scopes.add(GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX + ":" + groupName.length() + ":" + groupName + "_requester");
+        scopes.add(GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX + ":" + groupName.length() + ":" + groupName + "_responder");
+        scopes.add(GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX + ":" + groupName.length() + ":" + groupName + "_monitor");
+        scopes.add(GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX + ":" + groupName.length() + ":" + groupName + "_requester_responder");
         auds.clear();
         auds.add("aud4");
         keyTypes.clear();
@@ -284,13 +285,23 @@ public class CoapASTestServerGroupOSCORE
         
         // Specify access right also for client "clientF" as a joining node of an OSCORE group.
         // On this Group Manager, this client is allowed to be requester, responder, requester+responder or monitor.
-        pdp.addAccess("clientF", "rs2", groupName + "_requester_monitor_responder");
+        pdp.addAccess("clientF", "rs2",
+           GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX +
+           ":" + groupName.length() +
+           ":" + groupName + "_requester_monitor_responder");
+        
         // On this Group Manager, this client is allowed to be requester or monitor.
-        pdp.addAccess("clientF", "rs3", groupName + "_requester_monitor");
+        pdp.addAccess("clientF", "rs3",
+           GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX +
+           ":" + groupName.length() +
+           ":" + groupName + "_requester_monitor");
         
         // Specify access right also for client "clientG" as a joining node of an OSCORE group.
         // On this Group Manager, this client is allowed to be requester.
-        pdp.addAccess("clientG", "rs2", groupName + "_requester");
+        pdp.addAccess("clientG", "rs2",
+           GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX +
+           ":" + groupName.length() +
+           ":" + groupName + "_requester");
         
         // Add the resource servers rs2 and rs3 and their OSCORE Group Manager
         // audience to the table OSCOREGroupManagersTable in the PDP

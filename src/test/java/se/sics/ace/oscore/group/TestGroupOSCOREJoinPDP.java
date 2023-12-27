@@ -167,11 +167,12 @@ public class TestGroupOSCOREJoinPDP {
         profiles.clear();
         profiles.add("coap_dtls");
         scopes.clear();
-        scopes.add("feedca570000_requester");
-        scopes.add("feedca570000_responder");
-        scopes.add("feedca570000_monitor");
-        scopes.add("feedca570000_requester_responder");
-        scopes.add("feedca570000_requester_monitor");
+        String groupName = "feedca570000";
+        scopes.add(GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX + ":" + groupName.length() + ":" + groupName + "_requester");
+        scopes.add(GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX + ":" + groupName.length() + ":" + groupName + "_responder");
+        scopes.add(GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX + ":" + groupName.length() + ":" + groupName + "_monitor");
+        scopes.add(GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX + ":" + groupName.length() + ":" + groupName + "_requester_responder");
+        scopes.add(GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX + ":" + groupName.length() + ":" + groupName + "_requester_monitor");        
         auds.clear();
         auds.add("aud4");
         keyTypes.clear();
@@ -255,11 +256,17 @@ public class TestGroupOSCOREJoinPDP {
        // Specify access right also for client "clientG" as a joining node of an OSCORE group.
        // On this Group Manager, this client is allowed to be
        // requester, responder, requester+responder, or monitor.
-       pdp.addAccess("clientG", "rs4", "feedca570000_requester_monitor_responder");
+       pdp.addAccess("clientG", "rs4",
+          GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX +
+          ":" + groupName.length() +
+          ":" + groupName + "_requester_monitor_responder");
        
        // Specify access right also for client "clientG" as a joining node of an OSCORE group.
        // This client is allowed to be requester.
-       pdp.addAccess("clientH", "rs4", "feedca570000_monitor");
+       pdp.addAccess("clientH", "rs4",
+          GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX +
+    	  ":" + groupName.length() +
+    	  ":" + groupName + "_monitor");
        
        // Add the resource server rs4 and its OSCORE Group Manager
        // audience to the table OSCOREGroupManagersTable in the PDP

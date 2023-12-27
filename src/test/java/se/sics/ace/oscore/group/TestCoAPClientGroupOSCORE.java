@@ -257,8 +257,8 @@ public class TestCoAPClientGroupOSCORE {
     @Test
     public void testGroupOSCORESingleRoleREFToken() throws Exception { 
         
-    	String gid = new String("feedca570000");
-        String gid2 = new String("feedca570001");
+    	String groupName = new String("feedca570000");
+        String groupName2 = new String("feedca570001");
     	
         Configuration dtlsConfig = Configuration.getStandard();
         dtlsConfig.set(DtlsConfig.DTLS_CIPHER_SUITES, Arrays.asList(CipherSuite.TLS_PSK_WITH_AES_128_CCM_8, CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8));
@@ -304,7 +304,7 @@ public class TestCoAPClientGroupOSCORE {
         
         CBORObject cborArrayScope = CBORObject.NewArray();
         CBORObject cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid);
+        cborArrayEntry.Add(groupName);
         
     	int myRoles = 0;
     	myRoles = Util.addGroupOSCORERole(myRoles, GroupcommParameters.GROUP_OSCORE_REQUESTER);
@@ -334,7 +334,7 @@ public class TestCoAPClientGroupOSCORE {
         
         cborArrayScope = CBORObject.NewArray();
         cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid);
+        cborArrayEntry.Add(groupName);
         
     	myRoles = 0;
     	myRoles = Util.addGroupOSCORERole(myRoles, GroupcommParameters.GROUP_OSCORE_MONITOR);
@@ -363,7 +363,7 @@ public class TestCoAPClientGroupOSCORE {
         
         cborArrayScope = CBORObject.NewArray();
         cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid2);
+        cborArrayEntry.Add(groupName2);
         
     	myRoles = 0;
     	myRoles = Util.addGroupOSCORERole(myRoles, GroupcommParameters.GROUP_OSCORE_REQUESTER);
@@ -392,7 +392,7 @@ public class TestCoAPClientGroupOSCORE {
         
         cborArrayScope = CBORObject.NewArray();
         cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid);
+        cborArrayEntry.Add(groupName);
         
     	myRoles = 0;
     	myRoles = Util.addGroupOSCORERole(myRoles, GroupcommParameters.GROUP_OSCORE_RESPONDER);
@@ -422,7 +422,7 @@ public class TestCoAPClientGroupOSCORE {
         
         cborArrayScope = CBORObject.NewArray();
         cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid);
+        cborArrayEntry.Add(groupName);
         
     	myRoles = 0;
     	myRoles = Util.addGroupOSCORERole(myRoles, (short)10);
@@ -457,8 +457,8 @@ public class TestCoAPClientGroupOSCORE {
     @Test
     public void testGroupOSCOREMultipleRolesREFToken() throws Exception { 
         
-    	String gid = new String("feedca570000");
-        String gid2 = new String("feedca570001");
+    	String groupName = new String("feedca570000");
+        String groupName2 = new String("feedca570001");
     	
         Configuration dtlsConfig = Configuration.getStandard();
         dtlsConfig.set(DtlsConfig.DTLS_CIPHER_SUITES, Arrays.asList(CipherSuite.TLS_PSK_WITH_AES_128_CCM_8, CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8));
@@ -506,7 +506,7 @@ public class TestCoAPClientGroupOSCORE {
         
         CBORObject cborArrayScope = CBORObject.NewArray();
         CBORObject cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid);
+        cborArrayEntry.Add(groupName);
         
     	int myRoles = 0;
     	myRoles = Util.addGroupOSCORERole(myRoles, GroupcommParameters.GROUP_OSCORE_REQUESTER);
@@ -537,7 +537,7 @@ public class TestCoAPClientGroupOSCORE {
         
         cborArrayScope = CBORObject.NewArray();
         cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid2);
+        cborArrayEntry.Add(groupName2);
         
         myRoles = 0;
     	myRoles = Util.addGroupOSCORERole(myRoles, GroupcommParameters.GROUP_OSCORE_REQUESTER);
@@ -568,7 +568,7 @@ public class TestCoAPClientGroupOSCORE {
         
         cborArrayScope = CBORObject.NewArray();
         cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid);
+        cborArrayEntry.Add(groupName);
     	
         myRoles = 0;
     	myRoles = Util.addGroupOSCORERole(myRoles, GroupcommParameters.GROUP_OSCORE_REQUESTER);
@@ -603,7 +603,7 @@ public class TestCoAPClientGroupOSCORE {
         
         cborArrayScope = CBORObject.NewArray();
         cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid);
+        cborArrayEntry.Add(groupName);
         
         int expectedRoles = 0;
         expectedRoles = Util.addGroupOSCORERole(expectedRoles, GroupcommParameters.GROUP_OSCORE_REQUESTER);
@@ -626,7 +626,7 @@ public class TestCoAPClientGroupOSCORE {
     @Test
     public void testGroupOSCOREAltClientREFToken() throws Exception { 
         
-    	String gid = new String("feedca570000");
+    	String groupName = new String("feedca570000");
     	
         Configuration dtlsConfig = Configuration.getStandard();
         dtlsConfig.set(DtlsConfig.DTLS_CIPHER_SUITES, Arrays.asList(CipherSuite.TLS_PSK_WITH_AES_128_CCM_8, CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8));
@@ -673,7 +673,7 @@ public class TestCoAPClientGroupOSCORE {
         
         CBORObject cborArrayScope = CBORObject.NewArray();
         CBORObject cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid);
+        cborArrayEntry.Add(groupName);
         
     	int myRoles = 0;
     	myRoles = Util.addGroupOSCORERole(myRoles, GroupcommParameters.GROUP_OSCORE_RESPONDER);
@@ -702,7 +702,7 @@ public class TestCoAPClientGroupOSCORE {
         
         cborArrayScope = CBORObject.NewArray();
         cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid);
+        cborArrayEntry.Add(groupName);
         
         myRoles = 0;
     	myRoles = Util.addGroupOSCORERole(myRoles, GroupcommParameters.GROUP_OSCORE_REQUESTER);
@@ -736,7 +736,7 @@ public class TestCoAPClientGroupOSCORE {
         
         cborArrayScope = CBORObject.NewArray();
         cborArrayEntry = CBORObject.NewArray();
-        cborArrayEntry.Add(gid);
+        cborArrayEntry.Add(groupName);
         
         int expectedRoles = 0;
         expectedRoles = Util.addGroupOSCORERole(expectedRoles, GroupcommParameters.GROUP_OSCORE_REQUESTER);

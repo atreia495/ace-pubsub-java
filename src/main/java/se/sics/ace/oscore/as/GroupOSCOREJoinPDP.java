@@ -458,90 +458,157 @@ public class GroupOSCOREJoinPDP implements PDP, AutoCloseable {
         		  
         		  if (scopeEntry.getType().equals(CBORType.Array)) {
 		        		
-		        	  if (scopeEntry.size() != 2)
-		        		  throw new AceException("Scope must have two elements, i.e. Group ID and list of roles");
-		        	  
+		        	  if (scopeEntry.size() != 2) {
+		        		  throw new AceException("Scope must have two elements, i.e., group name and list of roles");
+		        	  }
+
 		        	  String groupName = "";
-		        	  Set<String> roles = new HashSet<>();
-		        	  
-		        	  // Retrieve the group name of the OSCORE group
-		        	  CBORObject scopeElement = scopeEntry.get(0);
-		        	  if (scopeElement.getType().equals(CBORType.TextString)) {
-		        		  groupName = scopeElement.AsString();
-		        	  }
-		        	  else {throw new AceException("The group name must be a CBOR Text String");}
-		        	  
+		        	  Set<String> permissions = new HashSet<>();
+		        	  		        	  
 		        	  // Retrieve the role or list of roles
-		        	  scopeElement = scopeEntry.get(1);
+		        	  CBORObject scopeElement = scopeEntry.get(1);
 		        	  
-		          	  // NEW VERSION USING the AIF-BASED ENCODING AS SINGLE INTEGER
+		        	  int permissionSet = 0;
 		        	  if (scopeElement.getType().equals(CBORType.Integer)) {
-		        		  int roleSet = scopeElement.AsInt32();
 		        		  
-		        		  if (roleSet <= 0)
-		        			  throw new AceException("The roles must be encoded as a CBOR Unsigned Integer greater than 0");
+		        		  permissionSet = scopeElement.AsInt32();
 		        		  
-		        		  Set<Integer> roleIdSet = Util.getGroupOSCORERoles(roleSet);
-		        		  short[] roleIdArray = new short[roleIdSet.size()];
-		        		  int index = 0;
-		        		  for (Integer elem : roleIdSet)
-		        			  roleIdArray[index++] = elem.shortValue(); 
-		        		  for (int i=0; i<roleIdArray.length; i++) {
-		        			  short roleIdentifier = roleIdArray[i];
-		        			  // Silently ignore unrecognized roles
-		        			  if (roleIdentifier < GroupcommParameters.GROUP_OSCORE_ROLES.length)
-			        			  roles.add(GroupcommParameters.GROUP_OSCORE_ROLES[roleIdentifier]);
+		        		  if (permissionSet <= 0)
+		        			  throw new AceException("The permission set must be encoded as a CBOR Unsigned Integer greater than 0");
+		        		  
+		        		  if ((permissionSet % 2) == 0) {
+		        			  // This is a user scope entry, hence Tperm specifies roles to have as a group member
+		        			  
+			        		  Set<Integer> roleIdSet = Util.getGroupOSCORERoles(permissionSet);
+			        		  short[] roleIdArray = new short[roleIdSet.size()];
+			        		  int index = 0;
+			        		  for (Integer elem : roleIdSet) {
+			        			  roleIdArray[index++] = elem.shortValue();
+			        		  }
+			        		  for (int i = 0; i < roleIdArray.length; i++) {
+			        			  short roleIdentifier = roleIdArray[i];
+			        			  // Silently ignore unrecognized roles
+			        			  if (roleIdentifier < GroupcommParameters.GROUP_OSCORE_ROLES.length) {
+			        				  permissions.add(GroupcommParameters.GROUP_OSCORE_ROLES[roleIdentifier]);
+			        			  }
+			        		  }
+		        		  }
+		        		  else {
+		        			  // This is an admin scope entry, hence Tperm specifies actions allowed to an Administrator
+		        			  
+		        			  // TODO
+		        			  // Implement the parsing of Tperm for this case
 		        		  }
 		        		  
 		        	  }
-		        	  
-		        	  else {throw new AceException("Invalid format of roles");}
-		        	  
-		        	  // Check if the client can access the specified group on the RS with the specified roles
-		        	  // Note: this assumes that there is only one RS acting as Group Manager specified as audience
-		        	  // Then, each element of 'scopes' refers to one OSCORE group under that Group Manager
-		        	  boolean canJoin = false;
-		        	  Set<String> allowedRoles = new HashSet<>();
-		        	  for (String foo : scopes) {
-		        		  String[] scopeParts = foo.split("_");
-		        		  if(groupName.equals(scopeParts[0])) {
-		        			  canJoin = true;
-		        			  for (int i=1; i<scopeParts.length; i++) {
-		        				  if (roles.contains(scopeParts[i]))
-		        					  allowedRoles.add(scopeParts[i]);
-		        			  }
-		        		  }
+		        	  else {
+		        		  throw new AceException("Invalid format of permissions for accessing an OSCORE Group Manager");
 		        	  }
 		        	  
-		        	  if (canJoin == true && !allowedRoles.isEmpty()) {
+		        	  
+		        	  if ((permissionSet % 2) == 0) {
+		        		  // This is a user scope entry, hence Toid specifies a group name as a literal string
 		        		  
-		        		  CBORObject cborArrayScopeEntry = CBORObject.NewArray();
-		        	      
-		        		  cborArrayScopeEntry.Add(groupName);
-		        	      
-		        		  int grantedRoles = 0;
-	        	    	  for (String foo : allowedRoles)
-	        	    		  grantedRoles = Util.addGroupOSCORERole(grantedRoles, rolesToInt.get(foo));
-	        	    	  cborArrayScopeEntry.Add(grantedRoles);
-		        	      
-		        	      cborArrayScope.Add(cborArrayScopeEntry);
-		        	     
-		        	  }
-  		      
+			        	  // Retrieve the group name of the OSCORE group
+			        	  scopeElement = scopeEntry.get(0);
+			        	  if (scopeElement.getType().equals(CBORType.TextString)) {
+			        		  groupName = scopeElement.AsString();
+			        	  }
+			        	  else {throw new AceException("The group name must be a CBOR Text String");}
+			        	  
+			        	  // Check if the client can access the specified group on the RS with the specified roles
+			        	  // Note: this assumes that there is only one RS acting as Group Manager specified as audience
+			        	  // Then, each element of 'scopes' refers to one OSCORE group under that Group Manager
+			        	  boolean canJoin = false;
+			        	  Set<String> allowedRoles = new HashSet<>();
+			        	  
+			        	  for (String foo : scopes) {
+			        		  
+			        		  // The format to parse for valid scope records is:
+			        		  //
+			        		  // "oscgm1:LENGTH:NAME_ROLE1_ROLE2_...
+			        		  //
+			        		  // where LENGTH is the number of characters of the group name NAME
+			        		  
+			        		  int index1 = foo.indexOf(":");
+			        		  if (index1 == -1 || (index1 == (foo.length() - 1))) {
+			        			  continue;
+			        		  }
+			        		  String mySubstr = foo.substring(0, index1);
+			        		  if (GroupcommParameters.GROUP_OSCORE_AS_SCOPE_LITERAL_PREFIX.equals(mySubstr) == false) {
+			        			  continue;
+			        		  }
+			        		  
+			        		  int index2 = foo.indexOf(":", (index1 + 1));
+			        		  if (index2 == -1 || (index2 == (foo.length() - 1))) {
+			        			  continue;
+			        		  }
+			        		  int length = 0;
+			        		  mySubstr = foo.substring((index1 + 1), (index2));
+			        		  try {			        		  
+				        		  length = Integer.parseInt(mySubstr);
+			        		  }
+			        		  catch (NumberFormatException e) {
+			        			  continue;
+			        		  }
+			        		  if ((length < 1)) {
+			        			  continue;
+			        		  }
+			        		  mySubstr = foo.substring((index2 + 1));
+			        		  if (mySubstr.length() < (length + 2) ) {
+			        			  continue;
+			        		  }
+			        		  
+			        		  String storedGroupName = mySubstr.substring(0, length);
+			        		  String storedRoleSequence = mySubstr.substring(length + 1);
+			        		  String[] storedRoles = storedRoleSequence.split("_");
+			        		  
+			        		  if(groupName.equals(storedGroupName)) {
+			        			  canJoin = true;
+			        			  for (int i = 0; i < storedRoles.length; i++) {
+			        				  if (permissions.contains(storedRoles[i]))
+			        					  allowedRoles.add(storedRoles[i]);
+			        			  }
+			        		  }
+			        		  
+			        	  }
+			        	  
+			        	  if (canJoin == true && !allowedRoles.isEmpty()) {
+			        		  
+			        		  CBORObject cborArrayScopeEntry = CBORObject.NewArray();
+			        	      
+			        		  cborArrayScopeEntry.Add(groupName);
+			        	      
+			        		  int grantedRoles = 0;
+		        	    	  for (String foo : allowedRoles) {
+		        	    		  grantedRoles = Util.addGroupOSCORERole(grantedRoles, rolesToInt.get(foo));
+		        	    	  }
+		        	    	  cborArrayScopeEntry.Add(grantedRoles);
+			        	      
+			        	      cborArrayScope.Add(cborArrayScopeEntry);
+			        	     
+			        	  }
+        		     }
+		        	 else {
+		        		 // This is an admin scope entry, hence Tperm specifies actions allowed to an Administrator
+		        		 
+		        		 // TODO
+		        		 // Implement the parsing of Toid for this case
+		        		 
+		        	 }
+		        	  
         		  } else {
-        	            throw new AceException(
-          	                    "Invalid scope entry format for joining OSCORE groups");
+        			  throw new AceException("Invalid scope entry format for accessing an OSCORE Group Manager");
           	      }
         		  
-        	  
         	  } // End of scope entries inspection
         	  
-        	  if (cborArrayScope.size() != 0)
+        	  if (cborArrayScope.size() != 0) {
         		  grantedScopes = cborArrayScope.EncodeToBytes();
+        	  }
         	  
   		    } else {
-  	            throw new AceException(
-  	                    "Invalid scope format for joining OSCORE groups");
+  		    	throw new AceException("Invalid scope format for accessing an OSCORE Group Manager");
   	        }
         	
         }
@@ -551,13 +618,11 @@ public class GroupOSCOREJoinPDP implements PDP, AutoCloseable {
     	// In fact, no processing for byte string scopes are defined, other than
     	// the one implemented above according to draft-ietf-ace-key-groupcomm-oscore
         else if (scope instanceof byte[]) {
-        	throw new AceException(
-  	                "Unknown processing for this byte string scope");
+        	throw new AceException("Unknown processing for this byte string scope");
         }
         
         else {
-        	throw new AceException(
-                   "Scopes must be Text Strings or Byte Strings");
+        	throw new AceException("Scopes must be Text Strings or Byte Strings");
         }
         
         return grantedScopes;
