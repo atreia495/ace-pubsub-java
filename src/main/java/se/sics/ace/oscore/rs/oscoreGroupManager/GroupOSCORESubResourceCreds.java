@@ -332,11 +332,6 @@ public class GroupOSCORESubResourceCreds extends CoapResource {
     		}
     		
     		// Invalid format of 'get_creds'
-    		if (getCreds.get(0).AsBoolean() == false && getCreds.get(2).size() == 0) {
-    			valid = false;
-    		}
-    		
-    		// Invalid format of 'get_creds'
     		if (valid) {
 				for (int i = 0; i < getCreds.get(1).size(); i++) {
 					// Possible elements of the first array have to be all integers and
@@ -439,6 +434,7 @@ public class GroupOSCORESubResourceCreds extends CoapResource {
     			int memberRoles = targetedGroup.getGroupMemberRoles(memberSenderId);
     			
     			boolean include = false;
+    			boolean earlyStop = false;
     			
 				for (Integer filter : requestedRoles) {
 					int filterRoles = filter.intValue();
@@ -447,7 +443,7 @@ public class GroupOSCORESubResourceCreds extends CoapResource {
 					if (filterRoles == (filterRoles & memberRoles)) {
 						
 						// This authentication credential has to be included anyway,
-						// regardless the Sender ID of the key owner
+						// regardless of the Sender ID of the key owner
 						if (inclusionFlag) {
 							include = true;
 						}
@@ -456,22 +452,29 @@ public class GroupOSCORESubResourceCreds extends CoapResource {
 						else if (!requestedSenderIDs.contains(ByteBuffer.wrap(memberSenderId))) {
 							include = true;
 						}
-						// Stop going through the role filter anyway;
-						// this authentication credential has not to be included
+						
+						// No need to check the Sender ID filter
+						if (include == false) {
+							earlyStop = true;
+						}
+						
+						// Stop going through the role filter anyway
 						break;
 					}	
 				}
     			
-    			if(!include) {
+    			if(!include && !earlyStop) {
     				// This authentication credential has to be included if the Sender ID of
     				// the key owner is in the node identifier filter
     				if (inclusionFlag && requestedSenderIDs.contains(ByteBuffer.wrap(memberSenderId))) {
     					include = true;
     				}
     				// This authentication credential has to be included if the Sender ID of
-    				// the key owner is not in the node identifier filter
+    				// the key owner is not in the node identifier filter, and the role filter was empty
     				else if (!inclusionFlag && !requestedSenderIDs.contains(ByteBuffer.wrap(memberSenderId))) {
-    					include = true;
+    					if (requestedRoles.size() == 0) {
+    						include = true;
+    					}
     				}
     			}
     			
