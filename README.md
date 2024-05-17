@@ -1,5 +1,7 @@
 # README #
 
+A modified version of the [ACE-Java](https://bitbucket.org/marco-tiloca-sics/ace-java/) implementation for the [Publish-Subscribe](https://datatracker.ietf.org/doc/draft-ietf-ace-pubsub-profile/) profile.
+
 This is a mavenized Java 1.8 project. You should be able to compile and run these classes by using Maven.
 
 ### What is this repository for? ###
